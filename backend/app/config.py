@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     app_env: str = "local"
     database_url: str = (
-        "postgresql+psycopg://wowlance:wowlance@127.0.0.1:5432/wowlance"
+        "postgresql+psycopg://wowlance:wowlance@127.0.0.1:5433/wowlance"
     )
 
 
