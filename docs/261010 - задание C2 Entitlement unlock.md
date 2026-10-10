@@ -140,14 +140,15 @@ Content-Type: application/json
 
 ---
 
-## 7. Вне скоупа (следующий тикет)
+## 7. Вне скоупа / параллель
 
 - Реальный staffing / roster Talent  
-- React: экран комнаты + бейдж «staffing locked/unlocked»  
 - Keycloak  
 - Webhook от живого Billing  
 
-Рекомендуемый следующий номер: **C3 — GET room + React room shell** (просмотр снимка и флага).
+**Параллельно с этим тикетом** можно вести  
+[C3 — GET room + React room shell](261010%20-%20задание%20C3%20Room%20read%20shell.md)  
+(`feature/c3-room-read-shell`) — только чтение `staffing_unlocked`, без POST entitlements.
 
 ---
 
