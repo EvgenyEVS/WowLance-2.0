@@ -21,13 +21,15 @@ docs/        ADR-002 и архитектурные материалы
 ## Быстрый старт (скелет)
 
 ```powershell
-# PostgreSQL
+# PostgreSQL (host port 5433 — см. docker-compose.yml)
 docker compose up -d db
 
 # API
 cd backend
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
+copy ..\.env.example .env
+.\.venv\Scripts\alembic upgrade head
 .\.venv\Scripts\uvicorn app.main:app --reload --port 8000
 
 # UI (после npm create / install)
@@ -36,6 +38,7 @@ npm install
 npm run dev
 ```
 
+C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`).  
 Health: http://127.0.0.1:8000/health  
 
 ## Фазы
