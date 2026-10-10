@@ -37,6 +37,15 @@ docs/                 ADR + architecture
 2. Реализация + тесты  
 3. Stubs адаптеров Strategy/Talent/Billing до live  
 
+## Задания стажёрам / промпты ИИ
+
+В **каждом** задании явно указывать:
+
+- **название новой ветки** (например `feature/c1-founder-handoff`) от актуального `main`;
+- стек: FastAPI · React · PostgreSQL · OpenSpec · Superpowers;
+- путь к файлу задания в `docs/`.
+
+
 Локальные пути:
 
 - Этот репозиторий: `C:\Программирование\Стажировка Wowlance\WowLance-2.0`  
