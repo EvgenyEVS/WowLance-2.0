@@ -1,0 +1,16 @@
+---
+description: WowLance 2.0 stack, ADR-002 boundaries, Superpowers workflow
+alwaysApply: true
+---
+
+# WowLance 2.0
+
+Stack: **FastAPI**, **React** (Vite+TS), **PostgreSQL**, **OpenSpec** (`contracts/`), **Superpowers**.
+
+- Own DB only; never read Strategy/Talent/CRM databases.
+- Out of scope: Jira, CRM product, strategy editor, Talent onboarding, lead billing.
+- Domain canon: `docs/ADR-002-wowlance-2.0-platform-room.md` (Hybrid C; start C1 snapshot).
+- Contracts before code: change `contracts/wowlance/` first, then implement.
+- Handoff may create a room before payment; staffing requires entitlement.
+- Django WowLance 1.0 is reference only — reimplement meanings, do not copy apps/templates.
+- Prefer small PRs with tests; stub external adapters until live contracts exist.

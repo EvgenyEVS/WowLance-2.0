@@ -1,0 +1,84 @@
+# OpenSpec / contract draft — FounderHandoff v1
+# Channel: sync POST (preferred for C1); optional async event mirror later.
+# Policy: room may be created before payment; staffing requires entitlement.
+
+id: FounderHandoff
+version: "1"
+direction: Strategy -> WowLance
+channel: https
+path: /internal/v1/handoffs
+method: POST
+idempotency_key: handoff_id
+
+request:
+  type: object
+  required:
+    - handoff_id
+    - strategy_id
+    - strategy_version
+    - founder_sub
+    - room_type
+    - project
+    - strategy
+  properties:
+    handoff_id: { type: string, format: uuid }
+    strategy_id: { type: string, format: uuid }
+    strategy_version: { type: string, minLength: 1 }
+    founder_sub: { type: string, minLength: 1, description: Keycloak sub }
+    room_type:
+      type: string
+      enum: [sale, develop]
+    project:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        timezone: { type: string, default: Europe/Moscow }
+    strategy:
+      type: object
+      required: [offer, audience, hot_criteria]
+      properties:
+        offer: { type: string }
+        audience: { type: string }
+        hot_criteria: { type: string }
+        utp: { type: string }
+    documents:
+      type: array
+      items:
+        type: object
+        required: [role, uri, checksum]
+        properties:
+          role: { type: string }
+          uri: { type: string }
+          checksum: { type: string }
+    staffing_intent:
+      type: object
+      properties:
+        package_code: { type: string }
+        slots:
+          type: array
+          items:
+            type: object
+            properties:
+              role_key: { type: string }
+              count: { type: integer, minimum: 1 }
+              level_min: { type: string }
+    commercial:
+      type: object
+      properties:
+        order_id: { type: string, format: uuid }
+        entitlement_required: { type: boolean, default: true }
+
+response_200:
+  type: object
+  required: [room_id, status, staffing_unlocked]
+  properties:
+    room_id: { type: string, format: uuid }
+    status:
+      type: string
+      enum: [created, already_exists]
+    staffing_unlocked: { type: boolean }
+
+errors:
+  - { code: 409, when: "handoff_id already bound to different payload" }
+  - { code: 422, when: "schema validation failed" }

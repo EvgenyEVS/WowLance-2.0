@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wowlance
+      POSTGRES_PASSWORD: wowlance
+      POSTGRES_DB: wowlance
+    ports:
+      - "5432:5432"
+    volumes:
+      - wowlance_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wowlance -d wowlance"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  wowlance_pg:
