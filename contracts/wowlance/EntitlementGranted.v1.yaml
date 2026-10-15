@@ -1,0 +1,40 @@
+# OpenSpec / contract draft — EntitlementGranted v1
+# Channel: sync POST (same as FounderHandoff C1).
+# Policy: handoff may create a room before payment; staffing unlocks only after entitlement.
+
+id: EntitlementGranted
+version: "1"
+direction: Order/Payments -> WowLance
+channel: https
+path: /internal/v1/entitlements
+method: POST
+idempotency_key: entitlement_id
+
+request:
+  type: object
+  required:
+    - entitlement_id
+    - room_id
+  properties:
+    entitlement_id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    order_id: { type: string, format: uuid }
+    source:
+      type: string
+      enum: [order, payments, stub]
+      default: stub
+
+response_200:
+  type: object
+  required: [room_id, staffing_unlocked, status]
+  properties:
+    room_id: { type: string, format: uuid }
+    staffing_unlocked: { type: boolean, const: true }
+    status:
+      type: string
+      enum: [granted, already_granted]
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 409, when: "entitlement_id already bound to a different room_id" }
+  - { code: 422, when: "schema validation failed" }
