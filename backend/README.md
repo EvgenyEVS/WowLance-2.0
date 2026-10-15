@@ -12,11 +12,28 @@
 | **409** | тот же `handoff_id`, другой payload |
 | **422** | валидация тела |
 
-`staffing_unlocked` в C1 **всегда** `false` (entitlement — следующий тикет).
+`staffing_unlocked` после handoff **false**, пока не придёт C2 entitlement.
 
-**Auth:** endpoint открыт (internal). Позже — Gateway / service token. Keycloak в C1 не внедряем.
+**Auth:** endpoint открыт (internal). Позже — Gateway / service token. Keycloak в C1/C2 не внедряем.
 
 Чужие БД / HTTP Strategy не вызываются: весь снимок приходит в теле POST. Файлы — только URI + checksum.
+
+## C2: EntitlementGranted
+
+`POST /internal/v1/entitlements` открывает staffing на **уже существующей** комнате  
+([`contracts/wowlance/EntitlementGranted.v1.yaml`](../contracts/wowlance/EntitlementGranted.v1.yaml)).
+
+| Статус | Когда |
+|--------|--------|
+| **200** | первый grant (`status: granted`, `staffing_unlocked: true`) |
+| **200** | повтор того же `entitlement_id` (`status: already_granted`) |
+| **404** | неизвестный `room_id` |
+| **409** | тот же `entitlement_id` уже привязан к другой комнате |
+| **422** | валидация тела |
+
+Повторный FounderHandoff **не** сбрасывает `staffing_unlocked` обратно в `false`.
+
+Revoke / «заблокировать снова» в C2 нет.
 
 ## Поднять локально
 
@@ -47,6 +64,22 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 
 Повтор того же JSON → `200` + `"status":"already_exists"` и тот же `room_id`.
 
+## curl (entitlement, C2)
+
+Подставьте `room_id` из ответа handoff. Пример в контракте использует placeholder.
+
+```powershell
+curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
+  -H "Content-Type: application/json" `
+  -d '{
+    "entitlement_id": "33333333-3333-3333-3333-333333333333",
+    "room_id": "<room_id from handoff>",
+    "source": "stub"
+  }'
+```
+
+Повтор того же `entitlement_id` → `200` + `"status":"already_granted"`.
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -56,9 +89,10 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1)
+## Отложено (не C1/C2)
 
 - Keycloak JWT, React UI  
-- `EntitlementGranted` → `staffing_unlocked=true`  
+- Реальный staffing / roster Talent  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
+- Живой webhook Billing  
