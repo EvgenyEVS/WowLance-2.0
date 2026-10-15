@@ -1,11 +1,11 @@
-"""SQLAlchemy models for C1 FounderHandoff and C2 Entitlement."""
+"""SQLAlchemy models for C1 FounderHandoff, C2 Entitlement, C4 slots."""
 
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -63,6 +63,9 @@ class Room(Base):
         back_populates="room", uselist=False
     )
     entitlements: Mapped[list[Entitlement]] = relationship(back_populates="room")
+    function_slots: Mapped[list[RoomFunctionSlot]] = relationship(
+        back_populates="room"
+    )
 
 
 class StrategySnapshot(Base):
@@ -115,3 +118,39 @@ class Entitlement(Base):
     )
 
     room: Mapped[Room] = relationship(back_populates="entitlements")
+
+
+class RoomFunctionSlot(Base):
+    """A purchased/intended seat in the room. C4: open, unassigned."""
+
+    __tablename__ = "room_function_slots"
+    __table_args__ = (
+        UniqueConstraint(
+            "room_id",
+            "role_key",
+            "seat_index",
+            name="uq_room_function_slot_seat",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    role_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    seat_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    level_min: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="open", server_default="open"
+    )
+    freelancer_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    room: Mapped[Room] = relationship(back_populates="function_slots")

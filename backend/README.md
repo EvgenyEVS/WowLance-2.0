@@ -99,6 +99,31 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
 ```
 
+## C4: Staffing slots
+
+Слоты **не** создаются на handoff/entitlement. Явный POST после unlock читает локальный `staffing_intent` снимка.
+
+`GET /api/v1/rooms/{room_id}/slots` и `POST /api/v1/rooms/{room_id}/slots/materialize`  
+([`contracts/wowlance/StaffingSlots.v1.yaml`](../contracts/wowlance/StaffingSlots.v1.yaml)).
+
+| Статус | Когда |
+|--------|--------|
+| **200** GET | staffing unlocked; тело: `slots` |
+| **200** POST | `status: materialized` или `already_materialized` (слоты не дублируются) |
+| **403** | `staffing_unlocked=false` (`detail: staffing_locked`) |
+| **404** | нет комнаты |
+| **422** | невалидный `room_id` |
+
+Пустой / отсутствующий `staffing_intent.slots` → `200` и `slots: []`. Auth открыт (Gateway / JWT later).
+
+```powershell
+# после handoff + entitlement, подставить room_id
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/materialize
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots
+```
+
+Sale example → два слота `seller` `#1` и `#2`, `status: open`.
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -108,10 +133,10 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1–C3)
+## Отложено (не C1–C4)
 
 - Keycloak JWT  
-- Реальный staffing / roster Talent  
+- Matching / assign freelancer / Talent roster  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
 - Живой webhook Billing  
