@@ -46,10 +46,14 @@ Health: http://127.0.0.1:8000/health
 
 | Фаза | Содержание |
 |------|------------|
-| **C0** | Контракты (`FounderHandoff` v1) |
-| **C1** | Handoff → комната + immutable snapshot |
-| **C2** | Keycloak + React shell + tasks |
-| **C3+** | Talent roster, Accept стратегии, adapters |
+| **C0–C1** | Контракты + FounderHandoff → комната + snapshot |
+| **C2** | Entitlement → `staffing_unlocked` |
+| **C3** | GET room + React shell |
+| **C4** | Staffing slots (gated) |
+| **C5** | StrategyPublished → Accept/Reject |
+| **C6** | Local roster + assign — [задание](docs/261015%20-%20задание%20C6%20Roster%20assign.md) ∥ C7 |
+| **C7** | Room tasks — [задание](docs/261015%20-%20задание%20C7%20Room%20tasks.md) ∥ C6 |
+| **C8+** | Keycloak JWT, Outbox, Hot→CRM, Quality Gate |
 
 ## Политика оплаты
 
