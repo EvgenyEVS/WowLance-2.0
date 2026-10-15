@@ -27,5 +27,6 @@
         { "role_key": "seller", "count": 2, "level_min": "B" }
       ]
     }
-  }
+  },
+  "pending_strategy": null
 }

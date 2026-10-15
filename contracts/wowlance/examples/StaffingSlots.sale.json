@@ -1,0 +1,25 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "staffing_unlocked": true,
+  "status": "materialized",
+  "slots": [
+    {
+      "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "role_key": "seller",
+      "seat_index": 1,
+      "level_min": "B",
+      "status": "open",
+      "freelancer_sub": null
+    },
+    {
+      "id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "role_key": "seller",
+      "seat_index": 2,
+      "level_min": "B",
+      "status": "open",
+      "freelancer_sub": null
+    }
+  ]
+}

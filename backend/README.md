@@ -99,6 +99,64 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
 ```
 
+`strategy` — только **active** снимок. Пока есть proposal, в ответе ещё `pending_strategy`.
+
+## C4: Staffing slots
+
+Слоты **не** создаются на handoff/entitlement. Явный POST после unlock читает локальный `staffing_intent` **active** снимка.
+
+`GET /api/v1/rooms/{room_id}/slots` и `POST /api/v1/rooms/{room_id}/slots/materialize`  
+([`contracts/wowlance/StaffingSlots.v1.yaml`](../contracts/wowlance/StaffingSlots.v1.yaml)).
+
+| Статус | Когда |
+|--------|--------|
+| **200** GET | staffing unlocked; тело: `slots` |
+| **200** POST | `status: materialized` или `already_materialized` (слоты не дублируются) |
+| **403** | `staffing_unlocked=false` (`detail: staffing_locked`) |
+| **404** | нет комнаты |
+| **422** | невалидный `room_id` |
+
+Пустой / отсутствующий `staffing_intent.slots` → `200` и `slots: []`. Auth открыт (Gateway / JWT later).
+
+```powershell
+# после handoff + entitlement, подставить room_id
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/materialize
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots
+```
+
+Sale example → два слота `seller` `#1` и `#2`, `status: open`.
+
+## C5: Strategy publish / Accept / Reject
+
+Новая версия стратегии не применяется молча.  
+`POST /internal/v1/strategy-publications` создаёт `pending` proposal  
+([`contracts/wowlance/StrategyPublished.v1.yaml`](../contracts/wowlance/StrategyPublished.v1.yaml)).
+
+| Статус | Когда |
+|--------|--------|
+| **200** publish | `pending` или повтор `publication_id` → `already_exists` |
+| **409** publish | уже есть pending; `strategy_version` == active; publication на другую комнату |
+| **404** | нет комнаты / нет proposal |
+| **200** accept/reject | `X-Actor-Sub` обязателен |
+| **422** | нет `X-Actor-Sub` |
+| **409** decide | proposal уже не `pending` |
+
+Accept: старый snapshot → `superseded`, новый insert `active` (payload не UPDATE).  
+Reject: active не меняется.  
+**Слоты C4 не пересобираются** при Accept (later).
+
+```powershell
+# room_id из handoff; подставьте его в JSON publication
+curl -s -X POST http://127.0.0.1:8000/internal/v1/strategy-publications `
+  -H "Content-Type: application/json" `
+  --data-binary "@..\contracts\wowlance\examples\StrategyPublished.sale.json"
+
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/strategy-proposals/<proposal_id>/accept `
+  -H "X-Actor-Sub: teamlead-demo-sub"
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -108,10 +166,12 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1–C3)
+## Отложено (не C1–C5)
 
-- Keycloak JWT  
-- Реальный staffing / roster Talent  
+- Keycloak JWT / реальная роль teamlead  
+- Matching / assign freelancer / Talent roster  
+- Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
 - Живой webhook Billing  
+

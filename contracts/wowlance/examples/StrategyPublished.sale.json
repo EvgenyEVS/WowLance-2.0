@@ -1,0 +1,25 @@
+{
+  "publication_id": "44444444-4444-4444-4444-444444444444",
+  "room_id": "00000000-0000-0000-0000-000000000000",
+  "strategy_id": "22222222-2222-2222-2222-222222222222",
+  "strategy_version": "2026-10-15.2",
+  "strategy": {
+    "offer": "Outbound cold calling plus LinkedIn follow-up",
+    "audience": "Heads of Sales, 50–200 employees",
+    "hot_criteria": "Asked for a demo or pricing",
+    "utp": "Same-week pipeline"
+  },
+  "documents": [
+    {
+      "role": "sop",
+      "uri": "s3://platform/strategy/22222222/v2026-10-15.2/sop.pdf",
+      "checksum": "sha256:demo2"
+    }
+  ],
+  "staffing_intent": {
+    "package_code": "cold_calling_base",
+    "slots": [
+      { "role_key": "seller", "count": 2, "level_min": "B" }
+    ]
+  }
+}

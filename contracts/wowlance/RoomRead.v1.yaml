@@ -51,6 +51,19 @@ response_200:
         staffing_intent:
           type: object
           nullable: true
+    pending_strategy:
+      type: object
+      nullable: true
+      description: Present while a StrategyPublished proposal is pending. strategy is always the active snapshot.
+      properties:
+        proposal_id: { type: string, format: uuid }
+        strategy_version: { type: string }
+        offer: { type: string }
+        audience: { type: string }
+        hot_criteria: { type: string }
+        status:
+          type: string
+          const: pending
 
 errors:
   - { code: 404, when: "room_id does not exist" }

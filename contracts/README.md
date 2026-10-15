@@ -8,9 +8,13 @@
 | [`wowlance/examples/FounderHandoff.sale.json`](wowlance/examples/FounderHandoff.sale.json) | пример payload |
 | [`wowlance/EntitlementGranted.v1.yaml`](wowlance/EntitlementGranted.v1.yaml) | draft v1 — обязателен для C2 |
 | [`wowlance/examples/EntitlementGranted.json`](wowlance/examples/EntitlementGranted.json) | пример payload (`room_id` подставить после handoff) |
-| [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — обязателен для C3 |
+| [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — C3 + C5 `pending_strategy` |
 | [`wowlance/examples/RoomRead.sale.json`](wowlance/examples/RoomRead.sale.json) | пример GET-ответа |
+| [`wowlance/StaffingSlots.v1.yaml`](wowlance/StaffingSlots.v1.yaml) | draft v1 — обязателен для C4 |
+| [`wowlance/examples/StaffingSlots.sale.json`](wowlance/examples/StaffingSlots.sale.json) | пример list/materialize |
+| [`wowlance/StrategyPublished.v1.yaml`](wowlance/StrategyPublished.v1.yaml) | draft v1 — C5 publish + Accept/Reject |
+| [`wowlance/examples/StrategyPublished.sale.json`](wowlance/examples/StrategyPublished.sale.json) | пример publish (`room_id` после handoff) |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
-Следующие (не блокируют скелет): `TalentRosterUpsert`, `RoomCreated`, `StrategyPublished`.
+Следующие (не блокируют скелет): `TalentRosterUpsert`, `RoomCreated`.

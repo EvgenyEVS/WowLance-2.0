@@ -1,0 +1,57 @@
+# OpenSpec / contract draft — StaffingSlots v1
+# Materialize seats from the local strategy snapshot after entitlement.
+# Locked rooms: 403. Unknown room: 404. Explicit POST materialize (not lazy GET).
+
+id: StaffingSlots
+version: "1"
+direction: client -> WowLance
+channel: https
+
+paths:
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/slots
+  materialize:
+    method: POST
+    path: /api/v1/rooms/{room_id}/slots/materialize
+
+slot:
+  type: object
+  required: [id, room_id, role_key, seat_index, status]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    role_key: { type: string }
+    seat_index: { type: integer, minimum: 1 }
+    level_min: { type: string, nullable: true }
+    status:
+      type: string
+      enum: [open, filled, cancelled]
+    freelancer_sub: { type: string, nullable: true }
+
+response_list_200:
+  type: object
+  required: [room_id, staffing_unlocked, slots]
+  properties:
+    room_id: { type: string, format: uuid }
+    staffing_unlocked: { type: boolean, const: true }
+    slots:
+      type: array
+      items: { $ref: "#/slot" }
+
+response_materialize_200:
+  type: object
+  required: [room_id, status, slots]
+  properties:
+    room_id: { type: string, format: uuid }
+    status:
+      type: string
+      enum: [materialized, already_materialized]
+    slots:
+      type: array
+      items: { $ref: "#/slot" }
+
+errors:
+  - { code: 403, when: "staffing_unlocked is false (detail: staffing_locked)" }
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "validation failed" }

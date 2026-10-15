@@ -23,4 +23,34 @@ export type RoomRead = {
     documents?: RoomDocument[] | null
     staffing_intent?: Record<string, unknown> | null
   }
+  pending_strategy?: {
+    proposal_id: string
+    strategy_version: string
+    offer: string
+    audience: string
+    hot_criteria: string
+    status: 'pending'
+  } | null
+}
+
+export type FunctionSlot = {
+  id: string
+  room_id: string
+  role_key: string
+  seat_index: number
+  level_min?: string | null
+  status: 'open' | 'filled' | 'cancelled'
+  freelancer_sub?: string | null
+}
+
+export type SlotsList = {
+  room_id: string
+  staffing_unlocked: boolean
+  slots: FunctionSlot[]
+}
+
+export type MaterializeResult = {
+  room_id: string
+  status: 'materialized' | 'already_materialized'
+  slots: FunctionSlot[]
 }
