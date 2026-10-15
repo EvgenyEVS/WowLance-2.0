@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { RoomRead } from '../types'
+import SlotsPanel from './SlotsPanel'
 
 type LoadState =
   | { kind: 'loading' }
@@ -89,6 +90,7 @@ function RoomView({ room }: { room: RoomRead }) {
         ) : null}
         <p className="hint">Version {room.strategy.strategy_version}</p>
       </section>
+      <SlotsPanel roomId={room.id} staffingUnlocked={room.staffing_unlocked} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

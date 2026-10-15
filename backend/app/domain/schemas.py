@@ -140,3 +140,36 @@ class RoomReadResponse(BaseModel):
     staffing_unlocked: bool
     strategy: RoomStrategyOut
     created_at: datetime
+
+
+class SlotStatus(str, Enum):
+    open = "open"
+    filled = "filled"
+    cancelled = "cancelled"
+
+
+class FunctionSlotOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    role_key: str
+    seat_index: int
+    level_min: str | None = None
+    status: SlotStatus
+    freelancer_sub: str | None = None
+
+
+class StaffingSlotsListResponse(BaseModel):
+    room_id: UUID
+    staffing_unlocked: Literal[True] = True
+    slots: list[FunctionSlotOut]
+
+
+class MaterializeStatus(str, Enum):
+    materialized = "materialized"
+    already_materialized = "already_materialized"
+
+
+class StaffingMaterializeResponse(BaseModel):
+    room_id: UUID
+    status: MaterializeStatus
+    slots: list[FunctionSlotOut]

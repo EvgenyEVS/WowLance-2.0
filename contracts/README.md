@@ -10,6 +10,8 @@
 | [`wowlance/examples/EntitlementGranted.json`](wowlance/examples/EntitlementGranted.json) | пример payload (`room_id` подставить после handoff) |
 | [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — обязателен для C3 |
 | [`wowlance/examples/RoomRead.sale.json`](wowlance/examples/RoomRead.sale.json) | пример GET-ответа |
+| [`wowlance/StaffingSlots.v1.yaml`](wowlance/StaffingSlots.v1.yaml) | draft v1 — обязателен для C4 |
+| [`wowlance/examples/StaffingSlots.sale.json`](wowlance/examples/StaffingSlots.sale.json) | пример list/materialize |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
