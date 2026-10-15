@@ -43,12 +43,12 @@ def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> Handoff
             raise HandoffConflictError(
                 "handoff_id already bound to a different payload"
             )
-        # Immutable: do not touch StrategySnapshot on replay.
+        # Immutable: do not touch StrategySnapshot or staffing_unlocked on replay.
         return HandoffResult(
             response=FounderHandoffResponse(
                 room_id=existing.id,
                 status=HandoffStatus.already_exists,
-                staffing_unlocked=False,
+                staffing_unlocked=existing.staffing_unlocked,
             ),
             http_status=200,
         )

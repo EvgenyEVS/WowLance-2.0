@@ -1,4 +1,4 @@
-"""SQLAlchemy models for C1 FounderHandoff."""
+"""SQLAlchemy models for C1 FounderHandoff and C2 Entitlement."""
 
 from __future__ import annotations
 
@@ -62,6 +62,7 @@ class Room(Base):
     strategy_snapshot: Mapped[StrategySnapshot | None] = relationship(
         back_populates="room", uselist=False
     )
+    entitlements: Mapped[list[Entitlement]] = relationship(back_populates="room")
 
 
 class StrategySnapshot(Base):
@@ -89,3 +90,28 @@ class StrategySnapshot(Base):
     )
 
     room: Mapped[Room] = relationship(back_populates="strategy_snapshot")
+
+
+class Entitlement(Base):
+    """Idempotent staffing unlock from Order/Payments (or stub)."""
+
+    __tablename__ = "entitlements"
+
+    entitlement_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    source: Mapped[str] = mapped_column(String(32), nullable=False, default="stub")
+    order_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    room: Mapped[Room] = relationship(back_populates="entitlements")

@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
 
 app = FastAPI(
@@ -11,6 +12,7 @@ app = FastAPI(
 )
 
 app.include_router(handoffs_router)
+app.include_router(entitlements_router)
 
 
 @app.get("/health")

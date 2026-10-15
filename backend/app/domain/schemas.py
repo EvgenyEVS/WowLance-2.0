@@ -83,4 +83,30 @@ class HandoffStatus(str, Enum):
 class FounderHandoffResponse(BaseModel):
     room_id: UUID
     status: HandoffStatus
-    staffing_unlocked: Literal[False] = False
+    staffing_unlocked: bool
+
+
+class EntitlementSource(str, Enum):
+    order = "order"
+    payments = "payments"
+    stub = "stub"
+
+
+class EntitlementGrantedRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    entitlement_id: UUID
+    room_id: UUID
+    order_id: UUID | None = None
+    source: EntitlementSource = EntitlementSource.stub
+
+
+class EntitlementStatus(str, Enum):
+    granted = "granted"
+    already_granted = "already_granted"
+
+
+class EntitlementGrantedResponse(BaseModel):
+    room_id: UUID
+    staffing_unlocked: Literal[True] = True
+    status: EntitlementStatus
