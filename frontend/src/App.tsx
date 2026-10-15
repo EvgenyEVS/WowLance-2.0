@@ -1,14 +1,20 @@
+import HomePage from './pages/HomePage'
+import RoomPage from './pages/RoomPage'
+
+function roomIdFromPath(pathname: string): string | null {
+  const match = pathname.match(/^\/rooms\/([^/]+)\/?$/)
+  if (!match) return null
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return match[1]
+  }
+}
+
 export default function App() {
-  return (
-    <main className="shell">
-      <p className="brand">WowLance 2.0</p>
-      <h1>Room shell</h1>
-      <p className="lede">
-        FastAPI · React · PostgreSQL · OpenSpec · Superpowers
-      </p>
-      <p className="hint">
-        Next: FounderHandoff → room snapshot (C1). See <code>AGENTS.md</code>.
-      </p>
-    </main>
-  )
+  const roomId = roomIdFromPath(window.location.pathname)
+  if (roomId) {
+    return <RoomPage roomId={roomId} />
+  }
+  return <HomePage />
 }

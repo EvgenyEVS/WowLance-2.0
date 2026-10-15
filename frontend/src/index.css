@@ -40,3 +40,89 @@ h1 {
 code {
   font-size: 0.9em;
 }
+
+.open-form {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+}
+
+.open-form input {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #c5cdd6;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.open-form button {
+  justify-self: start;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 6px;
+  background: #2e7d32;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.back {
+  margin: 0 0 0.75rem;
+}
+
+.back a {
+  color: #2e7d32;
+  text-decoration: none;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge.locked {
+  background: #eceff1;
+  color: #546e7a;
+}
+
+.badge.unlocked {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 1.5rem;
+}
+
+.meta dt {
+  color: #777;
+  font-weight: 600;
+}
+
+.meta dd {
+  margin: 0;
+}
+
+.block h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.docs {
+  padding-left: 1.1rem;
+}
+
+.doc-role {
+  font-weight: 600;
+}
+
+.error {
+  color: #c62828;
+}
