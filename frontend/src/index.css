@@ -126,3 +126,24 @@ code {
 .error {
   color: #c62828;
 }
+
+.slot-action {
+  margin: 0 0 0.75rem;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 6px;
+  background: #2e7d32;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.slot-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.slot-list {
+  padding-left: 1.1rem;
+  margin: 0;
+}
