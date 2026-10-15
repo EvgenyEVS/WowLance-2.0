@@ -23,4 +23,12 @@ export type RoomRead = {
     documents?: RoomDocument[] | null
     staffing_intent?: Record<string, unknown> | null
   }
+  pending_strategy?: {
+    proposal_id: string
+    strategy_version: string
+    offer: string
+    audience: string
+    hot_criteria: string
+    status: 'pending'
+  } | null
 }

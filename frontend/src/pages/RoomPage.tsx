@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { RoomRead } from '../types'
+import PendingStrategyPanel from './PendingStrategyPanel'
 
 type LoadState =
   | { kind: 'loading' }
@@ -10,7 +11,7 @@ type LoadState =
 export default function RoomPage({ roomId }: { roomId: string }) {
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
 
-  useEffect(() => {
+  const loadRoom = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
     fetch(`/api/v1/rooms/${encodeURIComponent(roomId)}`, {
@@ -38,6 +39,10 @@ export default function RoomPage({ roomId }: { roomId: string }) {
     return () => controller.abort()
   }, [roomId])
 
+  useEffect(() => {
+    return loadRoom()
+  }, [loadRoom])
+
   return (
     <main className="shell">
       <p className="brand">WowLance 2.0</p>
@@ -49,12 +54,20 @@ export default function RoomPage({ roomId }: { roomId: string }) {
         <p className="error">Room not found (404). Check the id from handoff.</p>
       )}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
-      {state.kind === 'ok' && <RoomView room={state.room} />}
+      {state.kind === 'ok' && (
+        <RoomView room={state.room} onReload={() => loadRoom()} />
+      )}
     </main>
   )
 }
 
-function RoomView({ room }: { room: RoomRead }) {
+function RoomView({
+  room,
+  onReload,
+}: {
+  room: RoomRead
+  onReload: () => void
+}) {
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
   return (
@@ -89,6 +102,7 @@ function RoomView({ room }: { room: RoomRead }) {
         ) : null}
         <p className="hint">Version {room.strategy.strategy_version}</p>
       </section>
+      <PendingStrategyPanel room={room} onDecided={onReload} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (
