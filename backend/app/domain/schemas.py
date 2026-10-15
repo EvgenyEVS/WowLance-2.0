@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
 from typing import Any, Literal
 from uuid import UUID
@@ -84,3 +85,32 @@ class FounderHandoffResponse(BaseModel):
     room_id: UUID
     status: HandoffStatus
     staffing_unlocked: Literal[False] = False
+
+
+class RoomDocumentOut(BaseModel):
+    role: str
+    uri: str
+    checksum: str
+
+
+class RoomStrategyOut(BaseModel):
+    strategy_id: UUID
+    strategy_version: str
+    offer: str
+    audience: str
+    hot_criteria: str
+    utp: str | None = None
+    documents: list[RoomDocumentOut] | None = None
+    staffing_intent: dict[str, Any] | None = None
+
+
+class RoomReadResponse(BaseModel):
+    id: UUID
+    name: str
+    room_type: RoomType
+    timezone: str
+    founder_sub: str
+    handoff_id: UUID
+    staffing_unlocked: bool
+    strategy: RoomStrategyOut
+    created_at: datetime

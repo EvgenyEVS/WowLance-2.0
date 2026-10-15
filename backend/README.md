@@ -47,6 +47,23 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 
 Повтор того же JSON → `200` + `"status":"already_exists"` и тот же `room_id`.
 
+## C3: GET room
+
+`GET /api/v1/rooms/{room_id}` отдаёт комнату + снимок стратегии  
+([`contracts/wowlance/RoomRead.v1.yaml`](../contracts/wowlance/RoomRead.v1.yaml)).  
+`staffing_unlocked` читается из БД как есть (после C1 это `false`). GET ничего не пишет.
+
+| Статус | Когда |
+|--------|--------|
+| **200** | комната есть |
+| **404** | неизвестный `room_id` |
+
+```powershell
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
+```
+
+CORS разрешён для Vite `localhost:5173`. UI: [frontend/README.md](../frontend/README.md).
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -56,9 +73,9 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1)
+## Отложено (не C1/C3)
 
-- Keycloak JWT, React UI  
-- `EntitlementGranted` → `staffing_unlocked=true`  
+- Keycloak JWT  
+- `EntitlementGranted` → `staffing_unlocked=true` (C2, параллельная ветка)  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
