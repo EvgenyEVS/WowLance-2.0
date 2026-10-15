@@ -1,0 +1,56 @@
+# OpenSpec / contract draft — RoomRead v1
+# Read-only view of a room + strategy snapshot for the C3 React shell.
+
+id: RoomRead
+version: "1"
+direction: client -> WowLance
+channel: https
+path: /api/v1/rooms/{room_id}
+method: GET
+
+response_200:
+  type: object
+  required:
+    - id
+    - name
+    - room_type
+    - timezone
+    - founder_sub
+    - staffing_unlocked
+    - strategy
+  properties:
+    id: { type: string, format: uuid }
+    name: { type: string }
+    room_type:
+      type: string
+      enum: [sale, develop]
+    timezone: { type: string }
+    founder_sub: { type: string }
+    handoff_id: { type: string, format: uuid }
+    staffing_unlocked: { type: boolean }
+    created_at: { type: string, format: date-time }
+    strategy:
+      type: object
+      required: [strategy_id, strategy_version, offer, audience, hot_criteria]
+      properties:
+        strategy_id: { type: string, format: uuid }
+        strategy_version: { type: string }
+        offer: { type: string }
+        audience: { type: string }
+        hot_criteria: { type: string }
+        utp: { type: string }
+        documents:
+          type: array
+          items:
+            type: object
+            required: [role, uri, checksum]
+            properties:
+              role: { type: string }
+              uri: { type: string }
+              checksum: { type: string }
+        staffing_intent:
+          type: object
+          nullable: true
+
+errors:
+  - { code: 404, when: "room_id does not exist" }

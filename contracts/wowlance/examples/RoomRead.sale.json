@@ -1,0 +1,31 @@
+{
+  "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "name": "Demo Cold Calling",
+  "room_type": "sale",
+  "timezone": "Europe/Moscow",
+  "founder_sub": "founder-demo-sub",
+  "handoff_id": "11111111-1111-1111-1111-111111111111",
+  "staffing_unlocked": false,
+  "created_at": "2026-10-10T12:00:00+00:00",
+  "strategy": {
+    "strategy_id": "22222222-2222-2222-2222-222222222222",
+    "strategy_version": "2026-10-10.1",
+    "offer": "Outbound cold calling for B2B SaaS",
+    "audience": "Heads of Sales, 50–200 employees",
+    "hot_criteria": "Asked for a demo or pricing",
+    "utp": "Same-day first dials",
+    "documents": [
+      {
+        "role": "sop",
+        "uri": "s3://platform/strategy/22222222/v2026-10-10.1/sop.pdf",
+        "checksum": "sha256:demo"
+      }
+    ],
+    "staffing_intent": {
+      "package_code": "cold_calling_base",
+      "slots": [
+        { "role_key": "seller", "count": 2, "level_min": "B" }
+      ]
+    }
+  }
+}
