@@ -39,6 +39,7 @@ npm run dev
 ```
 
 C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`).  
+C3 room UI: [frontend/README.md](frontend/README.md) (`GET /api/v1/rooms/{id}` → `/rooms/:roomId`).  
 Health: http://127.0.0.1:8000/health  
 
 ## Фазы

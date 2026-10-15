@@ -14,7 +14,7 @@
 
 `staffing_unlocked` после handoff **false**, пока не придёт C2 entitlement.
 
-**Auth:** endpoint открыт (internal). Позже — Gateway / service token. Keycloak в C1/C2 не внедряем.
+**Auth:** endpoint открыт (internal). Позже — Gateway / service token. Keycloak в C1–C3 не внедряем.
 
 Чужие БД / HTTP Strategy не вызываются: весь снимок приходит в теле POST. Файлы — только URI + checksum.
 
@@ -34,6 +34,19 @@
 Повторный FounderHandoff **не** сбрасывает `staffing_unlocked` обратно в `false`.
 
 Revoke / «заблокировать снова» в C2 нет.
+
+## C3: GET room
+
+`GET /api/v1/rooms/{room_id}` отдаёт комнату + снимок стратегии  
+([`contracts/wowlance/RoomRead.v1.yaml`](../contracts/wowlance/RoomRead.v1.yaml)).  
+`staffing_unlocked` читается из БД как есть. GET ничего не пишет.
+
+| Статус | Когда |
+|--------|--------|
+| **200** | комната есть |
+| **404** | неизвестный `room_id` |
+
+CORS разрешён для Vite `localhost:5173`. UI: [frontend/README.md](../frontend/README.md).
 
 ## Поднять локально
 
@@ -66,7 +79,7 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 
 ## curl (entitlement, C2)
 
-Подставьте `room_id` из ответа handoff. Пример в контракте использует placeholder.
+Подставьте `room_id` из ответа handoff.
 
 ```powershell
 curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
@@ -80,6 +93,12 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
 
 Повтор того же `entitlement_id` → `200` + `"status":"already_granted"`.
 
+## curl (GET room, C3)
+
+```powershell
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -89,9 +108,9 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1/C2)
+## Отложено (не C1–C3)
 
-- Keycloak JWT, React UI  
+- Keycloak JWT  
 - Реальный staffing / roster Talent  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
