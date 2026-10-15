@@ -1,0 +1,92 @@
+# OpenSpec / contract draft — StrategyPublished v1 + Decide
+# New strategy version is a pending proposal until teamlead Accept/Reject.
+# Until Accept, GET room keeps the previous active snapshot.
+
+id: StrategyPublished
+version: "1"
+direction: Strategy -> WowLance
+channel: https
+path: /internal/v1/strategy-publications
+method: POST
+idempotency_key: publication_id
+
+request:
+  type: object
+  required:
+    - publication_id
+    - room_id
+    - strategy_id
+    - strategy_version
+    - strategy
+  properties:
+    publication_id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    strategy_id: { type: string, format: uuid }
+    strategy_version: { type: string, minLength: 1 }
+    strategy:
+      type: object
+      required: [offer, audience, hot_criteria]
+      properties:
+        offer: { type: string }
+        audience: { type: string }
+        hot_criteria: { type: string }
+        utp: { type: string }
+    documents:
+      type: array
+      items:
+        type: object
+        required: [role, uri, checksum]
+        properties:
+          role: { type: string }
+          uri: { type: string }
+          checksum: { type: string }
+    staffing_intent:
+      type: object
+      nullable: true
+
+response_200:
+  type: object
+  required: [proposal_id, room_id, status]
+  properties:
+    proposal_id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    status:
+      type: string
+      enum: [pending, already_exists]
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 409, when: "pending already exists; version == active; publication_id bound to another room" }
+  - { code: 422, when: "schema validation failed" }
+
+---
+id: StrategyProposalDecide
+version: "1"
+direction: client -> WowLance
+channel: https
+headers:
+  X-Actor-Sub: { type: string, required: true }
+
+paths:
+  accept:
+    method: POST
+    path: /api/v1/rooms/{room_id}/strategy-proposals/{proposal_id}/accept
+  reject:
+    method: POST
+    path: /api/v1/rooms/{room_id}/strategy-proposals/{proposal_id}/reject
+
+response_200:
+  type: object
+  required: [proposal_id, room_id, decision, active_strategy_version]
+  properties:
+    proposal_id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    decision:
+      type: string
+      enum: [accepted, rejected]
+    active_strategy_version: { type: string }
+
+errors:
+  - { code: 404, when: "room or proposal missing" }
+  - { code: 409, when: "proposal is not pending" }
+  - { code: 422, when: "missing X-Actor-Sub" }

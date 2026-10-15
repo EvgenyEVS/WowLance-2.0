@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.db.models import Room, RoomFunctionSlot
+from app.db.models import Room, RoomFunctionSlot, StrategySnapshot
 from app.domain.schemas import (
     FunctionSlotOut,
     MaterializeStatus,
@@ -102,9 +102,16 @@ def list_slots(db: Session, room_id: uuid.UUID) -> StaffingSlotsListResponse:
     )
 
 
+def _active_snapshot(room: Room) -> StrategySnapshot | None:
+    for snap in room.strategy_snapshots:
+        if snap.status == "active":
+            return snap
+    return None
+
+
 def materialize_slots(db: Session, room_id: uuid.UUID) -> StaffingMaterializeResponse:
     room = _require_unlocked_room(db, room_id)
-    snapshot = room.strategy_snapshot
+    snapshot = _active_snapshot(room)
     intent = snapshot.staffing_intent if snapshot is not None else None
     planned = planned_seats_from_intent(intent)
     existing = _list_slot_rows(db, room.id)

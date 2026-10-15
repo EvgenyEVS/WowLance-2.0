@@ -130,6 +130,15 @@ class RoomStrategyOut(BaseModel):
     staffing_intent: dict[str, Any] | None = None
 
 
+class PendingStrategyOut(BaseModel):
+    proposal_id: UUID
+    strategy_version: str
+    offer: str
+    audience: str
+    hot_criteria: str
+    status: Literal["pending"] = "pending"
+
+
 class RoomReadResponse(BaseModel):
     id: UUID
     name: str
@@ -139,6 +148,7 @@ class RoomReadResponse(BaseModel):
     handoff_id: UUID
     staffing_unlocked: bool
     strategy: RoomStrategyOut
+    pending_strategy: PendingStrategyOut | None = None
     created_at: datetime
 
 
@@ -173,3 +183,38 @@ class StaffingMaterializeResponse(BaseModel):
     room_id: UUID
     status: MaterializeStatus
     slots: list[FunctionSlotOut]
+
+
+class StrategyPublishedRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    publication_id: UUID
+    room_id: UUID
+    strategy_id: UUID
+    strategy_version: str = Field(min_length=1)
+    strategy: StrategyIn
+    documents: list[DocumentIn] | None = None
+    staffing_intent: StaffingIntentIn | None = None
+
+
+class PublicationStatus(str, Enum):
+    pending = "pending"
+    already_exists = "already_exists"
+
+
+class StrategyPublishedResponse(BaseModel):
+    proposal_id: UUID
+    room_id: UUID
+    status: PublicationStatus
+
+
+class StrategyDecision(str, Enum):
+    accepted = "accepted"
+    rejected = "rejected"
+
+
+class StrategyDecideResponse(BaseModel):
+    proposal_id: UUID
+    room_id: UUID
+    decision: StrategyDecision
+    active_strategy_version: str

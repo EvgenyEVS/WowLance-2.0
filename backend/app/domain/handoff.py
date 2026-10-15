@@ -89,10 +89,10 @@ def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> Handoff
             if body.commercial is not None
             else None
         ),
+        status="active",
     )
-    # Link before flush so relationship is consistent in-session.
-    room.strategy_snapshot = snapshot
     db.add(room)
+    db.add(snapshot)
     db.commit()
     db.refresh(room)
 
