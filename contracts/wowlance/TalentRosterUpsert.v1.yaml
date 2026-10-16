@@ -1,0 +1,42 @@
+# OpenSpec / contract draft — TalentRosterUpsert v1
+# Stub upsert of a freelancer into the local roster.
+
+id: TalentRosterUpsert
+version: "1"
+direction: Talent -> WowLance
+channel: https
+
+paths:
+  upsert:
+    method: POST
+    path: /internal/v1/roster
+    headers: []
+
+request:
+  type: object
+  required: [freelancer_sub, display_name]
+  properties:
+    freelancer_sub:
+      type: string
+    display_name:
+      type: string
+    skills:
+      type: array
+      items: { type: string }
+      nullable: true
+    level:
+      type: string
+      nullable: true
+    source:
+      type: string
+      enum: [stub, talent]
+      default: stub
+
+response_200:
+  type: object
+  required: [freelancer_sub, status]
+  properties:
+    freelancer_sub: { type: string }
+    status:
+      type: string
+      enum: [upserted, already_exists]

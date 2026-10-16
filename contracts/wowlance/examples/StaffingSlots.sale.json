@@ -9,8 +9,8 @@
       "role_key": "seller",
       "seat_index": 1,
       "level_min": "B",
-      "status": "open",
-      "freelancer_sub": null
+      "status": "filled",
+      "freelancer_sub": "f-1234"
     },
     {
       "id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
