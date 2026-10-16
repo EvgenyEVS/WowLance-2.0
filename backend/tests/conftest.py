@@ -23,6 +23,14 @@ EXAMPLE_SALE = (
 )
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _auth_disabled_for_tests():
+    """C8: pytest runs without Keycloak — strict JWT is opt-in per test."""
+    settings.auth_disabled = True
+    yield
+    settings.auth_disabled = True
+
+
 @pytest.fixture(scope="session")
 def engine():
     eng = create_engine(settings.database_url, pool_pre_ping=True)
