@@ -218,3 +218,31 @@ class StrategyDecideResponse(BaseModel):
     room_id: UUID
     decision: StrategyDecision
     active_strategy_version: str
+
+
+class TaskStatus(str, Enum):
+    todo = "todo"
+    in_progress = "in_progress"
+    done = "done"
+
+
+class RoomTaskOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    title: str
+    status: TaskStatus
+    assignee_sub: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class RoomTaskListResponse(BaseModel):
+    room_id: UUID
+    tasks: list[RoomTaskOut]
+
+
+class RoomTaskCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1)
+    assignee_sub: str | None = None
