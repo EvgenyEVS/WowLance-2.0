@@ -51,9 +51,11 @@ Health: http://127.0.0.1:8000/health
 | **C3** | GET room + React shell |
 | **C4** | Staffing slots (gated) |
 | **C5** | StrategyPublished → Accept/Reject |
-| **C6** | Local roster + assign — [задание](docs/261015%20-%20задание%20C6%20Roster%20assign.md) ∥ C7 |
-| **C7** | Room tasks — [задание](docs/261015%20-%20задание%20C7%20Room%20tasks.md) ∥ C6 |
-| **C8+** | Keycloak JWT, Outbox, Hot→CRM, Quality Gate |
+| **C6** | Local roster + assign — [задание](docs/261015%20-%20задание%20C6%20Roster%20assign.md) |
+| **C7** | Room tasks — [задание](docs/261015%20-%20задание%20C7%20Room%20tasks.md) |
+| **C8** | Keycloak JWT + shadow User — [задание](docs/261016%20-%20задание%20C8%20Keycloak%20JWT.md) ∥ C9 |
+| **C9** | Hot lead → CRM stub — [задание](docs/261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) ∥ C8 |
+| **C10+** | Quality Gate, live adapters, `wowlance_test` DB |
 
 ## Политика оплаты
 
