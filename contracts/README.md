@@ -10,11 +10,15 @@
 | [`wowlance/examples/EntitlementGranted.json`](wowlance/examples/EntitlementGranted.json) | пример payload (`room_id` подставить после handoff) |
 | [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — C3 + C5 `pending_strategy` |
 | [`wowlance/examples/RoomRead.sale.json`](wowlance/examples/RoomRead.sale.json) | пример GET-ответа |
-| [`wowlance/StaffingSlots.v1.yaml`](wowlance/StaffingSlots.v1.yaml) | draft v1 — обязателен для C4 |
-| [`wowlance/examples/StaffingSlots.sale.json`](wowlance/examples/StaffingSlots.sale.json) | пример list/materialize |
+| [`wowlance/StaffingSlots.v1.yaml`](wowlance/StaffingSlots.v1.yaml) | draft v1 — C4 list/materialize + C6 SlotAssign |
+| [`wowlance/examples/StaffingSlots.sale.json`](wowlance/examples/StaffingSlots.sale.json) | пример list/materialize (один seat `filled`) |
 | [`wowlance/StrategyPublished.v1.yaml`](wowlance/StrategyPublished.v1.yaml) | draft v1 — C5 publish + Accept/Reject |
 | [`wowlance/examples/StrategyPublished.sale.json`](wowlance/examples/StrategyPublished.sale.json) | пример publish (`room_id` после handoff) |
+| [`wowlance/TalentRosterUpsert.v1.yaml`](wowlance/TalentRosterUpsert.v1.yaml) | draft v1 — C6 upsert локального roster (stub Talent) |
+| [`wowlance/examples/TalentRosterUpsert.json`](wowlance/examples/TalentRosterUpsert.json) | пример payload upsert |
+| [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 минимальный трекер задач комнаты |
+| [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
-Следующие (не блокируют скелет): `TalentRosterUpsert`, `RoomCreated`.
+Следующие (не блокируют скелет): `RoomCreated`.

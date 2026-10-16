@@ -1,6 +1,8 @@
-# OpenSpec / contract draft — StaffingSlots v1
+# OpenSpec / contract draft — StaffingSlots v1 (C4) + SlotAssign (C6)
 # Materialize seats from the local strategy snapshot after entitlement.
 # Locked rooms: 403. Unknown room: 404. Explicit POST materialize (not lazy GET).
+# C6 assign: seat an open slot with a freelancer already in the local roster.
+# Requires the stub header X-Actor-Sub (missing: 422). Idempotent on repeat.
 
 id: StaffingSlots
 version: "1"
@@ -14,6 +16,15 @@ paths:
   materialize:
     method: POST
     path: /api/v1/rooms/{room_id}/slots/materialize
+  assign:
+    method: POST
+    path: /api/v1/rooms/{room_id}/slots/{slot_id}/assign
+    headers: [X-Actor-Sub]
+    request:
+      type: object
+      required: [freelancer_sub]
+      properties:
+        freelancer_sub: { type: string }
 
 slot:
   type: object
@@ -51,7 +62,18 @@ response_materialize_200:
       type: array
       items: { $ref: "#/slot" }
 
+response_assign_200:
+  type: object
+  required: [slot, status]
+  properties:
+    slot: { $ref: "#/slot" }
+    status:
+      type: string
+      enum: [assigned, already_assigned]
+
 errors:
   - { code: 403, when: "staffing_unlocked is false (detail: staffing_locked)" }
   - { code: 404, when: "room_id does not exist" }
-  - { code: 422, when: "validation failed" }
+  - { code: 404, when: "assign: slot_id not in room or freelancer_sub not in roster (detail: slot_id does not exist in this room / freelancer_not_in_roster)" }
+  - { code: 409, when: "assign: slot already filled by another (slot_already_filled) or freelancer already seated in this room (already_seated)" }
+  - { code: 422, when: "validation failed or missing X-Actor-Sub on assign" }

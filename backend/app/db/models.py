@@ -1,4 +1,4 @@
-"""SQLAlchemy models for C1–C5: handoff, entitlement, slots, strategy accept."""
+"""SQLAlchemy models for C1–C7: handoff, entitlement, slots, strategy, tasks."""
 
 from __future__ import annotations
 
@@ -79,6 +79,7 @@ class Room(Base):
     function_slots: Mapped[list[RoomFunctionSlot]] = relationship(
         back_populates="room"
     )
+    tasks: Mapped[list[RoomTask]] = relationship(back_populates="room")
 
 
 class StrategySnapshot(Base):
@@ -222,3 +223,61 @@ class RoomFunctionSlot(Base):
     )
 
     room: Mapped[Room] = relationship(back_populates="function_slots")
+
+
+class FreelancerRoster(Base):
+    """C6: local snapshot of a freelancer (stub Talent). Service-global, not per-room."""
+
+    __tablename__ = "freelancer_roster"
+
+    freelancer_sub: Mapped[str] = mapped_column(String(255), primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    skills: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    level: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    source: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="stub", server_default="stub"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class RoomTask(Base):
+    """Minimal execution tracker (C7): todo -> in_progress -> done.
+
+    assignee_sub is a free string (no FK to roster — that is C6).
+    """
+
+    __tablename__ = "room_tasks"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="todo", server_default="todo"
+    )
+    assignee_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    room: Mapped[Room] = relationship(back_populates="tasks")

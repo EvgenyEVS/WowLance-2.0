@@ -54,3 +54,42 @@ export type MaterializeResult = {
   status: 'materialized' | 'already_materialized'
   slots: FunctionSlot[]
 }
+
+export type RosterMember = {
+  freelancer_sub: string
+  display_name: string
+  skills?: string[] | null
+  level?: string | null
+  source?: 'stub' | 'talent'
+}
+
+export type RosterList = {
+  members: RosterMember[]
+}
+
+export type RosterUpsertResult = {
+  freelancer_sub: string
+  status: 'upserted' | 'already_exists'
+}
+
+export type SlotAssignResult = {
+  slot: FunctionSlot
+  status: 'assigned' | 'already_assigned'
+}
+
+export type TaskStatus = 'todo' | 'in_progress' | 'done'
+
+export type RoomTask = {
+  id: string
+  room_id: string
+  title: string
+  status: TaskStatus
+  assignee_sub?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type TasksList = {
+  room_id: string
+  tasks: RoomTask[]
+}

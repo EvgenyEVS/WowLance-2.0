@@ -157,6 +157,85 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/strategy-proposals/
   -H "X-Actor-Sub: teamlead-demo-sub"
 ```
 
+## C6: Local roster + Assign slot
+
+Фрилансер приходит из Talent в **локальный roster** (stub, своя БД, без live Talent).  
+Назначение садит человека из roster на **открытый** слот комнаты (per-slot).
+
+`POST /internal/v1/roster` — upsert (idempotent по `freelancer_sub`)  
+([`contracts/wowlance/TalentRosterUpsert.v1.yaml`](../contracts/wowlance/TalentRosterUpsert.v1.yaml)).  
+`GET /api/v1/roster` — список для UI.  
+`POST /api/v1/rooms/{room_id}/slots/{slot_id}/assign` — назначение  
+([`contracts/wowlance/StaffingSlots.v1.yaml`](../contracts/wowlance/StaffingSlots.v1.yaml), блок SlotAssign).
+
+| Статус | Когда |
+|--------|--------|
+| **200** roster | `upserted` (новый / изменён) или `already_exists` (тот же payload) |
+| **200** assign | `assigned`; повтор того же `freelancer_sub` на тот же слот → `already_assigned` |
+| **403** assign | `staffing_unlocked=false` (`detail: staffing_locked`) |
+| **404** assign | нет комнаты / нет слота в комнате / `freelancer_not_in_roster` |
+| **409** assign | слот занят другим (`slot_already_filled`) / этот фрилансер уже на другом слоте комнаты (`already_seated`) |
+| **422** assign | невалидное тело / нет `X-Actor-Sub` |
+
+Правила: roster **глобальный** по `freelancer_sub`, назначение — per-slot. Один фрилансер — максимум один слот в комнате. Matching, скоринг, Keycloak — вне C6.
+
+```powershell
+# 1) upsert фрилансера в roster
+curl -s -X POST http://127.0.0.1:8000/internal/v1/roster `
+  -H "Content-Type: application/json" `
+  --data-binary "@..\contracts\wowlance\examples\TalentRosterUpsert.json"
+
+curl -s http://127.0.0.1:8000/api/v1/roster
+
+# 2) handoff -> entitlement -> materialize (см. выше), затем взять slot id
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/assign `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "freelancer_sub": "f-1234" }'
+# -> { "slot": { "status": "filled", "freelancer_sub": "f-1234", ... }, "status": "assigned" }
+```
+
+## C7: Room tasks
+
+Минимальный трекер комнаты: создать → взять → сдать. Без Quality Gate.  
+([`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml)).
+
+| Метод | Путь |
+|-------|------|
+| `GET` | `/api/v1/rooms/{room_id}/tasks` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/start` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/complete` |
+
+Статусы: `todo` → `in_progress` → `done`. Другие переходы → **409**.  
+`assignee_sub` — свободная строка (без FK на roster); при `start` заполняется из `X-Actor-Sub`, если пусто.
+
+| Статус | Когда |
+|--------|--------|
+| **201** create | задача создана в `todo` |
+| **200** start/complete | переход выполнен |
+| **404** | нет комнаты или задачи |
+| **409** | недопустимый переход статуса |
+| **422** | валидация; нет `X-Actor-Sub` на мутациях |
+
+Задачи доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не блокирует. Get — без пагинации (лимит 100).
+
+```powershell
+# room_id из handoff; мутации требуют X-Actor-Sub
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "title": "Call the first 20 leads" }'
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/start `
+  -H "X-Actor-Sub: freelancer-demo-sub"
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/complete `
+  -H "X-Actor-Sub: freelancer-demo-sub"
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -166,12 +245,32 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1–C5)
+> **Внимание: после `pytest` dev-БД остаётся без таблиц.**
+> Тесты используют ту же БД, что и приложение (`tests/conftest.py` берёт
+> `settings.database_url`), и фикстура вызывает `drop_all` в teardown.
+> Сваггер и UI после прогона начнут отдавать ошибки на любых запросах к данным
+> (`/health` при этом продолжит работать).
+>
+> Простого `alembic upgrade head` недостаточно: штамп в `alembic_version`
+> остаётся на head, поэтому миграции заново не выполняются. Пересобери схему:
+>
+> ```powershell
+> cd backend
+> .\.venv\Scripts\alembic stamp base
+> .\.venv\Scripts\alembic upgrade head
+> ```
+>
+> Известное ограничение: тестам нужна отдельная БД, пока не сделано.
+
+## Отложено (не C1–C7)
 
 - Keycloak JWT / реальная роль teamlead  
-- Matching / assign freelancer / Talent roster  
+- Matching / live Talent / shortlist  
+- Unassign слота  
+- Quality Gate: proof-файлы, рейтинги, reject с причиной  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
 - Живой webhook Billing  
+
 
