@@ -1,8 +1,9 @@
 """WowLance 2.0 API (FastAPI + PostgreSQL)."""
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth_stub import router as auth_stub_router
 from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
 from app.api.rooms import router as rooms_router
@@ -12,6 +13,7 @@ from app.api.slots import router as slots_router
 from app.api.strategy_proposals import router as strategy_proposals_router
 from app.api.strategy_publications import router as strategy_publications_router
 from app.api.tasks import router as tasks_router
+from app.auth.deps import require_user
 
 app = FastAPI(
     title="WowLance 2.0",
@@ -30,15 +32,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# C8: client routes require a valid Keycloak JWT when AUTH_DISABLED=false.
+# /health and /internal/v1/* stay open (service token later — do not protect them).
+client_auth = [Depends(require_user)]
+
 app.include_router(handoffs_router)
 app.include_router(entitlements_router)
-app.include_router(rooms_router)
-app.include_router(slots_router)
+app.include_router(rooms_router, dependencies=client_auth)
+app.include_router(slots_router, dependencies=client_auth)
 app.include_router(strategy_publications_router)
-app.include_router(strategy_proposals_router)
+app.include_router(strategy_proposals_router, dependencies=client_auth)
 app.include_router(roster_internal_router)
-app.include_router(roster_router)
-app.include_router(tasks_router)
+app.include_router(roster_router, dependencies=client_auth)
+app.include_router(tasks_router, dependencies=client_auth)
+app.include_router(auth_stub_router)
 
 
 @app.get("/health")
