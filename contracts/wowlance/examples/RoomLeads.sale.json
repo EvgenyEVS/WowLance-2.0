@@ -1,0 +1,29 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "leads": [
+    {
+      "id": "12121212-1212-1212-1212-121212121212",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "title": "Warm intro to Acme CEO",
+      "contact_name": "Jane Doe",
+      "contact_email": "jane@acme.example",
+      "notes": "asked for a pricing call next week",
+      "status": "open",
+      "crm_ref": null,
+      "created_at": "2026-10-16T09:00:00+00:00",
+      "updated_at": "2026-10-16T09:00:00+00:00"
+    },
+    {
+      "id": "13131313-1313-1313-1313-131313131313",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "title": "Inbound demo request from Beta LLC",
+      "contact_name": "John Smith",
+      "contact_email": "john@beta.example",
+      "notes": null,
+      "status": "handed_to_crm",
+      "crm_ref": "crm-stub:13131313-1313-1313-1313-131313131313",
+      "created_at": "2026-10-16T08:30:00+00:00",
+      "updated_at": "2026-10-16T10:15:00+00:00"
+    }
+  ]
+}

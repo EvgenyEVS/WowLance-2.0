@@ -1,0 +1,11 @@
+{
+  "lead_id": "13131313-1313-1313-1313-131313131313",
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "title": "Inbound demo request from Beta LLC",
+  "contact_name": "John Smith",
+  "contact_email": "john@beta.example",
+  "notes": null,
+  "founder_sub": "founder-1111",
+  "room_name": "SaaS outbound pilot",
+  "handed_at": "2026-10-16T10:15:00+00:00"
+}
