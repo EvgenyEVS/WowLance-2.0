@@ -1,7 +1,9 @@
 import { FormEvent, useState } from 'react'
+import { getToken, tokenInfo } from '../api'
 
 export default function HomePage() {
   const [roomId, setRoomId] = useState('')
+  const identity = tokenInfo(getToken())
 
   function onOpen(event: FormEvent) {
     event.preventDefault()
@@ -13,6 +15,11 @@ export default function HomePage() {
   return (
     <main className="shell">
       <p className="brand">WowLance 2.0</p>
+      <p className="back">
+        <a href="/login">
+          {identity.sub ? `Signed in: ${identity.sub}` : 'Login / token'}
+        </a>
+      </p>
       <h1>Room shell</h1>
       <p className="lede">
         FastAPI · React · PostgreSQL · OpenSpec · Superpowers

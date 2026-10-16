@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { apiFetch } from '../api'
 import type { RoomRead } from '../types'
 
-/** Stub teamlead identity until Keycloak. */
+/** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'teamlead-demo-sub'
 
 export default function PendingStrategyPanel({
@@ -22,7 +23,7 @@ export default function PendingStrategyPanel({
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/rooms/${encodeURIComponent(room.id)}/strategy-proposals/${proposalId}/${kind}`,
         {
           method: 'POST',

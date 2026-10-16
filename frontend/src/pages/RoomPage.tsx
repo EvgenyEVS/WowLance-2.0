@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import type { RoomRead } from '../types'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
@@ -17,7 +18,7 @@ export default function RoomPage({ roomId }: { roomId: string }) {
   const loadRoom = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    fetch(`/api/v1/rooms/${encodeURIComponent(roomId)}`, {
+    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}`, {
       signal: controller.signal,
     })
       .then(async (res) => {
