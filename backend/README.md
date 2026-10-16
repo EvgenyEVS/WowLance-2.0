@@ -204,6 +204,23 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
+> **Внимание: после `pytest` dev-БД остаётся без таблиц.**
+> Тесты используют ту же БД, что и приложение (`tests/conftest.py` берёт
+> `settings.database_url`), и фикстура вызывает `drop_all` в teardown.
+> Сваггер и UI после прогона начнут отдавать ошибки на любых запросах к данным
+> (`/health` при этом продолжит работать).
+>
+> Простого `alembic upgrade head` недостаточно: штамп в `alembic_version`
+> остаётся на head, поэтому миграции заново не выполняются. Пересобери схему:
+>
+> ```powershell
+> cd backend
+> .\.venv\Scripts\alembic stamp base
+> .\.venv\Scripts\alembic upgrade head
+> ```
+>
+> Известное ограничение: тестам нужна отдельная БД, пока не сделано.
+
 ## Отложено (не C1–C6)
 
 - Keycloak JWT / реальная роль teamlead  
