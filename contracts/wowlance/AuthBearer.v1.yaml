@@ -1,0 +1,36 @@
+# OpenSpec / contract draft — AuthBearer v1 (C8)
+# Client API (/api/v1/*) requires Keycloak access token in Authorization header.
+# Valid JWT (JWKS) -> shadow User upserted by `sub` on the first request.
+# /health and /internal/v1/* stay open in C8 (service token later).
+
+id: AuthBearer
+version: "1"
+direction: client -> WowLance
+channel: https
+
+header:
+  name: Authorization
+  value: "Bearer <access_token>"
+
+claims_required: [sub]
+optional_claims: [preferred_username, email, name]
+
+shadow_user:
+  table: users
+  strategy: upsert on first authenticated request
+  key: sub
+
+routes:
+  protected: [/api/v1/*]
+  public: [/health]
+  internal_open_in_c8: [/internal/v1/*]
+
+config:
+  AUTH_DISABLED: "true"   # true — dev/tests, no JWT required (local demo)
+  KEYCLOAK_ISSUER: http://127.0.0.1:8080/realms/wowlance
+  KEYCLOAK_AUDIENCE: wowlance-api
+  KEYCLOAK_JWKS_URL: ""   # optional, derived from issuer (+ /protocol/openid-connect/certs)
+  AUTH_STUB_JWKS: "false" # dev-only stub JWKS + token minting, never prod
+
+errors:
+  - { code: 401, when: "missing Bearer header or invalid JWT (expired, bad signature, issuer/audience mismatch) — AUTH_DISABLED=false" }
