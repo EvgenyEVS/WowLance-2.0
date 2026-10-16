@@ -9,10 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.db.models import Room, RoomFunctionSlot, StrategySnapshot
+from app.db.models import FreelancerRoster, Room, RoomFunctionSlot, StrategySnapshot
 from app.domain.schemas import (
+    AssignStatus,
     FunctionSlotOut,
     MaterializeStatus,
+    SlotAssignResponse,
     SlotStatus,
     StaffingMaterializeResponse,
     StaffingSlotsListResponse,
@@ -25,6 +27,22 @@ class RoomNotFoundError(Exception):
 
 class StaffingLockedError(Exception):
     """staffing_unlocked is false."""
+
+
+class SlotNotFoundError(Exception):
+    """No slot for the given (room_id, slot_id)."""
+
+
+class FreelancerNotInRosterError(Exception):
+    """freelancer_sub is not present in the local roster."""
+
+
+class SlotAlreadyFilledError(Exception):
+    """Slot is filled by another freelancer."""
+
+
+class AlreadySeatedError(Exception):
+    """The same freelancer already occupies another slot in this room."""
 
 
 @dataclass
@@ -167,3 +185,50 @@ def materialize_slots(db: Session, room_id: uuid.UUID) -> StaffingMaterializeRes
         status=status,
         slots=[_slot_out(row) for row in rows],
     )
+
+
+def assign_slot(
+    db: Session,
+    room_id: uuid.UUID,
+    slot_id: uuid.UUID,
+    freelancer_sub: str,
+) -> SlotAssignResponse:
+    """Seat a freelancer from the local roster on an open slot (C6).
+
+    Order: room -> unlocked -> slot -> roster -> filled/seated. Idempotent on
+    a repeated assign of the same freelancer to the same slot.
+    """
+    room = _require_unlocked_room(db, room_id)
+
+    slot = db.get(RoomFunctionSlot, slot_id)
+    if slot is None or slot.room_id != room.id:
+        raise SlotNotFoundError("slot_id does not exist in this room")
+
+    if db.get(FreelancerRoster, freelancer_sub) is None:
+        raise FreelancerNotInRosterError("freelancer_not_in_roster")
+
+    if slot.status == SlotStatus.filled.value:
+        if slot.freelancer_sub == freelancer_sub:
+            return SlotAssignResponse(
+                slot=_slot_out(slot), status=AssignStatus.already_assigned
+            )
+        raise SlotAlreadyFilledError("slot_already_filled")
+
+    if slot.status != SlotStatus.open.value:
+        raise SlotAlreadyFilledError("slot_not_assignable")
+
+    seated = db.scalars(
+        select(RoomFunctionSlot).where(
+            RoomFunctionSlot.room_id == room.id,
+            RoomFunctionSlot.freelancer_sub == freelancer_sub,
+            RoomFunctionSlot.id != slot.id,
+        )
+    ).first()
+    if seated is not None:
+        raise AlreadySeatedError("already_seated")
+
+    slot.freelancer_sub = freelancer_sub
+    slot.status = SlotStatus.filled.value
+    db.commit()
+    db.refresh(slot)
+    return SlotAssignResponse(slot=_slot_out(slot), status=AssignStatus.assigned)
