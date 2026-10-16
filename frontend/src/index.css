@@ -169,3 +169,47 @@ code {
   font: inherit;
   cursor: pointer;
 }
+
+.task-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-form input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #c5cdd6;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.task-form .slot-action {
+  margin: 0;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #e0e6ec;
+  border-radius: 6px;
+}
+
+.task-title {
+  flex: 1;
+}
+
+.task-item .slot-action {
+  margin: 0;
+  padding: 0.3rem 0.7rem;
+}

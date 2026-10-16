@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { RoomRead } from '../types'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import SlotsPanel from './SlotsPanel'
+import TasksPanel from './TasksPanel'
 
 type LoadState =
   | { kind: 'loading' }
@@ -105,6 +106,7 @@ function RoomView({
       </section>
       <PendingStrategyPanel room={room} onDecided={onReload} />
       <SlotsPanel roomId={room.id} staffingUnlocked={room.staffing_unlocked} />
+      <TasksPanel roomId={room.id} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (
