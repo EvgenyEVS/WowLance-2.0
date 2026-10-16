@@ -157,6 +157,47 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/strategy-proposals/
   -H "X-Actor-Sub: teamlead-demo-sub"
 ```
 
+## C7: Room tasks
+
+Минимальный трекер комнаты: создать → взять → сдать. Без roster/assign (C6), без Quality Gate.  
+([`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml)).
+
+| Метод | Путь |
+|-------|------|
+| `GET` | `/api/v1/rooms/{room_id}/tasks` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/start` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/complete` |
+
+Статусы: `todo` → `in_progress` → `done`. Другие переходы → **409**.  
+`assignee_sub` — свободная строка (без FK на roster); при `start` заполняется из `X-Actor-Sub`, если пусто.
+
+| Статус | Когда |
+|--------|--------|
+| **201** create | задача создана в `todo` |
+| **200** start/complete | переход выполнен |
+| **404** | нет комнаты или задачи |
+| **409** | недопустимый переход статуса |
+| **422** | валидация; нет `X-Actor-Sub` на мутациях |
+
+Задачи доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не блокирует. Get — без пагинации (лимит 100).
+
+```powershell
+# room_id из handoff; мутации требуют X-Actor-Sub
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "title": "Call the first 20 leads" }'
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/start `
+  -H "X-Actor-Sub: freelancer-demo-sub"
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/complete `
+  -H "X-Actor-Sub: freelancer-demo-sub"
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -166,10 +207,11 @@ cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-## Отложено (не C1–C5)
+## Отложено (не C1–C7)
 
 - Keycloak JWT / реальная роль teamlead  
-- Matching / assign freelancer / Talent roster  
+- Matching / assign freelancer / Talent roster (C6)  
+- Quality Gate: proof-файлы, рейтинги, reject с причиной  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
 - Outbox `RoomCreated`  
