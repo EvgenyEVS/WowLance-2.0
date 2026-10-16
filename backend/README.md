@@ -236,9 +236,49 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/com
   -H "X-Actor-Sub: freelancer-demo-sub"
 ```
 
+## C8: Keycloak JWT + shadow User
+
+Клиентские API `/api/v1/*` проверяют `Authorization: Bearer <access_token>` (RS256, JWKS). Первый успешный запрос upsert-ит shadow-пользователя в `users` по `sub`. Контракт: [`contracts/wowlance/AuthBearer.v1.yaml`](../contracts/wowlance/AuthBearer.v1.yaml). Модуль: `app/auth/` (JWT verify + `require_user` + `get_actor_sub`).
+
+| Поведение | `AUTH_DISABLED=true` (default, pytest) | `AUTH_DISABLED=false` |
+|-----------|------------------------------------------|------------------------|
+| `/api/v1/*` (rooms, slots, roster GET, strategy decide, tasks) | открыт — C1–C7 как раньше | **401** без валидного JWT |
+| `/health`, `/internal/v1/*` | открыт | открыт (service token later) |
+| actor мутаций | `X-Actor-Sub` (422 без него) | `sub` из JWT; `X-Actor-Sub` игнорируется |
+| `/auth/stub-jwks`, `/auth/stub-token` | 404 | 200 только при `AUTH_STUB_JWKS=true` |
+
+Env (`.env`, см. [.env.example](../.env.example)): `AUTH_DISABLED`, `KEYCLOAK_ISSUER`, `KEYCLOAK_AUDIENCE` (пусто → без проверки `aud`), `KEYCLOAK_JWKS_URL` (пусто → `issuer + /protocol/openid-connect/certs`), `AUTH_STUB_JWKS` (dev-only).
+
+### Токен за 2 минуты (stub JWKS, без Keycloak)
+
+```powershell
+# 1) в backend/.env поставить: AUTH_DISABLED=false, AUTH_STUB_JWKS=true
+#    перезапустить uvicorn
+# 2) mint demo-токена:
+curl.exe -s -X POST http://127.0.0.1:8000/auth/stub-token `
+  -H "Content-Type: application/json" `
+  -d '{"sub":"demo-user","name":"Demo User"}'
+# -> { "access_token": "eyJ...", "sub": "demo-user" }
+
+# 3) клиентский API:
+curl.exe -s http://127.0.0.1:8000/api/v1/rooms/<room_id> `
+  -H "Authorization: Bearer eyJ..."
+# без Bearer -> 401; /internal/v1/handoffs и /health без токена -> работают
+```
+
+`GET /auth/stub-jwks` отдаёт публичный ключ, RSA-ключ генерируется в памяти процесса — режим **«не для prod»** (оба endpoint-а отдают 404, пока `AUTH_STUB_JWKS=false`).
+
+### Настоящий Keycloak
+
+`AUTH_DISABLED=false` + `AUTH_STUB_JWKS=false` + `KEYCLOAK_ISSUER` / `KEYCLOAK_JWKS_URL` своего realm — верификация идёт по JWKS из issuer, токен выпускает сам Keycloak. Платформенный прод-Keycloak, Gateway, RBAC (teamlead vs freelancer) и token exchange — вне C8.
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
+
+C8: pytest всегда идёт с `AUTH_DISABLED=true` (форсирует `tests/conftest.py`) —
+Keycloak для регресса C1–C7 не нужен; строгий режим включается точечно в
+`tests/test_auth_c8.py`.
 
 ```powershell
 cd backend
@@ -262,9 +302,10 @@ cd backend
 >
 > Известное ограничение: тестам нужна отдельная БД, пока не сделано.
 
-## Отложено (не C1–C7)
+## Отложено (не C1–C8)
 
-- Keycloak JWT / реальная роль teamlead  
+- Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
+- Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  
 - Matching / live Talent / shortlist  
 - Unassign слота  
 - Quality Gate: proof-файлы, рейтинги, reject с причиной  

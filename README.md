@@ -42,6 +42,9 @@ C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`
 C3 room UI: [frontend/README.md](frontend/README.md) (`GET /api/v1/rooms/{id}` → `/rooms/:roomId`).  
 Health: http://127.0.0.1:8000/health  
 
+**Auth (C8):** по умолчанию `AUTH_DISABLED=true` — `/api/v1/*` открыт (локальный demo).  
+Строгий режим: `AUTH_DISABLED=false` → 401 без Bearer JWT; токен за 2 минуты — `POST /auth/stub-token` (`AUTH_STUB_JWKS=true`) или свой Keycloak/JWKS. Подробнее: [backend/README.md](backend/README.md) (C8), UI-логин: [frontend/README.md](frontend/README.md).
+
 ## Фазы
 
 | Фаза | Содержание |

@@ -1,10 +1,27 @@
 # WowLance 2.0 — frontend (React + Vite)
 
-C3–C7 room shell. No login.  
+C3–C8 room shell.  
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
 Pending strategy: **Accept** / **Reject** with stub header `X-Actor-Sub: teamlead-demo-sub`.  
 Tasks: **Add** / **Start** / **Complete** with stub header `X-Actor-Sub: freelancer-demo-sub`.
+
+## Login / token (C8)
+
+All API calls go through `apiFetch` (`src/api.ts`), which adds
+`Authorization: Bearer <token>` when a token is stored (memory +
+`sessionStorage`, key `wowlance_access_token`).
+
+- **Login page**: `/login` (link in the header of Home) — paste a Keycloak
+  access token → **Save token**. Home then shows `Signed in: <sub>`.
+- **401 from the API** (backend `AUTH_DISABLED=false`, no/expired token) →
+  the app switches to `/login` with «нужен login».
+- **Backend `AUTH_DISABLED=true` (default)** → requests work without any
+  token, login is optional (local demo without Keycloak).
+- Demo token without Keycloak: backend with `AUTH_DISABLED=false` +
+  `AUTH_STUB_JWKS=true` → `POST /auth/stub-token` (see backend/README.md, C8).
+
+OIDC code flow is out of scope for C8 (paste-token MVP, see the task file).
 
 ## Local
 
