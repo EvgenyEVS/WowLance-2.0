@@ -16,6 +16,8 @@
 | [`wowlance/examples/StrategyPublished.sale.json`](wowlance/examples/StrategyPublished.sale.json) | пример publish (`room_id` после handoff) |
 | [`wowlance/TalentRosterUpsert.v1.yaml`](wowlance/TalentRosterUpsert.v1.yaml) | draft v1 — C6 upsert локального roster (stub Talent) |
 | [`wowlance/examples/TalentRosterUpsert.json`](wowlance/examples/TalentRosterUpsert.json) | пример payload upsert |
+| [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 минимальный трекер задач комнаты |
+| [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

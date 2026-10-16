@@ -11,6 +11,7 @@ from app.api.roster import router as roster_router
 from app.api.slots import router as slots_router
 from app.api.strategy_proposals import router as strategy_proposals_router
 from app.api.strategy_publications import router as strategy_publications_router
+from app.api.tasks import router as tasks_router
 
 app = FastAPI(
     title="WowLance 2.0",
@@ -37,6 +38,7 @@ app.include_router(strategy_publications_router)
 app.include_router(strategy_proposals_router)
 app.include_router(roster_internal_router)
 app.include_router(roster_router)
+app.include_router(tasks_router)
 
 
 @app.get("/health")

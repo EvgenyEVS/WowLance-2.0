@@ -1,0 +1,59 @@
+# OpenSpec / contract draft — RoomTasks v1
+# Minimal execution tracker inside a room. Tasks belong to room_id (own DB only).
+# Statuses: todo -> in_progress -> done. Illegal transition: 409.
+# Mutations require the stub header X-Actor-Sub (missing: 422).
+
+id: RoomTasks
+version: "1"
+direction: client -> WowLance
+channel: https
+
+task:
+  type: object
+  required: [id, room_id, title, status, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    title: { type: string }
+    status:
+      type: string
+      enum: [todo, in_progress, done]
+    assignee_sub: { type: string, nullable: true }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+
+paths:
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/tasks
+  create:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks
+    headers: [X-Actor-Sub]
+    request:
+      required: [title]
+      properties:
+        title: { type: string }
+        assignee_sub: { type: string, nullable: true }
+  start:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks/{task_id}/start
+    headers: [X-Actor-Sub]
+  complete:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks/{task_id}/complete
+    headers: [X-Actor-Sub]
+
+response_list_200:
+  type: object
+  required: [room_id, tasks]
+  properties:
+    room_id: { type: string, format: uuid }
+    tasks:
+      type: array
+      items: { $ref: "#/task" }
+
+errors:
+  - { code: 404, when: "room or task missing" }
+  - { code: 409, when: "illegal status transition" }
+  - { code: 422, when: "validation or missing X-Actor-Sub on mutating routes" }

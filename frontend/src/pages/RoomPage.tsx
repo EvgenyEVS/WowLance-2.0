@@ -3,6 +3,7 @@ import type { RoomRead } from '../types'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
 import SlotsPanel from './SlotsPanel'
+import TasksPanel from './TasksPanel'
 
 type LoadState =
   | { kind: 'loading' }
@@ -112,6 +113,7 @@ function RoomView({
         staffingUnlocked={room.staffing_unlocked}
         rosterVersion={rosterVersion}
       />
+      <TasksPanel roomId={room.id} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

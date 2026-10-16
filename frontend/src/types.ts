@@ -76,3 +76,20 @@ export type SlotAssignResult = {
   slot: FunctionSlot
   status: 'assigned' | 'already_assigned'
 }
+
+export type TaskStatus = 'todo' | 'in_progress' | 'done'
+
+export type RoomTask = {
+  id: string
+  room_id: string
+  title: string
+  status: TaskStatus
+  assignee_sub?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type TasksList = {
+  room_id: string
+  tasks: RoomTask[]
+}

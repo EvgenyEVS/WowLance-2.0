@@ -1,0 +1,23 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "tasks": [
+    {
+      "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "title": "Call the first 20 leads from the exported list",
+      "status": "todo",
+      "assignee_sub": null,
+      "created_at": "2026-10-15T10:00:00+00:00",
+      "updated_at": "2026-10-15T10:00:00+00:00"
+    },
+    {
+      "id": "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "title": "Set up the CRM pipeline stages",
+      "status": "in_progress",
+      "assignee_sub": "freelancer-demo-sub",
+      "created_at": "2026-10-15T09:30:00+00:00",
+      "updated_at": "2026-10-15T11:15:00+00:00"
+    }
+  ]
+}
