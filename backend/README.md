@@ -236,6 +236,54 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/com
   -H "X-Actor-Sub: freelancer-demo-sub"
 ```
 
+## C9: Hot lead → CRM stub
+
+Лиды комнаты: создать → **hot** → выгрузить в CRM (stub). Своя БД, без live CRM / OAuth.  
+([`contracts/wowlance/RoomLeads.v1.yaml`](../contracts/wowlance/RoomLeads.v1.yaml),
+исходящее событие — [`contracts/wowlance/HotLeadToCrm.v1.yaml`](../contracts/wowlance/HotLeadToCrm.v1.yaml)).
+
+| Метод | Путь |
+|-------|------|
+| `GET` | `/api/v1/rooms/{room_id}/leads` |
+| `POST` | `/api/v1/rooms/{room_id}/leads` |
+| `POST` | `/api/v1/rooms/{room_id}/leads/{lead_id}/mark-hot` |
+| `POST` | `/api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm` |
+
+Статусы: `open` → `hot` → `handed_to_crm`. Другие переходы → **409**.
+`handoff-crm` пишет строку в `outbox_messages` (`event_type: HotLeadToCrm`,
+`status: sent`, `idempotency_key = lead_id`) и проставляет `crm_ref = crm-stub:<lead_id>`.
+Повторный `handoff-crm` идемпотентен: **200** + `status: already_handed`, второй outbox-строки нет.
+
+| Статус | Когда |
+|--------|--------|
+| **201** create | лид создан в `open` |
+| **200** mark-hot | `open` → `hot` |
+| **200** handoff | `hot` → `handed_to_crm` (+ outbox); повтор → `already_handed` |
+| **404** | нет комнаты или лида |
+| **409** | недопустимый переход (`mark-hot` не из `open`; `handoff` не из `hot`) |
+| **422** | валидация; нет `X-Actor-Sub` на мутациях |
+
+Лиды доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не требуется.
+Get — без пагинации (лимит 100). Auth — заглушка `X-Actor-Sub` (как C7), пока нет C8.
+
+```powershell
+# room_id из handoff; мутации требуют X-Actor-Sub
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: founder-demo-sub" `
+  -d '{ "title": "Warm intro to Acme", "contact_name": "Jane" }'
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/mark-hot `
+  -H "X-Actor-Sub: founder-demo-sub"
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/handoff-crm `
+  -H "X-Actor-Sub: founder-demo-sub"
+# -> { "lead": {... "status": "handed_to_crm", "crm_ref": "crm-stub:<lead_id>" },
+#      "crm_ref": "crm-stub:<lead_id>", "status": "handed" }
+
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
@@ -262,7 +310,7 @@ cd backend
 >
 > Известное ограничение: тестам нужна отдельная БД, пока не сделано.
 
-## Отложено (не C1–C7)
+## Отложено (не C1–C9)
 
 - Keycloak JWT / реальная роль teamlead  
 - Matching / live Talent / shortlist  
@@ -270,6 +318,7 @@ cd backend
 - Quality Gate: proof-файлы, рейтинги, reject с причиной  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
+- Живой CRM / OAuth: сейчас `HotLeadToCrm` только в локальном outbox  
 - Outbox `RoomCreated`  
 - Живой webhook Billing  
 
