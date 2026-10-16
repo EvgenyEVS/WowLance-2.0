@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { RoomRead } from '../types'
 import PendingStrategyPanel from './PendingStrategyPanel'
+import RosterPanel from './RosterPanel'
 import SlotsPanel from './SlotsPanel'
 
 type LoadState =
@@ -69,6 +70,7 @@ function RoomView({
   room: RoomRead
   onReload: () => void
 }) {
+  const [rosterVersion, setRosterVersion] = useState(0)
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
   return (
@@ -104,7 +106,12 @@ function RoomView({
         <p className="hint">Version {room.strategy.strategy_version}</p>
       </section>
       <PendingStrategyPanel room={room} onDecided={onReload} />
-      <SlotsPanel roomId={room.id} staffingUnlocked={room.staffing_unlocked} />
+      <RosterPanel onChanged={() => setRosterVersion((v) => v + 1)} />
+      <SlotsPanel
+        roomId={room.id}
+        staffingUnlocked={room.staffing_unlocked}
+        rosterVersion={rosterVersion}
+      />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

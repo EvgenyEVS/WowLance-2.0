@@ -218,3 +218,56 @@ class StrategyDecideResponse(BaseModel):
     room_id: UUID
     decision: StrategyDecision
     active_strategy_version: str
+
+
+class RosterSource(str, Enum):
+    stub = "stub"
+    talent = "talent"
+
+
+class RosterUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    freelancer_sub: str = Field(min_length=1)
+    display_name: str = Field(min_length=1)
+    skills: list[str] | None = None
+    level: str | None = None
+    source: RosterSource = RosterSource.stub
+
+
+class RosterUpsertStatus(str, Enum):
+    upserted = "upserted"
+    already_exists = "already_exists"
+
+
+class RosterUpsertResponse(BaseModel):
+    freelancer_sub: str
+    status: RosterUpsertStatus
+
+
+class RosterMemberOut(BaseModel):
+    freelancer_sub: str
+    display_name: str
+    skills: list[str] | None = None
+    level: str | None = None
+    source: RosterSource = RosterSource.stub
+
+
+class RosterListResponse(BaseModel):
+    members: list[RosterMemberOut]
+
+
+class SlotAssignRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    freelancer_sub: str = Field(min_length=1)
+
+
+class AssignStatus(str, Enum):
+    assigned = "assigned"
+    already_assigned = "already_assigned"
+
+
+class SlotAssignResponse(BaseModel):
+    slot: FunctionSlotOut
+    status: AssignStatus

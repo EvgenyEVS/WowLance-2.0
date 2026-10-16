@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
 from app.api.rooms import router as rooms_router
+from app.api.roster import internal_router as roster_internal_router
+from app.api.roster import router as roster_router
 from app.api.slots import router as slots_router
 from app.api.strategy_proposals import router as strategy_proposals_router
 from app.api.strategy_publications import router as strategy_publications_router
@@ -33,6 +35,8 @@ app.include_router(rooms_router)
 app.include_router(slots_router)
 app.include_router(strategy_publications_router)
 app.include_router(strategy_proposals_router)
+app.include_router(roster_internal_router)
+app.include_router(roster_router)
 
 
 @app.get("/health")

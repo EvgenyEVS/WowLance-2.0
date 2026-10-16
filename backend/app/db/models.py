@@ -222,3 +222,26 @@ class RoomFunctionSlot(Base):
     )
 
     room: Mapped[Room] = relationship(back_populates="function_slots")
+
+
+class FreelancerRoster(Base):
+    """C6: local snapshot of a freelancer (stub Talent). Service-global, not per-room."""
+
+    __tablename__ = "freelancer_roster"
+
+    freelancer_sub: Mapped[str] = mapped_column(String(255), primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    skills: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    level: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    source: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="stub", server_default="stub"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
