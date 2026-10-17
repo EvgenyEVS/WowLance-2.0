@@ -6,14 +6,14 @@
 | **Репозиторий** | [EvgenyEVS/WowLance-2.0](https://github.com/EvgenyEVS/WowLance-2.0) |
 | **Ветка** | `feature/c11-room-created-outbox` |
 | **База** | актуальный `main` **после merge C8 + C9** |
-| **Параллельность** | ✅ **можно делать параллельно с C10** (`feature/c10-quality-gate`) |
+| **Параллельность** | ✅ **можно параллельно с C10** (влит), **C12–C17** |
 | **Фаза** | C11 (исходящее событие при создании комнаты) |
 | **Стек** | **FastAPI · React · PostgreSQL · OpenSpec · Superpowers** |
 | **Исполнитель** | сильный стажёр + хороший ИИ |
 | **Срок** | 1–2 дня |
 | **Канон** | [ADR-002](ADR-002-wowlance-2.0-platform-room.md), [AGENTS.md](../AGENTS.md), [05-integration-map](architecture/05-integration-map.md) |
 | **Предыдущее** | [C1 FounderHandoff](261010%20-%20задание%20C1%20FounderHandoff.md) · [C9 Hot lead CRM](261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) (таблица outbox) |
-| **Параллель** | [C10 Quality Gate](261017%20-%20задание%20C10%20Quality%20Gate.md) |
+| **Параллель** | [C10](261017%20-%20задание%20C10%20Quality%20Gate.md) · [C12](261017%20-%20задание%20C12%20Slot%20unassign.md) · [C13](261017%20-%20задание%20C13%20Room%20health.md) · [C14](261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) · [C15](261017%20-%20задание%20C15%20Task%20roster%20assignee.md) · [C16](261017%20-%20задание%20C16%20Earnings%20stub.md) · [C17](261017%20-%20задание%20C17%20Member%20terminated.md) |
 
 C9 должен быть в базе: нужна таблица `outbox_messages`. Если C9 ещё не в `main` — ветка от C9 tip / после merge.
 

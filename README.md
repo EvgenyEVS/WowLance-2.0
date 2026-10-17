@@ -60,7 +60,13 @@ Health: http://127.0.0.1:8000/health
 | **C9** | Hot lead → CRM stub — [задание](docs/261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) ∥ C8 |
 | **C10** | Quality Gate lite — [задание](docs/261017%20-%20задание%20C10%20Quality%20Gate.md) ∥ C11 |
 | **C11** | Outbox `RoomCreated` — [задание](docs/261017%20-%20задание%20C11%20RoomCreated%20outbox.md) ∥ C10 |
-| **C12+** | Live adapters, matching, RBAC ролей |
+| **C12** | Slot unassign / reassign — [задание](docs/261017%20-%20задание%20C12%20Slot%20unassign.md) ∥ C11 · C13 |
+| **C13** | Room health stub → Strategy — [задание](docs/261017%20-%20задание%20C13%20Room%20health.md) ∥ C11 · C12 |
+| **C14** | Meet / Jitsi stub — [задание](docs/261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) ∥ C11–C13 · C15–C17 |
+| **C15** | Task assignee из roster — [задание](docs/261017%20-%20задание%20C15%20Task%20roster%20assignee.md) ∥ C11–C14 · C16–C17 |
+| **C16** | «Я заработал» stub — [задание](docs/261017%20-%20задание%20C16%20Earnings%20stub.md) ∥ C11–C15 · C17 |
+| **C17** | MemberTerminated lite — [задание](docs/261017%20-%20задание%20C17%20Member%20terminated.md) ∥ C11 · C13–C16 (осторожно с C12) |
+| **C18+** | Matching, live adapters, полный RBAC ролей |
 
 ## Политика оплаты
 
