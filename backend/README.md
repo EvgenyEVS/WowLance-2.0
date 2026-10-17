@@ -349,6 +349,43 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/han
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 ```
 
+## C11: RoomCreated outbox
+
+При первом создании комнаты (`FounderHandoff` → `status: created`) пишется строка в
+`outbox_messages` (`event_type: RoomCreated`, `status: sent`) в той же транзакции,
+что и комната + снимок стратегии. Контракт:
+[contracts/wowlance/RoomCreated.v1.yaml](../contracts/wowlance/RoomCreated.v1.yaml),
+пример — [contracts/wowlance/examples/RoomCreated.sale.json](../contracts/wowlance/examples/RoomCreated.sale.json).
+
+| Правило | Поведение |
+|---------|-----------|
+| Когда | Только при `status == created` (первый `handoff_id` для комнаты) |
+| idempotency_key | `room:<room_id>:RoomCreated` (хранится как `room_id`) |
+| event_type | `RoomCreated` |
+| status | `sent` (stub, без брокера) |
+| sent_at | `now` |
+| Повтор handoff (`already_exists`) | **не** создаёт вторую outbox-строку |
+| 409 (иной payload под тем же handoff_id) | комната и outbox не меняются |
+| Атомарность | комната + снимок + outbox коммитятся вместе |
+
+Payload минимум: `room_id`, `handoff_id`, `room_type`, `name`, `founder_sub`,
+`strategy_id`, `strategy_version`, `created_at`, `staffing_unlocked` (always `false` on create).
+
+Проверка SQL:
+
+```sql
+SELECT event_type, idempotency_key, status, sent_at
+FROM outbox_messages
+WHERE event_type = 'RoomCreated';
+```
+
+```powershell
+# room_id из ответа handoff (201 created)
+curl -s http://127.0.0.1:8000/internal/v1/handoffs -X POST `
+  -H "Content-Type: application/json" `
+  -d @<founder-handoff.json>
+```
+
 ## C12: Slot unassign / reassign
 
 После C6 слот можно было только назначить. C12 добавляет обратное:
