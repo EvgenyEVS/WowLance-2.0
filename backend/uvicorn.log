@@ -1,0 +1,17 @@
+INFO:     127.0.0.1:55143 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55181 - "GET /api/v1/roster HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55182 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/slots HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/v1/roster HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/slots HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55193 - "GET /api/v1/roster HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55199 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55198 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55196 - "GET /api/v1/roster HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55203 - "POST /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads HTTP/1.1" 201 Created
+INFO:     127.0.0.1:55205 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55208 - "POST /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads/628bcb1b-3fbd-4040-a60a-ab41a63addbd/mark-hot HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55210 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55216 - "POST /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads/628bcb1b-3fbd-4040-a60a-ab41a63addbd/handoff-crm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55218 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb/leads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "GET /api/v1/rooms/2abdce61-0a9d-4a78-8852-1e49ae6453bb HTTP/1.1" 200 OK
