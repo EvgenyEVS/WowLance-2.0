@@ -1,0 +1,82 @@
+# OpenSpec / contract draft — RoomHealth v1 (C13)
+# Read-only aggregate of a room (slots / tasks / leads) for the Strategy showcase.
+# WowLance -> Strategy: GET over https + optional outbox publish (stub, no live broker).
+# Empty entities are zeros, not 404. Unknown room: 404.
+# Publish = always a new outbox row (snapshot history); no dedup key.
+
+id: RoomHealth
+version: "1"
+direction: WowLance -> Strategy (витрина)
+channel: https + optional outbox
+
+paths:
+  get:
+    method: GET
+    path: /api/v1/rooms/{room_id}/health
+  publish:
+    method: POST
+    path: /internal/v1/rooms/{room_id}/health/publish
+    note: "stub: пишет outbox RoomHealthSnapshot (status=sent), живой HTTP в Strategy позже"
+
+snapshot:
+  type: object
+  required: [room_id, captured_at, room, slots, tasks, leads]
+  properties:
+    room_id: { type: string, format: uuid }
+    captured_at: { type: string, format: date-time }
+    room:
+      type: object
+      required: [room_type, name, staffing_unlocked, strategy_id, strategy_version]
+      properties:
+        room_type: { type: string, enum: [sale, develop] }
+        name: { type: string }
+        staffing_unlocked: { type: boolean }
+        strategy_id: { type: string, format: uuid, nullable: true }
+        strategy_version: { type: string, nullable: true }
+    slots:
+      type: object
+      required: [total, open, filled, cancelled]
+      properties:
+        total: { type: integer, minimum: 0 }
+        open: { type: integer, minimum: 0 }
+        filled: { type: integer, minimum: 0 }
+        cancelled: { type: integer, minimum: 0 }
+    tasks:
+      type: object
+      required: [todo, in_progress, submitted, done]
+      properties:
+        todo: { type: integer, minimum: 0 }
+        in_progress: { type: integer, minimum: 0 }
+        submitted: { type: integer, minimum: 0 }
+        done: { type: integer, minimum: 0 }
+    leads:
+      type: object
+      required: [total, hot, handed_to_crm]
+      properties:
+        total: { type: integer, minimum: 0 }
+        hot: { type: integer, minimum: 0 }
+        handed_to_crm: { type: integer, minimum: 0 }
+
+response_get_200:
+  $ref: "#/snapshot"
+
+response_publish_200:
+  type: object
+  required: [outbox_id, event_type, status, snapshot]
+  properties:
+    outbox_id: { type: string, format: uuid }
+    event_type: { type: string, const: RoomHealthSnapshot }
+    status: { type: string, const: published }
+    snapshot: { $ref: "#/snapshot" }
+
+outbox:
+  table: outbox_messages
+  event_type: RoomHealthSnapshot
+  status: sent
+  sent_at: now
+  payload: { $ref: "#/snapshot" }   # тот же snapshot + captured_at
+  idempotency_key: "per-publish uuid (всегда новая строка — история снимков)"
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "validation failed (bad uuid)" }

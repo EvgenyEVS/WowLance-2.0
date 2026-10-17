@@ -380,3 +380,51 @@ class LeadHandoffResponse(BaseModel):
     lead: RoomLeadOut
     crm_ref: str
     status: LeadHandoffStatus
+
+
+class RoomHealthRoomOut(BaseModel):
+    room_type: RoomType
+    name: str
+    staffing_unlocked: bool
+    strategy_id: UUID | None = None
+    strategy_version: str | None = None
+
+
+class RoomHealthSlotsOut(BaseModel):
+    total: int = 0
+    open: int = 0
+    filled: int = 0
+    cancelled: int = 0
+
+
+class RoomHealthTasksOut(BaseModel):
+    todo: int = 0
+    in_progress: int = 0
+    submitted: int = 0
+    done: int = 0
+
+
+class RoomHealthLeadsOut(BaseModel):
+    total: int = 0
+    hot: int = 0
+    handed_to_crm: int = 0
+
+
+class RoomHealthOut(BaseModel):
+    room_id: UUID
+    captured_at: datetime
+    room: RoomHealthRoomOut
+    slots: RoomHealthSlotsOut
+    tasks: RoomHealthTasksOut
+    leads: RoomHealthLeadsOut
+
+
+class RoomHealthPublishStatus(str, Enum):
+    published = "published"
+
+
+class RoomHealthPublishResponse(BaseModel):
+    outbox_id: UUID
+    event_type: Literal["RoomHealthSnapshot"]
+    status: RoomHealthPublishStatus
+    snapshot: RoomHealthOut
