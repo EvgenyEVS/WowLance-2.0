@@ -61,7 +61,9 @@ def test_mark_hot_then_handoff_creates_outbox(client, db_session, sale_payload):
     assert body["crm_ref"] == f"crm-stub:{lead_id}"
     assert body["lead"]["status"] == "handed_to_crm"
 
-    rows = db_session.scalars(select(OutboxMessage)).all()
+    rows = db_session.scalars(
+        select(OutboxMessage).where(OutboxMessage.event_type == "HotLeadToCrm")
+    ).all()
     assert len(rows) == 1
     msg = rows[0]
     assert msg.event_type == "HotLeadToCrm"
@@ -90,7 +92,9 @@ def test_handoff_repeat_is_idempotent(client, db_session, sale_payload):
     assert second.json()["status"] == "already_handed"
     assert second.json()["crm_ref"] == first.json()["crm_ref"]
 
-    rows = db_session.scalars(select(OutboxMessage)).all()
+    rows = db_session.scalars(
+        select(OutboxMessage).where(OutboxMessage.event_type == "HotLeadToCrm")
+    ).all()
     assert len(rows) == 1
 
 

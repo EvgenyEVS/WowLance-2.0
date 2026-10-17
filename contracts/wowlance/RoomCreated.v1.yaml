@@ -1,0 +1,35 @@
+# OpenSpec / contract draft — RoomCreated v1 (C11)
+# Outbound event when a room is first created (FounderHandoff status=created).
+# C11 scope: persist into the local outbox (status=sent, sync stub); live bus later.
+
+id: RoomCreated
+version: "1"
+direction: WowLance -> platform (Strategy/Order/bus)
+channel: outbox
+idempotency_key: room_id
+
+payload:
+  type: object
+  required: [room_id, handoff_id, room_type, name, founder_sub, strategy_id, strategy_version, created_at]
+  properties:
+    room_id: { type: string, format: uuid }
+    handoff_id: { type: string, format: uuid }
+    room_type: { type: string, enum: [sale, develop] }
+    name: { type: string }
+    founder_sub: { type: string }
+    strategy_id: { type: string, format: uuid }
+    strategy_version: { type: string }
+    created_at: { type: string, format: date-time }
+    staffing_unlocked: { type: boolean }
+
+outbox:
+  table: outbox_messages
+  event_type: RoomCreated
+  status:
+    enum: [pending, sent, failed]
+    c11: sent
+  columns: [id, event_type, idempotency_key, payload, status, created_at, sent_at]
+  unique: idempotency_key
+
+bus_stub:
+  note: "no live broker/HTTP to Strategy, no OAuth, no Keycloak"
