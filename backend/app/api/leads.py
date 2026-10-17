@@ -1,0 +1,132 @@
+"""Room leads API (C9). Mutations require the X-Actor-Sub stub -> 422 without it."""
+
+from __future__ import annotations
+
+import uuid
+
+from fastapi import APIRouter, Depends, Header, HTTPException
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.domain.leads import (
+    InvalidTransitionError,
+    LeadNotFoundError,
+    RoomNotFoundError,
+    create_lead,
+    handoff_to_crm,
+    list_leads,
+    mark_hot,
+)
+from app.domain.schemas import (
+    LeadHandoffResponse,
+    RoomLeadCreateRequest,
+    RoomLeadListResponse,
+    RoomLeadOut,
+)
+
+router = APIRouter(prefix="/api/v1/rooms", tags=["leads"])
+
+
+def _actor_sub(x_actor_sub: str | None) -> str:
+    if x_actor_sub is None or not x_actor_sub.strip():
+        raise HTTPException(status_code=422, detail="X-Actor-Sub header is required")
+    return x_actor_sub.strip()
+
+
+def _map_errors(exc: Exception) -> None:
+    if isinstance(exc, (RoomNotFoundError, LeadNotFoundError)):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, InvalidTransitionError):
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    raise exc
+
+
+@router.get(
+    "/{room_id}/leads",
+    response_model=RoomLeadListResponse,
+    responses={
+        200: {"description": "Leads of the room"},
+        404: {"description": "room_id does not exist"},
+    },
+)
+def get_room_leads(
+    room_id: uuid.UUID,
+    db: Session = Depends(get_db),
+) -> RoomLeadListResponse:
+    try:
+        return list_leads(db, room_id)
+    except RoomNotFoundError as exc:
+        _map_errors(exc)
+        raise
+
+
+@router.post(
+    "/{room_id}/leads",
+    response_model=RoomLeadOut,
+    status_code=201,
+    responses={
+        201: {"description": "Lead created in open"},
+        404: {"description": "room_id does not exist"},
+        422: {"description": "validation or missing X-Actor-Sub"},
+    },
+)
+def post_room_lead(
+    room_id: uuid.UUID,
+    payload: RoomLeadCreateRequest,
+    db: Session = Depends(get_db),
+    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+) -> RoomLeadOut:
+    _actor_sub(x_actor_sub)
+    try:
+        return create_lead(db, room_id, payload)
+    except RoomNotFoundError as exc:
+        _map_errors(exc)
+        raise
+
+
+@router.post(
+    "/{room_id}/leads/{lead_id}/mark-hot",
+    response_model=RoomLeadOut,
+    responses={
+        200: {"description": "open -> hot"},
+        404: {"description": "room or lead does not exist"},
+        409: {"description": "lead is not open"},
+        422: {"description": "missing X-Actor-Sub"},
+    },
+)
+def post_mark_hot(
+    room_id: uuid.UUID,
+    lead_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+) -> RoomLeadOut:
+    actor = _actor_sub(x_actor_sub)
+    try:
+        return mark_hot(db, room_id, lead_id, actor)
+    except (RoomNotFoundError, LeadNotFoundError, InvalidTransitionError) as exc:
+        _map_errors(exc)
+        raise
+
+
+@router.post(
+    "/{room_id}/leads/{lead_id}/handoff-crm",
+    response_model=LeadHandoffResponse,
+    responses={
+        200: {"description": "hot -> handed_to_crm (+ outbox); repeat -> already_handed"},
+        404: {"description": "room or lead does not exist"},
+        409: {"description": "lead is not hot yet"},
+        422: {"description": "missing X-Actor-Sub"},
+    },
+)
+def post_handoff_crm(
+    room_id: uuid.UUID,
+    lead_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+) -> LeadHandoffResponse:
+    actor = _actor_sub(x_actor_sub)
+    try:
+        return handoff_to_crm(db, room_id, lead_id, actor)
+    except (RoomNotFoundError, LeadNotFoundError, InvalidTransitionError) as exc:
+        _map_errors(exc)
+        raise

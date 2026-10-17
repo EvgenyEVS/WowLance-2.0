@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch } from '../api'
 import type { RoomRead } from '../types'
+import LeadsPanel from './LeadsPanel'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
 import SlotsPanel from './SlotsPanel'
@@ -115,6 +116,7 @@ function RoomView({
         rosterVersion={rosterVersion}
       />
       <TasksPanel roomId={room.id} />
+      <LeadsPanel roomId={room.id} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

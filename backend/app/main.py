@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth_stub import router as auth_stub_router
 from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
+from app.api.leads import router as leads_router
 from app.api.rooms import router as rooms_router
 from app.api.roster import internal_router as roster_internal_router
 from app.api.roster import router as roster_router
@@ -43,9 +44,15 @@ app.include_router(slots_router, dependencies=client_auth)
 app.include_router(strategy_publications_router)
 app.include_router(strategy_proposals_router, dependencies=client_auth)
 app.include_router(roster_internal_router)
+<<<<<<< HEAD
 app.include_router(roster_router, dependencies=client_auth)
 app.include_router(tasks_router, dependencies=client_auth)
 app.include_router(auth_stub_router)
+=======
+app.include_router(roster_router)
+app.include_router(tasks_router)
+app.include_router(leads_router)
+>>>>>>> origin/feature/c9-hot-lead-crm
 
 
 @app.get("/health")

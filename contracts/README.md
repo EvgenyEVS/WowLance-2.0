@@ -20,6 +20,11 @@
 | [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач |
 | [`wowlance/AuthBearer.v1.yaml`](wowlance/AuthBearer.v1.yaml) | draft v1 — C8 Bearer JWT на `/api/v1/*` + shadow User |
 
+| [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | draft v1 — C9 лиды комнаты (open → hot → handed_to_crm) |
+| [`wowlance/examples/RoomLeads.sale.json`](wowlance/examples/RoomLeads.sale.json) | пример list-ответа лидов |
+| [`wowlance/HotLeadToCrm.v1.yaml`](wowlance/HotLeadToCrm.v1.yaml) | draft v1 — C9 исходящее событие Hot → CRM (outbox) |
+| [`wowlance/examples/HotLeadToCrm.json`](wowlance/examples/HotLeadToCrm.json) | пример outbox payload |
+
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
 Следующие (не блокируют скелет): `RoomCreated`.

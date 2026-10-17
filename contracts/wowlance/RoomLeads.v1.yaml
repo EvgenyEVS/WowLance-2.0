@@ -1,0 +1,80 @@
+# OpenSpec / contract draft — RoomLeads v1 (C9)
+# Leads live inside a room (own DB only). Lifecycle: open -> hot -> handed_to_crm.
+# Mutations require the stub header X-Actor-Sub (missing: 422), same as C5–C7.
+
+id: RoomLeads
+version: "1"
+direction: client -> WowLance
+channel: https
+
+lead:
+  type: object
+  required: [id, room_id, title, status, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    title: { type: string }
+    contact_name: { type: string, nullable: true }
+    contact_email: { type: string, nullable: true }
+    notes: { type: string, nullable: true }
+    status:
+      type: string
+      enum: [open, hot, handed_to_crm]
+    crm_ref: { type: string, nullable: true }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+
+paths:
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/leads
+  create:
+    method: POST
+    path: /api/v1/rooms/{room_id}/leads
+    headers: [X-Actor-Sub]
+    request:
+      required: [title]
+      properties:
+        title: { type: string }
+        contact_name: { type: string, nullable: true }
+        contact_email: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+  mark_hot:
+    method: POST
+    path: /api/v1/rooms/{room_id}/leads/{lead_id}/mark-hot
+    headers: [X-Actor-Sub]
+  handoff:
+    method: POST
+    path: /api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm
+    headers: [X-Actor-Sub]
+
+transitions:
+  create: "-> open"
+  mark_hot: "open -> hot; repeat on hot/handed_to_crm: 409"
+  handoff: "hot -> handed_to_crm + outbox HotLeadToCrm (status=sent), crm_ref = crm-stub:<lead_id>"
+  handoff_repeat: "handed_to_crm -> 200 already_handed (idempotent by lead_id)"
+  handoff_from_open: "open -> 409"
+
+response_list_200:
+  type: object
+  required: [room_id, leads]
+  properties:
+    room_id: { type: string, format: uuid }
+    leads:
+      type: array
+      items: { $ref: "#/lead" }
+
+response_handoff_200:
+  type: object
+  required: [lead, crm_ref, status]
+  properties:
+    lead: { $ref: "#/lead" }
+    crm_ref: { type: string }
+    status:
+      type: string
+      enum: [handed, already_handed]
+
+errors:
+  - { code: 404, when: "room or lead missing" }
+  - { code: 409, when: "illegal transition (mark-hot on non-open; handoff from open)" }
+  - { code: 422, when: "validation or missing X-Actor-Sub on mutating routes" }
