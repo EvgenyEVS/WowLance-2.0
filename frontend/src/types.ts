@@ -123,3 +123,25 @@ export type LeadHandoffResult = {
   crm_ref: string
   status: 'handed' | 'already_handed'
 }
+
+export type RoomHealth = {
+  room_id: string
+  captured_at: string
+  room: {
+    room_type: 'sale' | 'develop'
+    name: string
+    staffing_unlocked: boolean
+    strategy_id?: string | null
+    strategy_version?: string | null
+  }
+  slots: { total: number; open: number; filled: number; cancelled: number }
+  tasks: { todo: number; in_progress: number; submitted: number; done: number }
+  leads: { total: number; hot: number; handed_to_crm: number }
+}
+
+export type RoomHealthPublishResult = {
+  outbox_id: string
+  event_type: 'RoomHealthSnapshot'
+  status: 'published'
+  snapshot: RoomHealth
+}

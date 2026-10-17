@@ -4,6 +4,7 @@ import type { RoomRead } from '../types'
 import LeadsPanel from './LeadsPanel'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
+import RoomHealthPanel from './RoomHealthPanel'
 import SlotsPanel from './SlotsPanel'
 import TasksPanel from './TasksPanel'
 
@@ -117,6 +118,7 @@ function RoomView({
       />
       <TasksPanel roomId={room.id} />
       <LeadsPanel roomId={room.id} />
+      <RoomHealthPanel roomId={room.id} />
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

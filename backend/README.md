@@ -349,6 +349,42 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/han
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 ```
 
+## C13: Room health → Strategy
+
+Соседнему сервису Strategy нужен один контракт «здоровье комнаты»: сколько
+мест занято, как задачи, сколько Hot/ушло в CRM. C13 даёт **read-only агрегат**
+`GET …/health` + опциональный **publish** в outbox (`RoomHealthSnapshot`,
+stub `sent`, как `HotLeadToCrm`). Живого брокера / HTTP в Strategy нет.
+Контракт: [contracts/wowlance/RoomHealth.v1.yaml](../contracts/wowlance/RoomHealth.v1.yaml).
+
+| Метод | Путь |
+|-------|------|
+| GET | `/api/v1/rooms/{room_id}/health` (под `/api/v1` guard, C8) |
+| POST | `/internal/v1/rooms/{room_id}/health/publish` (internal, открыт) |
+
+Пayload snapshot: `room` (type/name/unlocked/strategy_id/version из активного
+снимка) + `slots` `{total,open,filled,cancelled}` + `tasks` `{todo,in_progress,
+submitted,done}` (статусы C10) + `leads` `{total,hot,handed_to_crm}` (enum C9).
+Пустые сущности → нули, не 404. Нет комнаты → 404.
+
+**Publish** пишет **новую** строку `outbox_messages` на каждый вызов
+(история снимков, без dedup): `event_type=RoomHealthSnapshot`, `status=sent`,
+`sent_at=now`, payload = тот же snapshot + `captured_at`. Alembic-миграции нет.
+Проверка SQL: `SELECT event_type, status, sent_at FROM outbox_messages
+WHERE event_type = 'RoomHealthSnapshot';`
+
+```powershell
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/health
+# -> { "room_id": ..., "captured_at": ..., "room": {...},
+#      "slots": {"total": 2, "open": 1, "filled": 1, "cancelled": 0},
+#      "tasks": {"todo": 1, "in_progress": 1, "submitted": 1, "done": 0},
+#      "leads": {"total": 2, "hot": 1, "handed_to_crm": 1} }
+
+curl -s -X POST http://127.0.0.1:8000/internal/v1/rooms/<room_id>/health/publish
+# -> { "outbox_id": ..., "event_type": "RoomHealthSnapshot",
+#      "status": "published", "snapshot": {...} }
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  
@@ -368,9 +404,7 @@ cd backend
 
 Опционально в `.env`: `TEST_DATABASE_URL=...`
 
-## Отложено (не C1–C8)
-
-## Отложено (не C1–C9)
+## Отложено (не C1–C13)
 
 - Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
 - Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  

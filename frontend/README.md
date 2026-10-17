@@ -1,14 +1,13 @@
 # WowLance 2.0 — frontend (React + Vite)
 
-C3–C8 room shell.  
-
-C3–C9 room shell. No login.  
+C3–C9 room shell. C13 room health card. No login.  
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
 Pending strategy: **Accept** / **Reject** with stub header `X-Actor-Sub: teamlead-demo-sub`.  
 Tasks (C7): **Add** / **Start** with stub header `X-Actor-Sub: freelancer-demo-sub`.  
 Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accept** / **Reject** (optional reason) as `X-Actor-Sub: teamlead-demo-sub`. Proof shown on the card; reject keeps proof for resubmit.  
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
+Room health (C13): card on the room page shows slots/tasks/leads aggregates; **Refresh** re-reads `GET …/health`, **Publish snapshot** writes an outbox `RoomHealthSnapshot` row (stub).
 
 ## Login / token (C8)
 
@@ -57,3 +56,4 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 7. C6: in **Roster** upsert a freelancer (e.g. `f-1234` / demo), then in **Slots** pick them on an `open` seat and **Assign** → seat becomes `filled` with the sub; assigning the same freelancer again returns idempotent `already_assigned`.
 8. Block **Tasks** (available right after room creation, no entitlement needed): type a title → **Add** (→ `todo`), **Start** (→ `in_progress`, assignee from `X-Actor-Sub`). C10 Quality Gate: enter a **proof URI** (+ optional note) → **Submit** (→ `submitted`, missing URI → 422), then **Accept** (→ `done`) or **Reject** with optional reason (→ `in_progress`, proof kept for resubmit). Illegal transitions (incl. direct `in_progress` → `done`) show a 409 error.
 9. Block **Leads** (C9, available right after room creation): type a title (+ optional contact name) → **Add** (→ `open`), **Mark hot** (→ `hot`), **Hand to CRM** (→ `handed_to_crm`, shows `crm-stub:<lead_id>`). Handing a hot lead off twice is idempotent (`already_handed`); illegal transitions show a 409 error.
+10. Block **Room health** (C13): after adding slots/tasks/leads, **Refresh** shows matching counts (empty entities are zeros, not errors). **Publish snapshot** writes an outbox row and shows the `outbox_id`; repeat publishes create a new row each time (history).
