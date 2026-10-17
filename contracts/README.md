@@ -16,8 +16,8 @@
 | [`wowlance/examples/StrategyPublished.sale.json`](wowlance/examples/StrategyPublished.sale.json) | пример publish (`room_id` после handoff) |
 | [`wowlance/TalentRosterUpsert.v1.yaml`](wowlance/TalentRosterUpsert.v1.yaml) | draft v1 — C6 upsert локального roster (stub Talent) |
 | [`wowlance/examples/TalentRosterUpsert.json`](wowlance/examples/TalentRosterUpsert.json) | пример payload upsert |
-| [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 минимальный трекер задач комнаты |
-| [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач |
+| [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 трекер задач + C10 Quality Gate (`submitted`/`proof_*`, accept/reject) |
+| [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач (todo/in_progress/submitted + proof) |
 | [`wowlance/AuthBearer.v1.yaml`](wowlance/AuthBearer.v1.yaml) | draft v1 — C8 Bearer JWT на `/api/v1/*` + shadow User |
 
 | [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | draft v1 — C9 лиды комнаты (open → hot → handed_to_crm) |

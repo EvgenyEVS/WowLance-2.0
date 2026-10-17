@@ -1,7 +1,13 @@
 # OpenSpec / contract draft — RoomTasks v1
 # Minimal execution tracker inside a room. Tasks belong to room_id (own DB only).
-# Statuses: todo -> in_progress -> done. Illegal transition: 409.
+# Statuses: todo -> in_progress -> submitted -> done.
+#   start    : todo        -> in_progress
+#   complete : in_progress -> submitted  (requires proof_uri)
+#   accept   : submitted   -> done
+#   reject   : submitted   -> in_progress (optional review_note; proof kept)
+# Illegal transition (incl. in_progress -> done) : 409.
 # Mutations require the stub header X-Actor-Sub (missing: 422).
+# Quality Gate lite (C10): proof_uri/proof_note on submit; reviewed_by_sub/review_note on review.
 
 id: RoomTasks
 version: "1"
@@ -17,8 +23,12 @@ task:
     title: { type: string }
     status:
       type: string
-      enum: [todo, in_progress, done]
+      enum: [todo, in_progress, submitted, done]
     assignee_sub: { type: string, nullable: true }
+    proof_uri: { type: string, nullable: true }
+    proof_note: { type: string, nullable: true }
+    reviewed_by_sub: { type: string, nullable: true }
+    review_note: { type: string, nullable: true }
     created_at: { type: string, format: date-time }
     updated_at: { type: string, format: date-time }
 
@@ -43,6 +53,22 @@ paths:
     method: POST
     path: /api/v1/rooms/{room_id}/tasks/{task_id}/complete
     headers: [X-Actor-Sub]
+    request:
+      required: [proof_uri]
+      properties:
+        proof_uri: { type: string }
+        proof_note: { type: string, nullable: true }
+  accept:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks/{task_id}/accept
+    headers: [X-Actor-Sub]
+  reject:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks/{task_id}/reject
+    headers: [X-Actor-Sub]
+    request:
+      properties:
+        review_note: { type: string, nullable: true }
 
 response_list_200:
   type: object

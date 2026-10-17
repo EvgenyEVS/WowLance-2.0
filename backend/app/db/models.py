@@ -251,8 +251,10 @@ class FreelancerRoster(Base):
 
 
 class RoomTask(Base):
-    """Minimal execution tracker (C7): todo -> in_progress -> done.
+    """Room task tracker: todo -> in_progress -> submitted -> done.
 
+    C7 minimal tracker; C10 Quality Gate lite adds proof_uri/proof_note on
+    submit and reviewed_by_sub/review_note on accept/reject.
     assignee_sub is a free string (no FK to roster — that is C6).
     """
 
@@ -272,6 +274,10 @@ class RoomTask(Base):
         String(32), nullable=False, default="todo", server_default="todo"
     )
     assignee_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    proof_uri: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    proof_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewed_by_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -6,7 +6,8 @@ C3–C9 room shell. No login.
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
 Pending strategy: **Accept** / **Reject** with stub header `X-Actor-Sub: teamlead-demo-sub`.  
-Tasks: **Add** / **Start** / **Complete** with stub header `X-Actor-Sub: freelancer-demo-sub`.  
+Tasks (C7): **Add** / **Start** with stub header `X-Actor-Sub: freelancer-demo-sub`.  
+Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accept** / **Reject** (optional reason) as `X-Actor-Sub: teamlead-demo-sub`. Proof shown on the card; reject keeps proof for resubmit.  
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
 
 ## Login / token (C8)
@@ -54,5 +55,5 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 5. After C2 entitlement, refresh: **Staffing unlocked**, block **Slots** with **Materialize slots** (sale example → two `seller` seats). Locked rooms show «Slots locked until entitlement».
 6. After C5 publish, refresh: **Strategy** stays the old offer; **Pending strategy** block with Accept/Reject. Accept → new offer, pending disappears.
 7. C6: in **Roster** upsert a freelancer (e.g. `f-1234` / demo), then in **Slots** pick them on an `open` seat and **Assign** → seat becomes `filled` with the sub; assigning the same freelancer again returns idempotent `already_assigned`.
-8. Block **Tasks** (available right after room creation, no entitlement needed): type a title → **Add** (→ `todo`), **Start** (→ `in_progress`, assignee from `X-Actor-Sub`), **Complete** (→ `done`). Illegal transitions show a 409 error.
+8. Block **Tasks** (available right after room creation, no entitlement needed): type a title → **Add** (→ `todo`), **Start** (→ `in_progress`, assignee from `X-Actor-Sub`). C10 Quality Gate: enter a **proof URI** (+ optional note) → **Submit** (→ `submitted`, missing URI → 422), then **Accept** (→ `done`) or **Reject** with optional reason (→ `in_progress`, proof kept for resubmit). Illegal transitions (incl. direct `in_progress` → `done`) show a 409 error.
 9. Block **Leads** (C9, available right after room creation): type a title (+ optional contact name) → **Add** (→ `open`), **Mark hot** (→ `hot`), **Hand to CRM** (→ `handed_to_crm`, shows `crm-stub:<lead_id>`). Handing a hot lead off twice is idempotent (`already_handed`); illegal transitions show a 409 error.

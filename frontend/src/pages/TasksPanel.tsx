@@ -11,6 +11,10 @@ type TasksState =
   | { kind: 'not_found' }
   | { kind: 'error'; message: string }
 
+type MutateResult =
+  | { ok: true }
+  | { ok: false; status: number; message: string }
+
 export default function TasksPanel({ roomId }: { roomId: string }) {
   const [state, setState] = useState<TasksState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
@@ -49,7 +53,10 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
     return loadTasks()
   }, [loadTasks])
 
-  async function mutate(path: string, body?: unknown): Promise<boolean> {
+  async function mutate(
+    path: string,
+    body?: unknown,
+  ): Promise<MutateResult> {
     setBusy(true)
     setError(null)
     try {
@@ -64,20 +71,29 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
         { method: 'POST', headers, body: payload },
       )
       if (res.status === 404) {
-        setError('Room or task not found (404).')
-        return false
+        const message = 'Room or task not found (404).'
+        setError(message)
+        loadTasks()
+        return { ok: false, status: res.status, message }
       }
       if (res.status === 409) {
-        setError('Illegal status transition (409). Reload the list.')
+        const message = 'Illegal status transition (409). Reload the list.'
+        setError(message)
         loadTasks()
-        return false
+        return { ok: false, status: res.status, message }
+      }
+      if (res.status === 422) {
+        const message = 'Missing proof URI or actor (422).'
+        setError(message)
+        return { ok: false, status: res.status, message }
       }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
-        return false
+        const message = `HTTP ${res.status}`
+        setError(message)
+        return { ok: false, status: res.status, message }
       }
       loadTasks()
-      return true
+      return { ok: true }
     } finally {
       setBusy(false)
     }
@@ -87,8 +103,8 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
     event.preventDefault()
     const trimmed = title.trim()
     if (!trimmed) return
-    const ok = await mutate('', { title: trimmed })
-    if (ok) setTitle('')
+    const result = await mutate('', { title: trimmed })
+    if (result.ok) setTitle('')
   }
 
   return (
@@ -115,37 +131,153 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
       {state.kind === 'ok' && state.tasks.length > 0 && (
         <ul className="task-list">
           {state.tasks.map((task) => (
-            <li key={task.id} className="task-item">
-              <span className="task-title">{task.title}</span>
-              <span className="hint task-status">{task.status}</span>
-              {task.assignee_sub ? (
-                <span className="hint task-assignee">{task.assignee_sub}</span>
-              ) : null}
-              {task.status === 'todo' && (
-                <button
-                  type="button"
-                  className="slot-action"
-                  disabled={busy}
-                  onClick={() => void mutate(`/${task.id}/start`)}
-                >
-                  Start
-                </button>
-              )}
-              {task.status === 'in_progress' && (
-                <button
-                  type="button"
-                  className="slot-action"
-                  disabled={busy}
-                  onClick={() => void mutate(`/${task.id}/complete`)}
-                >
-                  Complete
-                </button>
-              )}
-            </li>
+            <TaskItem
+              key={task.id}
+              task={task}
+              busy={busy}
+              onStart={() => void mutate(`/${task.id}/start`)}
+              onComplete={(proofUri, proofNote) =>
+                mutate(`/${task.id}/complete`, {
+                  proof_uri: proofUri,
+                  ...(proofNote ? { proof_note: proofNote } : {}),
+                })
+              }
+              onAccept={() => void mutate(`/${task.id}/accept`)}
+              onReject={(reviewNote) =>
+                mutate(
+                  `/${task.id}/reject`,
+                  reviewNote ? { review_note: reviewNote } : undefined,
+                )
+              }
+            />
           ))}
         </ul>
       )}
       {error ? <p className="error">{error}</p> : null}
     </section>
+  )
+}
+
+type TaskItemProps = {
+  task: RoomTask
+  busy: boolean
+  onStart: () => void
+  onComplete: (proofUri: string, proofNote: string) => Promise<MutateResult>
+  onAccept: () => void
+  onReject: (reviewNote: string) => Promise<MutateResult>
+}
+
+function TaskItem({
+  task,
+  busy,
+  onStart,
+  onComplete,
+  onAccept,
+  onReject,
+}: TaskItemProps) {
+  const [proofUri, setProofUri] = useState('')
+  const [proofNote, setProofNote] = useState('')
+  const [rejectNote, setRejectNote] = useState('')
+
+  async function submitProof(event: React.FormEvent) {
+    event.preventDefault()
+    const uri = proofUri.trim()
+    if (!uri) return
+    const result = await onComplete(uri, proofNote.trim())
+    if (result.ok) {
+      setProofUri('')
+      setProofNote('')
+    }
+  }
+
+  async function submitReject() {
+    const result = await onReject(rejectNote.trim())
+    if (result.ok) setRejectNote('')
+  }
+
+  return (
+    <li className="task-item">
+      <div className="task-row">
+        <span className="task-title">{task.title}</span>
+        <span className="hint task-status">{task.status}</span>
+        {task.assignee_sub ? (
+          <span className="hint task-assignee">{task.assignee_sub}</span>
+        ) : null}
+        {task.status === 'todo' && (
+          <button type="button" className="slot-action" disabled={busy} onClick={onStart}>
+            Start
+          </button>
+        )}
+        {task.status === 'submitted' && (
+          <>
+            <button
+              type="button"
+              className="slot-action"
+              disabled={busy}
+              onClick={onAccept}
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              className="slot-action"
+              disabled={busy}
+              onClick={() => void submitReject()}
+            >
+              Reject
+            </button>
+          </>
+        )}
+      </div>
+
+      {task.status === 'in_progress' && (
+        <form className="task-proof-form" onSubmit={submitProof}>
+          <input
+            type="text"
+            value={proofUri}
+            placeholder="Proof URI (required)"
+            onChange={(e) => setProofUri(e.target.value)}
+            disabled={busy}
+          />
+          <input
+            type="text"
+            value={proofNote}
+            placeholder="Note (optional)"
+            onChange={(e) => setProofNote(e.target.value)}
+            disabled={busy}
+          />
+          <button
+            type="submit"
+            className="slot-action"
+            disabled={busy || !proofUri.trim()}
+          >
+            Submit
+          </button>
+        </form>
+      )}
+
+      {(task.status === 'submitted' || task.status === 'done') && task.proof_uri ? (
+        <p className="hint task-proof">
+          Proof: <a href={task.proof_uri}>{task.proof_uri}</a>
+          {task.proof_note ? <> — {task.proof_note}</> : null}
+          {task.reviewed_by_sub ? <> (reviewed by {task.reviewed_by_sub})</> : null}
+          {task.review_note ? <> — reason: {task.review_note}</> : null}
+        </p>
+      ) : null}
+
+      {task.status === 'in_progress' && task.review_note ? (
+        <p className="hint task-review">Last reject reason: {task.review_note}</p>
+      ) : null}
+
+      {task.status === 'submitted' ? (
+        <input
+          type="text"
+          value={rejectNote}
+          placeholder="Reject reason (optional)"
+          onChange={(e) => setRejectNote(e.target.value)}
+          disabled={busy}
+        />
+      ) : null}
+    </li>
   )
 }
