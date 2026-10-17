@@ -197,7 +197,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/ass
 
 ## C7: Room tasks
 
-Минимальный трекер комнаты: создать → взять → сдать. Без Quality Gate.  
+Минимальный трекер комнаты: создать → взять → сдать. Quality Gate (proof + accept/reject) — **C10** ниже.  
 ([`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml)).
 
 | Метод | Путь |
@@ -206,17 +206,19 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/ass
 | `POST` | `/api/v1/rooms/{room_id}/tasks` |
 | `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/start` |
 | `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/complete` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/accept` |
+| `POST` | `/api/v1/rooms/{room_id}/tasks/{task_id}/reject` |
 
-Статусы: `todo` → `in_progress` → `done`. Другие переходы → **409**.  
+Статусы: `todo` → `in_progress` → `submitted` → `done`. Прямой `in_progress` → `done` запрещён (**409**).  
 `assignee_sub` — свободная строка (без FK на roster); при `start` заполняется из `X-Actor-Sub`, если пусто.
 
 | Статус | Когда |
 |--------|--------|
 | **201** create | задача создана в `todo` |
-| **200** start/complete | переход выполнен |
+| **200** start/complete/accept/reject | переход выполнен |
 | **404** | нет комнаты или задачи |
 | **409** | недопустимый переход статуса |
-| **422** | валидация; нет `X-Actor-Sub` на мутациях |
+| **422** | валидация (в т.ч. `complete` без `proof_uri`); нет `X-Actor-Sub` на мутациях |
 
 Задачи доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не блокирует. Get — без пагинации (лимит 100).
 
@@ -231,9 +233,35 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks `
 
 curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/start `
   -H "X-Actor-Sub: freelancer-demo-sub"
+```
 
+## C10: Quality Gate lite
+
+Сдача задачи требует **proof** (URI строкой + короткий note); тимлид **accept/reject**. Без загрузки файлов, рейтингов и выплат. Контракт: [`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml). Миграция: `008_c10_quality_gate` (nullable `proof_uri`, `proof_note`, `reviewed_by_sub`, `review_note` на `room_tasks`).
+
+Переходы:
+- `in_progress` → **complete** (`proof_uri` обязателен) → `submitted`;
+- `submitted` → **accept** → `done` (+ `reviewed_by_sub`);
+- `submitted` → **reject** (опц. `review_note`) → `in_progress` (proof **сохраняется**, можно сдать снова).
+
+`complete` без `proof_uri` / с пустым → **422**. accept/reject не из `submitted` → **409**. Роли teamlead в C10 нет: accept/reject доступны любому валидному актору (`get_actor_sub`); RBAC — позже.
+
+```powershell
+# сдача с proof: in_progress -> submitted
 curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/complete `
-  -H "X-Actor-Sub: freelancer-demo-sub"
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: freelancer-demo-sub" `
+  -d '{ "proof_uri": "https://drive.example.com/report.pdf", "proof_note": "see p.3" }'
+
+# приёмка: submitted -> done
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/accept `
+  -H "X-Actor-Sub: teamlead-demo-sub"
+
+# возврат: submitted -> in_progress
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/reject `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "review_note": "missing pages" }'
 ```
 
 ## C8: Keycloak JWT + shadow User
@@ -242,7 +270,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/com
 
 | Поведение | `AUTH_DISABLED=true` (default, pytest) | `AUTH_DISABLED=false` |
 |-----------|------------------------------------------|------------------------|
-| `/api/v1/*` (rooms, slots, roster GET, strategy decide, tasks) | открыт — C1–C7 как раньше | **401** без валидного JWT |
+| `/api/v1/*` (rooms, slots, roster GET, strategy decide, tasks, leads) | открыт — C1–C10 как раньше | **401** без валидного JWT |
 | `/health`, `/internal/v1/*` | открыт | открыт (service token later) |
 | actor мутаций | `X-Actor-Sub` (422 без него) | `sub` из JWT; `X-Actor-Sub` игнорируется |
 | `/auth/stub-jwks`, `/auth/stub-token` | 404 | 200 только при `AUTH_STUB_JWKS=true` |

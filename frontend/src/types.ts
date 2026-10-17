@@ -77,7 +77,7 @@ export type SlotAssignResult = {
   status: 'assigned' | 'already_assigned'
 }
 
-export type TaskStatus = 'todo' | 'in_progress' | 'done'
+export type TaskStatus = 'todo' | 'in_progress' | 'submitted' | 'done'
 
 export type RoomTask = {
   id: string
@@ -85,6 +85,10 @@ export type RoomTask = {
   title: string
   status: TaskStatus
   assignee_sub?: string | null
+  proof_uri?: string | null
+  proof_note?: string | null
+  reviewed_by_sub?: string | null
+  review_note?: string | null
   created_at: string
   updated_at: string
 }
