@@ -44,15 +44,10 @@ app.include_router(slots_router, dependencies=client_auth)
 app.include_router(strategy_publications_router)
 app.include_router(strategy_proposals_router, dependencies=client_auth)
 app.include_router(roster_internal_router)
-<<<<<<< HEAD
 app.include_router(roster_router, dependencies=client_auth)
 app.include_router(tasks_router, dependencies=client_auth)
+app.include_router(leads_router, dependencies=client_auth)
 app.include_router(auth_stub_router)
-=======
-app.include_router(roster_router)
-app.include_router(tasks_router)
-app.include_router(leads_router)
->>>>>>> origin/feature/c9-hot-lead-crm
 
 
 @app.get("/health")
