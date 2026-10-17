@@ -7,6 +7,10 @@
       "title": "Call the first 20 leads from the exported list",
       "status": "todo",
       "assignee_sub": null,
+      "proof_uri": null,
+      "proof_note": null,
+      "reviewed_by_sub": null,
+      "review_note": null,
       "created_at": "2026-10-15T10:00:00+00:00",
       "updated_at": "2026-10-15T10:00:00+00:00"
     },
@@ -16,8 +20,25 @@
       "title": "Set up the CRM pipeline stages",
       "status": "in_progress",
       "assignee_sub": "freelancer-demo-sub",
+      "proof_uri": null,
+      "proof_note": null,
+      "reviewed_by_sub": null,
+      "review_note": null,
       "created_at": "2026-10-15T09:30:00+00:00",
       "updated_at": "2026-10-15T11:15:00+00:00"
+    },
+    {
+      "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "title": "Export leads list to CSV",
+      "status": "submitted",
+      "assignee_sub": "freelancer-demo-sub",
+      "proof_uri": "https://drive.example.com/leads-export.csv",
+      "proof_note": "20 rows, deduplicated",
+      "reviewed_by_sub": null,
+      "review_note": null,
+      "created_at": "2026-10-15T09:00:00+00:00",
+      "updated_at": "2026-10-15T12:00:00+00:00"
     }
   ]
 }
