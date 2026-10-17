@@ -1,4 +1,7 @@
-"""C4 staffing seats: materialize from local snapshot intent. No Talent/matching."""
+"""C4 staffing seats: materialize from local snapshot intent. No Talent/matching.
+
+C6 assign; C12 unassign/reassign on filled slots. Actor checks live in the API layer.
+"""
 
 from __future__ import annotations
 
@@ -14,10 +17,14 @@ from app.domain.schemas import (
     AssignStatus,
     FunctionSlotOut,
     MaterializeStatus,
+    ReassignStatus,
     SlotAssignResponse,
+    SlotReassignResponse,
     SlotStatus,
+    SlotUnassignResponse,
     StaffingMaterializeResponse,
     StaffingSlotsListResponse,
+    UnassignStatus,
 )
 
 
@@ -43,6 +50,10 @@ class SlotAlreadyFilledError(Exception):
 
 class AlreadySeatedError(Exception):
     """The same freelancer already occupies another slot in this room."""
+
+
+class SlotNotFilledError(Exception):
+    """Operation requires a filled slot (C12)."""
 
 
 @dataclass
@@ -232,3 +243,77 @@ def assign_slot(
     db.commit()
     db.refresh(slot)
     return SlotAssignResponse(slot=_slot_out(slot), status=AssignStatus.assigned)
+
+
+def _require_slot_in_room(
+    db: Session, room: Room, slot_id: uuid.UUID
+) -> RoomFunctionSlot:
+    slot = db.get(RoomFunctionSlot, slot_id)
+    if slot is None or slot.room_id != room.id:
+        raise SlotNotFoundError("slot_id does not exist in this room")
+    return slot
+
+
+def unassign_slot(
+    db: Session, room_id: uuid.UUID, slot_id: uuid.UUID
+) -> SlotUnassignResponse:
+    """Free a filled slot back to open (C12).
+
+    Order: room -> unlocked -> slot -> filled. 409 slot_not_filled otherwise.
+    """
+    room = _require_unlocked_room(db, room_id)
+    slot = _require_slot_in_room(db, room, slot_id)
+
+    if slot.status != SlotStatus.filled.value:
+        raise SlotNotFilledError("slot_not_filled")
+
+    slot.freelancer_sub = None
+    slot.status = SlotStatus.open.value
+    db.commit()
+    db.refresh(slot)
+    return SlotUnassignResponse(
+        slot=_slot_out(slot), status=UnassignStatus.unassigned
+    )
+
+
+def reassign_slot(
+    db: Session,
+    room_id: uuid.UUID,
+    slot_id: uuid.UUID,
+    freelancer_sub: str,
+) -> SlotReassignResponse:
+    """Swap the person on an already filled slot (C12).
+
+    Order: room -> unlocked -> slot -> roster -> filled -> same sub (idempotent)
+    -> seated elsewhere. Reassign on an open slot: 409 slot_not_filled.
+    """
+    room = _require_unlocked_room(db, room_id)
+    slot = _require_slot_in_room(db, room, slot_id)
+
+    if db.get(FreelancerRoster, freelancer_sub) is None:
+        raise FreelancerNotInRosterError("freelancer_not_in_roster")
+
+    if slot.status != SlotStatus.filled.value:
+        raise SlotNotFilledError("slot_not_filled")
+
+    if slot.freelancer_sub == freelancer_sub:
+        return SlotReassignResponse(
+            slot=_slot_out(slot), status=ReassignStatus.already_assigned
+        )
+
+    seated = db.scalars(
+        select(RoomFunctionSlot).where(
+            RoomFunctionSlot.room_id == room.id,
+            RoomFunctionSlot.freelancer_sub == freelancer_sub,
+            RoomFunctionSlot.id != slot.id,
+        )
+    ).first()
+    if seated is not None:
+        raise AlreadySeatedError("already_seated")
+
+    slot.freelancer_sub = freelancer_sub
+    db.commit()
+    db.refresh(slot)
+    return SlotReassignResponse(
+        slot=_slot_out(slot), status=ReassignStatus.reassigned
+    )
