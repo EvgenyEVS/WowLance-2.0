@@ -1,4 +1,4 @@
-"""C7 room tasks: minimal tracker todo -> in_progress -> done."""
+"""C7 room tasks: tracker todo -> in_progress -> submitted -> done (C10 gate)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import uuid
 
 ACTOR = {"X-Actor-Sub": "teamlead-demo-sub"}
 FREELANCER = {"X-Actor-Sub": "freelancer-demo-sub"}
+PROOF = {"proof_uri": "https://example.com/proof.txt"}
 
 
 def _handoff(client, payload: dict) -> str:
@@ -39,7 +40,7 @@ def test_create_and_list_contains_todo(client, sale_payload):
     assert body["tasks"][0]["status"] == "todo"
 
 
-def test_start_then_complete(client, sale_payload):
+def test_start_then_complete_submits_with_proof(client, sale_payload):
     room_id = _handoff(client, sale_payload)
     task_id = _create(client, room_id)["id"]
 
@@ -50,11 +51,16 @@ def test_start_then_complete(client, sale_payload):
     assert started.json()["status"] == "in_progress"
     assert started.json()["assignee_sub"] == "freelancer-demo-sub"
 
-    done = client.post(
-        f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete", headers=FREELANCER
+    submitted = client.post(
+        f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
+        json=PROOF,
+        headers=FREELANCER,
     )
-    assert done.status_code == 200, done.text
-    assert done.json()["status"] == "done"
+    assert submitted.status_code == 200, submitted.text
+    body = submitted.json()
+    assert body["status"] == "submitted"
+    assert body["proof_uri"] == PROOF["proof_uri"]
+    assert body["reviewed_by_sub"] is None
 
 
 def test_create_keeps_explicit_assignee(client, sale_payload):
@@ -74,12 +80,14 @@ def test_complete_from_todo_409(client, sale_payload):
     task_id = _create(client, room_id)["id"]
 
     r = client.post(
-        f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete", headers=ACTOR
+        f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
+        json=PROOF,
+        headers=ACTOR,
     )
     assert r.status_code == 409
 
 
-def test_start_already_done_409(client, sale_payload):
+def test_start_already_submitted_409(client, sale_payload):
     room_id = _handoff(client, sale_payload)
     task_id = _create(client, room_id)["id"]
     assert (
@@ -90,7 +98,9 @@ def test_start_already_done_409(client, sale_payload):
     )
     assert (
         client.post(
-            f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete", headers=ACTOR
+            f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
+            json=PROOF,
+            headers=ACTOR,
         ).status_code
         == 200
     )
@@ -113,7 +123,8 @@ def test_mutation_without_actor_header_422(client, sale_payload):
     )
     assert (
         client.post(
-            f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete"
+            f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
+            json=PROOF,
         ).status_code
         == 422
     )
