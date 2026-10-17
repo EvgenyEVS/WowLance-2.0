@@ -5,6 +5,8 @@ import type {
   MaterializeResult,
   RosterMember,
   SlotAssignResult,
+  SlotReassignResult,
+  SlotUnassignResult,
   SlotsList,
 } from '../types'
 
@@ -108,6 +110,17 @@ export default function SlotsPanel({
     }
   }
 
+  function patchSlot(body: { slot: FunctionSlot }) {
+    setState((prev) =>
+      prev.kind === 'ok'
+        ? {
+            kind: 'ok',
+            slots: prev.slots.map((s) => (s.id === body.slot.id ? body.slot : s)),
+          }
+        : prev,
+    )
+  }
+
   async function assign(slot: FunctionSlot) {
     const freelancerSub = (picked[slot.id] ?? '').trim()
     if (!freelancerSub) return
@@ -145,14 +158,90 @@ export default function SlotsPanel({
         return
       }
       const body = (await res.json()) as SlotAssignResult
-      setState((prev) =>
-        prev.kind === 'ok'
-          ? {
-              kind: 'ok',
-              slots: prev.slots.map((s) => (s.id === body.slot.id ? body.slot : s)),
-            }
-          : prev,
+      patchSlot(body)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function unassign(slot: FunctionSlot) {
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/${encodeURIComponent(
+          slot.id,
+        )}/unassign`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Sub': ACTOR_SUB,
+          },
+        },
       )
+      if (res.status === 403) {
+        setError('Staffing locked (403).')
+        return
+      }
+      if (res.status === 404) {
+        setError('Slot not found (404).')
+        return
+      }
+      if (res.status === 409) {
+        setError('Slot is not filled (409).')
+        loadSlots()
+        return
+      }
+      if (!res.ok) {
+        setError(`HTTP ${res.status}`)
+        return
+      }
+      const body = (await res.json()) as SlotUnassignResult
+      patchSlot(body)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function reassign(slot: FunctionSlot) {
+    const freelancerSub = (picked[slot.id] ?? '').trim()
+    if (!freelancerSub) return
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/${encodeURIComponent(
+          slot.id,
+        )}/reassign`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Sub': ACTOR_SUB,
+          },
+          body: JSON.stringify({ freelancer_sub: freelancerSub }),
+        },
+      )
+      if (res.status === 403) {
+        setError('Staffing locked (403).')
+        return
+      }
+      if (res.status === 404) {
+        setError('Slot or freelancer not found (404). Upsert into roster first.')
+        return
+      }
+      if (res.status === 409) {
+        setError('Slot not filled or freelancer already seated (409).')
+        loadSlots()
+        return
+      }
+      if (!res.ok) {
+        setError(`HTTP ${res.status}`)
+        return
+      }
+      const body = (await res.json()) as SlotReassignResult
+      patchSlot(body)
     } finally {
       setBusy(false)
     }
@@ -216,7 +305,41 @@ export default function SlotsPanel({
                       </button>
                     </>
                   ) : slot.status === 'filled' ? (
-                    <span className="hint"> → {slot.freelancer_sub}</span>
+                    <>
+                      <span className="hint"> → {slot.freelancer_sub}</span>
+                      <button
+                        type="button"
+                        className="slot-action"
+                        disabled={busy}
+                        onClick={() => void unassign(slot)}
+                      >
+                        Unassign
+                      </button>
+                      <select
+                        value={picked[slot.id] ?? ''}
+                        onChange={(e) =>
+                          setPicked((prev) => ({ ...prev, [slot.id]: e.target.value }))
+                        }
+                        disabled={busy}
+                      >
+                        <option value="">Reassign to…</option>
+                        {roster
+                          .filter((m) => m.freelancer_sub !== slot.freelancer_sub)
+                          .map((m) => (
+                            <option key={m.freelancer_sub} value={m.freelancer_sub}>
+                              {m.display_name} ({m.freelancer_sub})
+                            </option>
+                          ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="slot-action"
+                        disabled={busy || !(picked[slot.id] ?? '').trim()}
+                        onClick={() => void reassign(slot)}
+                      >
+                        Reassign
+                      </button>
+                    </>
                   ) : null}
                 </li>
               ))}
