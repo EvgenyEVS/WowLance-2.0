@@ -8,6 +8,8 @@ from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
 from app.api.leads import router as leads_router
 from app.api.rooms import router as rooms_router
+from app.api.room_health import internal_router as room_health_internal_router
+from app.api.room_health import router as room_health_router
 from app.api.roster import internal_router as roster_internal_router
 from app.api.roster import router as roster_router
 from app.api.slots import router as slots_router
@@ -47,6 +49,8 @@ app.include_router(roster_internal_router)
 app.include_router(roster_router, dependencies=client_auth)
 app.include_router(tasks_router, dependencies=client_auth)
 app.include_router(leads_router, dependencies=client_auth)
+app.include_router(room_health_router, dependencies=client_auth)
+app.include_router(room_health_internal_router)
 app.include_router(auth_stub_router)
 
 
