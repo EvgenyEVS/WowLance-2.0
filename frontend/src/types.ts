@@ -77,6 +77,16 @@ export type SlotAssignResult = {
   status: 'assigned' | 'already_assigned'
 }
 
+export type SlotUnassignResult = {
+  slot: FunctionSlot
+  status: 'unassigned'
+}
+
+export type SlotReassignResult = {
+  slot: FunctionSlot
+  status: 'reassigned' | 'already_assigned'
+}
+
 export type TaskStatus = 'todo' | 'in_progress' | 'submitted' | 'done'
 
 export type RoomTask = {

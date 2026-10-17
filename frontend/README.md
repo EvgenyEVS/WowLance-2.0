@@ -1,10 +1,9 @@
 # WowLance 2.0 — frontend (React + Vite)
 
-C3–C8 room shell.  
-
-C3–C9 room shell. No login.  
+C3–C9 room shell. C12 slot unassign/reassign. No login.  
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
+Slot unassign/reassign (C12): a `filled` slot has **Unassign** (→ `open`, sub cleared) and a **Reassign to…** picker + **Reassign** (swap the seated person; same sub → idempotent `already_assigned`). Reassign on an `open` slot shows a 409 — use Assign instead.  
 Pending strategy: **Accept** / **Reject** with stub header `X-Actor-Sub: teamlead-demo-sub`.  
 Tasks (C7): **Add** / **Start** with stub header `X-Actor-Sub: freelancer-demo-sub`.  
 Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accept** / **Reject** (optional reason) as `X-Actor-Sub: teamlead-demo-sub`. Proof shown on the card; reject keeps proof for resubmit.  
@@ -57,3 +56,4 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 7. C6: in **Roster** upsert a freelancer (e.g. `f-1234` / demo), then in **Slots** pick them on an `open` seat and **Assign** → seat becomes `filled` with the sub; assigning the same freelancer again returns idempotent `already_assigned`.
 8. Block **Tasks** (available right after room creation, no entitlement needed): type a title → **Add** (→ `todo`), **Start** (→ `in_progress`, assignee from `X-Actor-Sub`). C10 Quality Gate: enter a **proof URI** (+ optional note) → **Submit** (→ `submitted`, missing URI → 422), then **Accept** (→ `done`) or **Reject** with optional reason (→ `in_progress`, proof kept for resubmit). Illegal transitions (incl. direct `in_progress` → `done`) show a 409 error.
 9. Block **Leads** (C9, available right after room creation): type a title (+ optional contact name) → **Add** (→ `open`), **Mark hot** (→ `hot`), **Hand to CRM** (→ `handed_to_crm`, shows `crm-stub:<lead_id>`). Handing a hot lead off twice is idempotent (`already_handed`); illegal transitions show a 409 error.
+10. C12 on a `filled` seat: **Unassign** frees it back to `open` (sub cleared, assignable again); **Reassign to…** + **Reassign** swaps in another roster member without going through `open`. Reassigning the seated person again returns idempotent `already_assigned`; a sub already seated on another seat in the room shows a 409 `already_seated`.

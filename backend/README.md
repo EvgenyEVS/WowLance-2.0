@@ -349,6 +349,44 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/han
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 ```
 
+## C12: Slot unassign / reassign
+
+После C6 слот можно было только назначить. C12 добавляет обратное:
+**unassign** (снять человека, слот `filled` → `open`, `freelancer_sub` очищается)
+и **reassign** (заменить человека на уже занятом слоте). Контракт:
+[contracts/wowlance/StaffingSlots.v1.yaml](../contracts/wowlance/StaffingSlots.v1.yaml).
+
+| Метод | Путь |
+|-------|------|
+| POST | `/api/v1/rooms/{room_id}/slots/{slot_id}/unassign` |
+| POST | `/api/v1/rooms/{room_id}/slots/{slot_id}/reassign` |
+
+| Статус | Когда |
+|--------|-------|
+| **200** unassign | слот был `filled` → стал `open`, `freelancer_sub: null` |
+| **200** reassign | `reassigned` (сменился человек) или `already_assigned` (тот же sub, идемпотентно) |
+| **403** | `staffing_locked` (как assign) |
+| **404** | нет комнаты / слота; у reassign — `freelancer_sub` нет в roster |
+| **409** | `slot_not_filled` (unassign/reassign на `open`), `already_seated` (reassign на занятого в другой слот) |
+| **422** | нет `X-Actor-Sub` |
+
+Правила: unassign/reassign ортогональны assign (reassign на `open` → 409, а не assign);
+оба требуют заполненный слот. Alembic-миграции нет — колонки уже есть.
+Вызывающий — любой валидный актор (`get_actor_sub`), отдельной роли teamlead нет (RBAC later).
+
+```powershell
+# room_id из handoff, slot_id из GET slots; человек должен быть в roster (C6)
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/unassign `
+  -H "X-Actor-Sub: teamlead-demo-sub"
+# -> { "slot": { ... "status": "open", "freelancer_sub": null }, "status": "unassigned" }
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/reassign `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "freelancer_sub": "f-2" }'
+# -> { "slot": { ... "status": "filled", "freelancer_sub": "f-2" }, "status": "reassigned" }
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  
@@ -368,14 +406,11 @@ cd backend
 
 Опционально в `.env`: `TEST_DATABASE_URL=...`
 
-## Отложено (не C1–C8)
-
-## Отложено (не C1–C9)
+## Отложено (не C1–C12)
 
 - Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
 - Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  
 - Matching / live Talent / shortlist  
-- Unassign слота  
 - Quality Gate: proof-файлы, рейтинги, reject с причиной  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  

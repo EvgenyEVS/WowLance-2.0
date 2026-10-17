@@ -273,6 +273,25 @@ class SlotAssignResponse(BaseModel):
     status: AssignStatus
 
 
+class UnassignStatus(str, Enum):
+    unassigned = "unassigned"
+
+
+class SlotUnassignResponse(BaseModel):
+    slot: FunctionSlotOut
+    status: UnassignStatus
+
+
+class ReassignStatus(str, Enum):
+    reassigned = "reassigned"
+    already_assigned = "already_assigned"
+
+
+class SlotReassignResponse(BaseModel):
+    slot: FunctionSlotOut
+    status: ReassignStatus
+
+
 class TaskStatus(str, Enum):
     todo = "todo"
     in_progress = "in_progress"
