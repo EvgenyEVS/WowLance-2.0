@@ -1,0 +1,28 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "captured_at": "2026-10-17T12:00:00+00:00",
+  "room": {
+    "room_type": "sale",
+    "name": "SaaS outbound pilot",
+    "staffing_unlocked": true,
+    "strategy_id": "99999999-9999-9999-9999-999999999999",
+    "strategy_version": "v1"
+  },
+  "slots": {
+    "total": 2,
+    "open": 1,
+    "filled": 1,
+    "cancelled": 0
+  },
+  "tasks": {
+    "todo": 1,
+    "in_progress": 1,
+    "submitted": 1,
+    "done": 0
+  },
+  "leads": {
+    "total": 2,
+    "hot": 1,
+    "handed_to_crm": 1
+  }
+}
