@@ -276,6 +276,7 @@ class SlotAssignResponse(BaseModel):
 class TaskStatus(str, Enum):
     todo = "todo"
     in_progress = "in_progress"
+    submitted = "submitted"
     done = "done"
 
 
@@ -285,6 +286,10 @@ class RoomTaskOut(BaseModel):
     title: str
     status: TaskStatus
     assignee_sub: str | None = None
+    proof_uri: str | None = None
+    proof_note: str | None = None
+    reviewed_by_sub: str | None = None
+    review_note: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -299,6 +304,19 @@ class RoomTaskCreateRequest(BaseModel):
 
     title: str = Field(min_length=1)
     assignee_sub: str | None = None
+
+
+class RoomTaskCompleteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    proof_uri: str = Field(min_length=1)
+    proof_note: str | None = None
+
+
+class RoomTaskRejectRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    review_note: str | None = None
 
 
 class LeadStatus(str, Enum):
