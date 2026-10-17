@@ -38,3 +38,15 @@ failed to load config from C:\Программирование\Стажиров�
 21:44:27 [vite] Build failed with 1 error:
 package.json:1:0: ERROR: Unexpected end of file in JSON
 21:44:27 [vite] server restart failed
+failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
+21:49:28 [vite] config must export or return an object.
+21:49:28 [vite] server restart failed
+failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
+21:54:27 [vite] config must export or return an object.
+21:54:27 [vite] server restart failed
+failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
+22:14:29 [vite] config must export or return an object.
+22:14:29 [vite] server restart failed
+failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
+22:19:13 [vite] config must export or return an object.
+22:19:13 [vite] server restart failed
