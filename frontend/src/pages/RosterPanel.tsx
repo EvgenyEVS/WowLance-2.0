@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import type { RosterMember, RosterUpsertResult } from '../types'
 
 type RosterState =
@@ -18,7 +19,7 @@ export default function RosterPanel({ onChanged }: { onChanged?: () => void }) {
   const loadRoster = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    fetch('/api/v1/roster', { signal: controller.signal })
+    apiFetch('/api/v1/roster', { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           setState({ kind: 'error', message: `HTTP ${res.status}` })
@@ -50,7 +51,7 @@ export default function RosterPanel({ onChanged }: { onChanged?: () => void }) {
     setError(null)
     setMessage(null)
     try {
-      const res = await fetch('/internal/v1/roster', {
+      const res = await apiFetch('/internal/v1/roster', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

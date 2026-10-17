@@ -93,3 +93,29 @@ export type TasksList = {
   room_id: string
   tasks: RoomTask[]
 }
+
+export type LeadStatus = 'open' | 'hot' | 'handed_to_crm'
+
+export type RoomLead = {
+  id: string
+  room_id: string
+  title: string
+  contact_name?: string | null
+  contact_email?: string | null
+  notes?: string | null
+  status: LeadStatus
+  crm_ref?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type LeadsList = {
+  room_id: string
+  leads: RoomLead[]
+}
+
+export type LeadHandoffResult = {
+  lead: RoomLead
+  crm_ref: string
+  status: 'handed' | 'already_handed'
+}

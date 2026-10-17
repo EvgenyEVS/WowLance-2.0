@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import type { RoomTask, TasksList } from '../types'
 
-/** Stub actor identity until Keycloak. Freelancer takes tasks in the room. */
+/** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'freelancer-demo-sub'
 
 type TasksState =
@@ -19,7 +20,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
   const loadTasks = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    fetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/tasks`, {
+    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/tasks`, {
       signal: controller.signal,
     })
       .then(async (res) => {
@@ -58,7 +59,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
         headers['Content-Type'] = 'application/json'
         payload = JSON.stringify(body)
       }
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/rooms/${encodeURIComponent(roomId)}/tasks${path}`,
         { method: 'POST', headers, body: payload },
       )

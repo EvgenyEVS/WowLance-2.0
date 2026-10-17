@@ -236,40 +236,122 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/com
   -H "X-Actor-Sub: freelancer-demo-sub"
 ```
 
+## C8: Keycloak JWT + shadow User
+
+Клиентские API `/api/v1/*` проверяют `Authorization: Bearer <access_token>` (RS256, JWKS). Первый успешный запрос upsert-ит shadow-пользователя в `users` по `sub`. Контракт: [`contracts/wowlance/AuthBearer.v1.yaml`](../contracts/wowlance/AuthBearer.v1.yaml). Модуль: `app/auth/` (JWT verify + `require_user` + `get_actor_sub`).
+
+| Поведение | `AUTH_DISABLED=true` (default, pytest) | `AUTH_DISABLED=false` |
+|-----------|------------------------------------------|------------------------|
+| `/api/v1/*` (rooms, slots, roster GET, strategy decide, tasks) | открыт — C1–C7 как раньше | **401** без валидного JWT |
+| `/health`, `/internal/v1/*` | открыт | открыт (service token later) |
+| actor мутаций | `X-Actor-Sub` (422 без него) | `sub` из JWT; `X-Actor-Sub` игнорируется |
+| `/auth/stub-jwks`, `/auth/stub-token` | 404 | 200 только при `AUTH_STUB_JWKS=true` |
+
+Env (`.env`, см. [.env.example](../.env.example)): `AUTH_DISABLED`, `KEYCLOAK_ISSUER`, `KEYCLOAK_AUDIENCE` (пусто → без проверки `aud`), `KEYCLOAK_JWKS_URL` (пусто → `issuer + /protocol/openid-connect/certs`), `AUTH_STUB_JWKS` (dev-only).
+
+### Токен за 2 минуты (stub JWKS, без Keycloak)
+
+```powershell
+# 1) в backend/.env поставить: AUTH_DISABLED=false, AUTH_STUB_JWKS=true
+#    перезапустить uvicorn
+# 2) mint demo-токена:
+curl.exe -s -X POST http://127.0.0.1:8000/auth/stub-token `
+  -H "Content-Type: application/json" `
+  -d '{"sub":"demo-user","name":"Demo User"}'
+# -> { "access_token": "eyJ...", "sub": "demo-user" }
+
+# 3) клиентский API:
+curl.exe -s http://127.0.0.1:8000/api/v1/rooms/<room_id> `
+  -H "Authorization: Bearer eyJ..."
+# без Bearer -> 401; /internal/v1/handoffs и /health без токена -> работают
+```
+
+`GET /auth/stub-jwks` отдаёт публичный ключ, RSA-ключ генерируется в памяти процесса — режим **«не для prod»** (оба endpoint-а отдают 404, пока `AUTH_STUB_JWKS=false`).
+
+### Настоящий Keycloak
+
+`AUTH_DISABLED=false` + `AUTH_STUB_JWKS=false` + `KEYCLOAK_ISSUER` / `KEYCLOAK_JWKS_URL` своего realm — верификация идёт по JWKS из issuer, токен выпускает сам Keycloak. Платформенный прод-Keycloak, Gateway, RBAC (teamlead vs freelancer) и token exchange — вне C8.
+
+
+## C9: Hot lead → CRM stub
+
+Лиды комнаты: создать → **hot** → выгрузить в CRM (stub). Своя БД, без live CRM / OAuth.  
+([`contracts/wowlance/RoomLeads.v1.yaml`](../contracts/wowlance/RoomLeads.v1.yaml),
+исходящее событие — [`contracts/wowlance/HotLeadToCrm.v1.yaml`](../contracts/wowlance/HotLeadToCrm.v1.yaml)).
+
+| Метод | Путь |
+|-------|------|
+| `GET` | `/api/v1/rooms/{room_id}/leads` |
+| `POST` | `/api/v1/rooms/{room_id}/leads` |
+| `POST` | `/api/v1/rooms/{room_id}/leads/{lead_id}/mark-hot` |
+| `POST` | `/api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm` |
+
+Статусы: `open` → `hot` → `handed_to_crm`. Другие переходы → **409**.
+`handoff-crm` пишет строку в `outbox_messages` (`event_type: HotLeadToCrm`,
+`status: sent`, `idempotency_key = lead_id`) и проставляет `crm_ref = crm-stub:<lead_id>`.
+Повторный `handoff-crm` идемпотентен: **200** + `status: already_handed`, второй outbox-строки нет.
+
+| Статус | Когда |
+|--------|--------|
+| **201** create | лид создан в `open` |
+| **200** mark-hot | `open` → `hot` |
+| **200** handoff | `hot` → `handed_to_crm` (+ outbox); повтор → `already_handed` |
+| **404** | нет комнаты или лида |
+| **409** | недопустимый переход (`mark-hot` не из `open`; `handoff` не из `hot`) |
+| **422** | валидация; нет `X-Actor-Sub` на мутациях |
+
+Лиды доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не требуется.
+Get — без пагинации (лимит 100). Auth — заглушка `X-Actor-Sub` (как C7), пока нет C8.
+
+```powershell
+# room_id из handoff; мутации требуют X-Actor-Sub
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: founder-demo-sub" `
+  -d '{ "title": "Warm intro to Acme", "contact_name": "Jane" }'
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/mark-hot `
+  -H "X-Actor-Sub: founder-demo-sub"
+
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads/<lead_id>/handoff-crm `
+  -H "X-Actor-Sub: founder-demo-sub"
+# -> { "lead": {... "status": "handed_to_crm", "crm_ref": "crm-stub:<lead_id>" },
+#      "crm_ref": "crm-stub:<lead_id>", "status": "handed" }
+
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
+```
+
 ## Тесты
 
-Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
+Нужен живой Postgres из `docker compose`.  
+**Приложение** → БД `wowlance` (`DATABASE_URL`).  
+**Pytest** → отдельная БД `wowlance_test` (`drop_all` не трогает UI/Swagger).
+
+C8: pytest всегда с `AUTH_DISABLED=true` (форсирует `tests/conftest.py`);  
+строгий JWT — точечно в `tests/test_auth_c8.py`.
+
+`conftest` сам создаёт `wowlance_test`, если её нет. На чистом volume —
+также `docker/init-create-test-db.sql`.
 
 ```powershell
 cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-> **Внимание: после `pytest` dev-БД остаётся без таблиц.**
-> Тесты используют ту же БД, что и приложение (`tests/conftest.py` берёт
-> `settings.database_url`), и фикстура вызывает `drop_all` в teardown.
-> Сваггер и UI после прогона начнут отдавать ошибки на любых запросах к данным
-> (`/health` при этом продолжит работать).
->
-> Простого `alembic upgrade head` недостаточно: штамп в `alembic_version`
-> остаётся на head, поэтому миграции заново не выполняются. Пересобери схему:
->
-> ```powershell
-> cd backend
-> .\.venv\Scripts\alembic stamp base
-> .\.venv\Scripts\alembic upgrade head
-> ```
->
-> Известное ограничение: тестам нужна отдельная БД, пока не сделано.
+Опционально в `.env`: `TEST_DATABASE_URL=...`
 
-## Отложено (не C1–C7)
+## Отложено (не C1–C8)
 
-- Keycloak JWT / реальная роль teamlead  
+## Отложено (не C1–C9)
+
+- Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
+- Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  
 - Matching / live Talent / shortlist  
 - Unassign слота  
 - Quality Gate: proof-файлы, рейтинги, reject с причиной  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
+- Живой CRM / OAuth: сейчас `HotLeadToCrm` только в локальном outbox  
 - Outbox `RoomCreated`  
 - Живой webhook Billing  
 

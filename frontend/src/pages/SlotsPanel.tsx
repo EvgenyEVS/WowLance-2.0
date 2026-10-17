@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import type {
   FunctionSlot,
   MaterializeResult,
@@ -7,7 +8,7 @@ import type {
   SlotsList,
 } from '../types'
 
-/** Stub actor identity until Keycloak (teamlead seats freelancers). */
+/** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'teamlead-demo-sub'
 
 type SlotsState =
@@ -35,7 +36,7 @@ export default function SlotsPanel({
   const loadSlots = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    fetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/slots`, {
+    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/slots`, {
       signal: controller.signal,
     })
       .then(async (res) => {
@@ -65,7 +66,7 @@ export default function SlotsPanel({
   }, [roomId])
 
   const loadRoster = useCallback(() => {
-    fetch('/api/v1/roster')
+    apiFetch('/api/v1/roster')
       .then(async (res) => {
         if (!res.ok) return
         const body = (await res.json()) as { members: RosterMember[] }
@@ -84,7 +85,7 @@ export default function SlotsPanel({
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/materialize`,
         { method: 'POST' },
       )
@@ -113,7 +114,7 @@ export default function SlotsPanel({
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/${encodeURIComponent(
           slot.id,
         )}/assign`,

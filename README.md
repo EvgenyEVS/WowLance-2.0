@@ -42,6 +42,9 @@ C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`
 C3 room UI: [frontend/README.md](frontend/README.md) (`GET /api/v1/rooms/{id}` → `/rooms/:roomId`).  
 Health: http://127.0.0.1:8000/health  
 
+**Auth (C8):** по умолчанию `AUTH_DISABLED=true` — `/api/v1/*` открыт (локальный demo).  
+Строгий режим: `AUTH_DISABLED=false` → 401 без Bearer JWT; токен за 2 минуты — `POST /auth/stub-token` (`AUTH_STUB_JWKS=true`) или свой Keycloak/JWKS. Подробнее: [backend/README.md](backend/README.md) (C8), UI-логин: [frontend/README.md](frontend/README.md).
+
 ## Фазы
 
 | Фаза | Содержание |
@@ -55,7 +58,9 @@ Health: http://127.0.0.1:8000/health
 | **C7** | Room tasks — [задание](docs/261015%20-%20задание%20C7%20Room%20tasks.md) |
 | **C8** | Keycloak JWT + shadow User — [задание](docs/261016%20-%20задание%20C8%20Keycloak%20JWT.md) ∥ C9 |
 | **C9** | Hot lead → CRM stub — [задание](docs/261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) ∥ C8 |
-| **C10+** | Quality Gate, live adapters, `wowlance_test` DB |
+| **C10** | Quality Gate lite — [задание](docs/261017%20-%20задание%20C10%20Quality%20Gate.md) ∥ C11 |
+| **C11** | Outbox `RoomCreated` — [задание](docs/261017%20-%20задание%20C11%20RoomCreated%20outbox.md) ∥ C10 |
+| **C12+** | Live adapters, matching, RBAC ролей |
 
 ## Политика оплаты
 

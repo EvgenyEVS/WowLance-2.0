@@ -1,4 +1,8 @@
-"""Pytest fixtures — real PostgreSQL (docker compose). Tables truncated per test."""
+"""Pytest fixtures — real PostgreSQL (docker compose).
+
+Uses dedicated DB `wowlance_test` so drop_all never wipes uvicorn/Swagger/UI
+data on `wowlance`. AUTH_DISABLED stays true for the suite (C8).
+"""
 
 from __future__ import annotations
 
@@ -8,6 +12,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
@@ -21,17 +26,64 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_SALE = (
     REPO_ROOT / "contracts" / "wowlance" / "examples" / "FounderHandoff.sale.json"
 )
+TEST_DB_NAME = "wowlance_test"
+
+
+def _test_database_url() -> str:
+    if getattr(settings, "test_database_url", "").strip():
+        return settings.test_database_url.strip()
+    url = make_url(settings.database_url)
+    return url.set(database=TEST_DB_NAME).render_as_string(hide_password=False)
+
+
+def _ensure_test_database(test_url: str) -> None:
+    """CREATE DATABASE wowlance_test if missing (existing docker volumes)."""
+    url = make_url(test_url)
+    admin = url.set(database="wowlance")
+    admin_eng = create_engine(
+        admin.render_as_string(hide_password=False),
+        isolation_level="AUTOCOMMIT",
+        pool_pre_ping=True,
+    )
+    try:
+        with admin_eng.connect() as conn:
+            exists = conn.execute(
+                text("SELECT 1 FROM pg_database WHERE datname = :name"),
+                {"name": url.database},
+            ).scalar()
+            if not exists:
+                conn.execute(text(f'CREATE DATABASE "{url.database}"'))
+    finally:
+        admin_eng.dispose()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _auth_disabled_for_tests():
+    """C8: pytest runs without Keycloak — strict JWT is opt-in per test."""
+    settings.auth_disabled = True
+    yield
+    settings.auth_disabled = True
 
 
 @pytest.fixture(scope="session")
 def engine():
-    eng = create_engine(settings.database_url, pool_pre_ping=True)
+    test_url = _test_database_url()
+    try:
+        _ensure_test_database(test_url)
+    except Exception as exc:  # noqa: BLE001
+        pytest.exit(
+            f"Cannot prepare test database {test_url!r}. "
+            f"Run `docker compose up -d db` from repo root. ({exc})",
+            returncode=1,
+        )
+
+    eng = create_engine(test_url, pool_pre_ping=True)
     try:
         with eng.connect() as conn:
             conn.execute(text("SELECT 1"))
     except Exception as exc:  # noqa: BLE001
         pytest.exit(
-            f"PostgreSQL unavailable at {settings.database_url!r}. "
+            f"PostgreSQL test DB unavailable at {test_url!r}. "
             f"Run `docker compose up -d db` from repo root. ({exc})",
             returncode=1,
         )

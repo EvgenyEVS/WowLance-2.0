@@ -1,12 +1,13 @@
-"""Staffing slots API (C4) + assign (C6). Open until Gateway/JWT; locked = 403."""
+"""Staffing slots API (C4) + assign (C6). Locked = 403; actor: JWT sub (C8)."""
 
 from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth.deps import get_actor_sub
 from app.db.session import get_db
 from app.domain.schemas import (
     SlotAssignRequest,
@@ -27,12 +28,6 @@ from app.domain.staffing import (
 )
 
 router = APIRouter(prefix="/api/v1/rooms", tags=["slots"])
-
-
-def _actor_sub(x_actor_sub: str | None) -> str:
-    if x_actor_sub is None or not x_actor_sub.strip():
-        raise HTTPException(status_code=422, detail="X-Actor-Sub header is required")
-    return x_actor_sub.strip()
 
 
 def _map_errors(exc: Exception) -> None:
@@ -101,9 +96,8 @@ def post_assign_slot(
     slot_id: uuid.UUID,
     payload: SlotAssignRequest,
     db: Session = Depends(get_db),
-    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+    actor: str = Depends(get_actor_sub),
 ) -> SlotAssignResponse:
-    _actor_sub(x_actor_sub)
     try:
         return assign_slot(db, room_id, slot_id, payload.freelancer_sub)
     except (

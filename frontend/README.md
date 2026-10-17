@@ -1,10 +1,30 @@
 # WowLance 2.0 — frontend (React + Vite)
 
-C3–C7 room shell. No login.  
+C3–C8 room shell.  
+
+C3–C9 room shell. No login.  
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
 Pending strategy: **Accept** / **Reject** with stub header `X-Actor-Sub: teamlead-demo-sub`.  
-Tasks: **Add** / **Start** / **Complete** with stub header `X-Actor-Sub: freelancer-demo-sub`.
+Tasks: **Add** / **Start** / **Complete** with stub header `X-Actor-Sub: freelancer-demo-sub`.  
+Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
+
+## Login / token (C8)
+
+All API calls go through `apiFetch` (`src/api.ts`), which adds
+`Authorization: Bearer <token>` when a token is stored (memory +
+`sessionStorage`, key `wowlance_access_token`).
+
+- **Login page**: `/login` (link in the header of Home) — paste a Keycloak
+  access token → **Save token**. Home then shows `Signed in: <sub>`.
+- **401 from the API** (backend `AUTH_DISABLED=false`, no/expired token) →
+  the app switches to `/login` with «нужен login».
+- **Backend `AUTH_DISABLED=true` (default)** → requests work without any
+  token, login is optional (local demo without Keycloak).
+- Demo token without Keycloak: backend with `AUTH_DISABLED=false` +
+  `AUTH_STUB_JWKS=true` → `POST /auth/stub-token` (see backend/README.md, C8).
+
+OIDC code flow is out of scope for C8 (paste-token MVP, see the task file).
 
 ## Local
 
@@ -35,3 +55,4 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
 6. After C5 publish, refresh: **Strategy** stays the old offer; **Pending strategy** block with Accept/Reject. Accept → new offer, pending disappears.
 7. C6: in **Roster** upsert a freelancer (e.g. `f-1234` / demo), then in **Slots** pick them on an `open` seat and **Assign** → seat becomes `filled` with the sub; assigning the same freelancer again returns idempotent `already_assigned`.
 8. Block **Tasks** (available right after room creation, no entitlement needed): type a title → **Add** (→ `todo`), **Start** (→ `in_progress`, assignee from `X-Actor-Sub`), **Complete** (→ `done`). Illegal transitions show a 409 error.
+9. Block **Leads** (C9, available right after room creation): type a title (+ optional contact name) → **Add** (→ `open`), **Mark hot** (→ `hot`), **Hand to CRM** (→ `handed_to_crm`, shows `crm-stub:<lead_id>`). Handing a hot lead off twice is idempotent (`already_handed`); illegal transitions show a 409 error.

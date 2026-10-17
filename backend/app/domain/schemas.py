@@ -299,3 +299,47 @@ class RoomTaskCreateRequest(BaseModel):
 
     title: str = Field(min_length=1)
     assignee_sub: str | None = None
+
+
+class LeadStatus(str, Enum):
+    open = "open"
+    hot = "hot"
+    handed_to_crm = "handed_to_crm"
+
+
+class RoomLeadOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    title: str
+    contact_name: str | None = None
+    contact_email: str | None = None
+    notes: str | None = None
+    status: LeadStatus
+    crm_ref: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class RoomLeadListResponse(BaseModel):
+    room_id: UUID
+    leads: list[RoomLeadOut]
+
+
+class RoomLeadCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1)
+    contact_name: str | None = None
+    contact_email: str | None = None
+    notes: str | None = None
+
+
+class LeadHandoffStatus(str, Enum):
+    handed = "handed"
+    already_handed = "already_handed"
+
+
+class LeadHandoffResponse(BaseModel):
+    lead: RoomLeadOut
+    crm_ref: str
+    status: LeadHandoffStatus
