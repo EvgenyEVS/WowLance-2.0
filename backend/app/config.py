@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg://wowlance:wowlance@127.0.0.1:5433/wowlance"
     )
+    # Pytest only. Empty → same host/user as database_url, db name wowlance_test.
+    test_database_url: str = ""
 
     # C8 auth. Dev/test default: open /api/v1/* without JWT.
     # Prod/demo with Keycloak: AUTH_DISABLED=false (strict Bearer).

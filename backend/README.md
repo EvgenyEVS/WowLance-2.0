@@ -323,33 +323,22 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 
 ## Тесты
 
-Нужен живой Postgres из `docker compose` (`DATABASE_URL` как в `.env.example`).
+Нужен живой Postgres из `docker compose`.  
+**Приложение** → БД `wowlance` (`DATABASE_URL`).  
+**Pytest** → отдельная БД `wowlance_test` (`drop_all` не трогает UI/Swagger).
 
-C8: pytest всегда идёт с `AUTH_DISABLED=true` (форсирует `tests/conftest.py`) —
-Keycloak для регресса C1–C7 не нужен; строгий режим включается точечно в
-`tests/test_auth_c8.py`.
+C8: pytest всегда с `AUTH_DISABLED=true` (форсирует `tests/conftest.py`);  
+строгий JWT — точечно в `tests/test_auth_c8.py`.
+
+`conftest` сам создаёт `wowlance_test`, если её нет. На чистом volume —
+также `docker/init-create-test-db.sql`.
 
 ```powershell
 cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-> **Внимание: после `pytest` dev-БД остаётся без таблиц.**
-> Тесты используют ту же БД, что и приложение (`tests/conftest.py` берёт
-> `settings.database_url`), и фикстура вызывает `drop_all` в teardown.
-> Сваггер и UI после прогона начнут отдавать ошибки на любых запросах к данным
-> (`/health` при этом продолжит работать).
->
-> Простого `alembic upgrade head` недостаточно: штамп в `alembic_version`
-> остаётся на head, поэтому миграции заново не выполняются. Пересобери схему:
->
-> ```powershell
-> cd backend
-> .\.venv\Scripts\alembic stamp base
-> .\.venv\Scripts\alembic upgrade head
-> ```
->
-> Известное ограничение: тестам нужна отдельная БД, пока не сделано.
+Опционально в `.env`: `TEST_DATABASE_URL=...`
 
 ## Отложено (не C1–C8)
 

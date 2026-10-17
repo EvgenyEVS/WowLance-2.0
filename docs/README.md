@@ -14,6 +14,9 @@
 | [261016 — C8 Keycloak JWT](261016%20-%20задание%20C8%20Keycloak%20JWT.md) | JWT + shadow User ∥ C9 |
 | [261016 — C9 Hot lead CRM](261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) | Hot → CRM stub + outbox ∥ C8 |
 | [261016 — QA C6/C7](261016%20-%20QA%20отчёт%20C6%20и%20C7.md) | QA отчёт C6+C7 |
+| [261017 — QA C8/C9](261017%20-%20задание%20QA%20C8%20и%20C9.md) | Задание QA C8 + C9 |
+| [261017 — C10 Quality Gate](261017%20-%20задание%20C10%20Quality%20Gate.md) | Task proof / accept-reject ∥ C11 |
+| [261017 — C11 RoomCreated outbox](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) | Outbox при create комнаты ∥ C10 |
 
 Исходная папка документов в монолите 1.0:  
 `C:\Программирование\Стажировка Wowlance\WowLance\WowLance 2.0`  

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import type { LeadsList, RoomLead } from '../types'
 
-/** Stub actor identity until Keycloak (C8). Founder works the lead funnel. */
+/** Fallback actor for AUTH_DISABLED=true; ignored when a JWT Bearer is sent. */
 const ACTOR_SUB = 'founder-demo-sub'
 
 type LeadsState =
@@ -20,7 +21,7 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
   const loadLeads = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    fetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/leads`, {
+    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/leads`, {
       signal: controller.signal,
     })
       .then(async (res) => {
@@ -59,7 +60,7 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
         headers['Content-Type'] = 'application/json'
         payload = JSON.stringify(body)
       }
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/v1/rooms/${encodeURIComponent(roomId)}/leads${path}`,
         { method: 'POST', headers, body: payload },
       )
