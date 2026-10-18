@@ -1,52 +1,6 @@
 failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-09:17:44 [vite] config must export or return an object.
-09:17:44 [vite] server restart failed
+07:37:42 [vite] config must export or return an object.
+07:37:42 [vite] server restart failed
 failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-09:22:47 [vite] config must export or return an object.
-09:22:47 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-19:46:21 [vite] config must export or return an object.
-19:46:21 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-20:01:20 [vite] config must export or return an object.
-20:01:20 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:04:30 [vite] config must export or return an object.
-21:04:30 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:14:27 [vite] config must export or return an object.
-21:14:27 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:19:30 [vite] config must export or return an object.
-21:19:30 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:24:31 [vite] config must export or return an object.
-21:24:31 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:29:27 [vite] config must export or return an object.
-21:29:27 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:34:29 [vite] config must export or return an object.
-21:34:29 [vite] server restart failed
-X [ERROR] Unexpected end of file in JSON
-
-    package.json:1:0:
-      1 │ 
-        ╵ ^
-
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:44:27 [vite] Build failed with 1 error:
-package.json:1:0: ERROR: Unexpected end of file in JSON
-21:44:27 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:49:28 [vite] config must export or return an object.
-21:49:28 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-21:54:27 [vite] config must export or return an object.
-21:54:27 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-22:14:29 [vite] config must export or return an object.
-22:14:29 [vite] server restart failed
-failed to load config from C:\Программирование\Стажировка Wowlance\WowLance-2.0\frontend\vite.config.ts
-22:19:13 [vite] config must export or return an object.
-22:19:13 [vite] server restart failed
+07:47:42 [vite] config must export or return an object.
+07:47:42 [vite] server restart failed
