@@ -360,7 +360,7 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 | Правило | Поведение |
 |---------|-----------|
 | Когда | Только при `status == created` (первый `handoff_id` для комнаты) |
-| idempotency_key | `room:<room_id>:RoomCreated` (хранится как `room_id`) |
+| idempotency_key | `str(room_id)` (uuid комнаты; контракт `idempotency_key: room_id`) |
 | event_type | `RoomCreated` |
 | status | `sent` (stub, без брокера) |
 | sent_at | `now` |
@@ -464,7 +464,10 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/rooms/<room_id>/health/publish
 
 Нужен живой Postgres из `docker compose`.  
 **Приложение** → БД `wowlance` (`DATABASE_URL`).  
-**Pytest** → отдельная БД `wowlance_test` (`drop_all` не трогает UI/Swagger).
+**Pytest** → всегда БД `wowlance_test` (`tests/conftest.py` ремапит имя БД;
+`drop_all` **не** трогает UI/Swagger на `wowlance`). Если `TEST_DATABASE_URL`
+случайно указывает на `wowlance` — conftest всё равно уводит на `wowlance_test`
+или падает с отказом.
 
 C8: pytest всегда с `AUTH_DISABLED=true` (форсирует `tests/conftest.py`);  
 строгий JWT — точечно в `tests/test_auth_c8.py`.
@@ -475,20 +478,32 @@ C8: pytest всегда с `AUTH_DISABLED=true` (форсирует `tests/conft
 ```powershell
 cd backend
 .\.venv\Scripts\pytest -q
+# не нужно подменять DATABASE_URL вручную — suite не бьёт в wowlance
 ```
 
-Опционально в `.env`: `TEST_DATABASE_URL=...`
+Опционально в `.env`: `TEST_DATABASE_URL=postgresql+psycopg://…/wowlance_test`
+(имя БД должно быть **не** `wowlance`).
+
+### Порт API занят (QA tip)
+
+Если `uvicorn` на `:8000` не поднимается / отвечает «чужой» процесс (зомби-listener):
+
+```powershell
+.\.venv\Scripts\uvicorn app.main:app --reload --port 8001
+```
+
+В `frontend/vite.config` временно proxy на `8001`, либо вызывай API/Swagger на
+`http://127.0.0.1:8001`. После прогона верни proxy на `:8000`.
 
 ## Отложено (не C1–C13)
 
 - Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
 - Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  
 - Matching / live Talent / shortlist  
-- Quality Gate: proof-файлы, рейтинги, reject с причиной  
+- Quality Gate: proof-файлы в S3, рейтинги (reject с причиной — уже C10)  
 - Пересборка слотов после Accept  
 - Скачивание файлов из object storage  
 - Живой CRM / OAuth: сейчас `HotLeadToCrm` только в локальном outbox  
-- Outbox `RoomCreated`  
 - Живой webhook Billing  
 
 

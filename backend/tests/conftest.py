@@ -30,10 +30,19 @@ TEST_DB_NAME = "wowlance_test"
 
 
 def _test_database_url() -> str:
-    if getattr(settings, "test_database_url", "").strip():
-        return settings.test_database_url.strip()
-    url = make_url(settings.database_url)
-    return url.set(database=TEST_DB_NAME).render_as_string(hide_password=False)
+    """Always resolve to `wowlance_test` — never drop_all on app DB `wowlance`.
+
+    Priority: TEST_DATABASE_URL / settings.test_database_url, else DATABASE_URL
+    with database name forced to wowlance_test. If the resolved name is still
+    `wowlance` (misconfigured env), rewrite to wowlance_test.
+    """
+    raw = getattr(settings, "test_database_url", "").strip()
+    url = make_url(raw) if raw else make_url(settings.database_url).set(
+        database=TEST_DB_NAME
+    )
+    if (url.database or "").lower() == "wowlance":
+        url = url.set(database=TEST_DB_NAME)
+    return url.render_as_string(hide_password=False)
 
 
 def _ensure_test_database(test_url: str) -> None:
@@ -77,6 +86,14 @@ def engine():
             returncode=1,
         )
 
+    resolved_db = make_url(test_url).database
+    if (resolved_db or "").lower() == "wowlance":
+        pytest.exit(
+            f"Refusing to run pytest against app DB {test_url!r}. "
+            f"Use {TEST_DB_NAME} (TEST_DATABASE_URL or default remap in conftest).",
+            returncode=1,
+        )
+
     eng = create_engine(test_url, pool_pre_ping=True)
     try:
         with eng.connect() as conn:
@@ -88,6 +105,7 @@ def engine():
             returncode=1,
         )
     Base.metadata.drop_all(bind=eng)
+
     Base.metadata.create_all(bind=eng)
     yield eng
     Base.metadata.drop_all(bind=eng)
