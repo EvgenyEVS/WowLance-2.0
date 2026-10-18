@@ -24,9 +24,11 @@
 | [`wowlance/examples/RoomLeads.sale.json`](wowlance/examples/RoomLeads.sale.json) | пример list-ответа лидов |
 | [`wowlance/HotLeadToCrm.v1.yaml`](wowlance/HotLeadToCrm.v1.yaml) | draft v1 — C9 исходящее событие Hot → CRM (outbox) |
 | [`wowlance/examples/HotLeadToCrm.json`](wowlance/examples/HotLeadToCrm.json) | пример outbox payload |
+| [`wowlance/RoomCreated.v1.yaml`](wowlance/RoomCreated.v1.yaml) | draft v1 — C11 исходящее событие RoomCreated при создании комнаты (outbox) |
+| [`wowlance/examples/RoomCreated.sale.json`](wowlance/examples/RoomCreated.sale.json) | пример outbox payload |
 | [`wowlance/RoomHealth.v1.yaml`](wowlance/RoomHealth.v1.yaml) | draft v1 — C13 агрегат комнаты (slots/tasks/leads) для витрины Стратегии |
 | [`wowlance/examples/RoomHealth.sale.json`](wowlance/examples/RoomHealth.sale.json) | пример GET health-ответа |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
-Следующие (не блокируют скелет): `RoomCreated`, `RoomHealthSnapshot`.
+Следующие (не блокируют скелет): `RoomHealthSnapshot`.

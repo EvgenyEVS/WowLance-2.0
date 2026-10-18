@@ -5,17 +5,20 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
+from datetime import datetime, timezone
 from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import Room, StrategySnapshot, User
+from app.db.models import OutboxMessage, Room, StrategySnapshot, User
 from app.domain.schemas import (
     FounderHandoffRequest,
     FounderHandoffResponse,
     HandoffStatus,
 )
+
+ROOM_CREATED_EVENT = "RoomCreated"
 
 
 class HandoffConflictError(Exception):
@@ -33,6 +36,29 @@ def fingerprint_payload(body: FounderHandoffRequest) -> str:
 class HandoffResult:
     response: FounderHandoffResponse
     http_status: int
+
+
+def _room_created_outbox(room_id: uuid.UUID, body: FounderHandoffRequest, now) -> OutboxMessage:
+    """Outbox row for the first create of a room. Idempotency key = room_id."""
+    payload = {
+        "room_id": str(room_id),
+        "handoff_id": str(body.handoff_id),
+        "room_type": body.room_type.value,
+        "name": body.project.name,
+        "founder_sub": body.founder_sub,
+        "strategy_id": str(body.strategy_id),
+        "strategy_version": body.strategy_version,
+        "created_at": now.isoformat(),
+        "staffing_unlocked": False,
+    }
+    return OutboxMessage(
+        id=uuid.uuid4(),
+        event_type=ROOM_CREATED_EVENT,
+        idempotency_key=str(room_id),
+        payload=payload,
+        status="sent",
+        sent_at=now,
+    )
 
 
 def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> HandoffResult:
@@ -93,6 +119,10 @@ def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> Handoff
     )
     db.add(room)
     db.add(snapshot)
+
+    now = datetime.now(timezone.utc)
+    db.add(_room_created_outbox(room.id, body, now))
+
     db.commit()
     db.refresh(room)
 
