@@ -147,6 +147,7 @@ class RoomReadResponse(BaseModel):
     founder_sub: str
     handoff_id: UUID
     staffing_unlocked: bool
+    meeting_url: str | None = None
     strategy: RoomStrategyOut
     pending_strategy: PendingStrategyOut | None = None
     created_at: datetime
@@ -428,3 +429,13 @@ class RoomHealthPublishResponse(BaseModel):
     event_type: Literal["RoomHealthSnapshot"]
     status: RoomHealthPublishStatus
     snapshot: RoomHealthOut
+
+
+class MeetStatus(str, Enum):
+    created = "created"
+    already_exists = "already_exists"
+
+
+class MeetEnsureResponse(BaseModel):
+    meeting_url: str
+    status: MeetStatus

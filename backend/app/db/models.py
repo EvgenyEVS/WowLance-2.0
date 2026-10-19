@@ -57,6 +57,9 @@ class Room(Base):
     staffing_unlocked: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
+    meeting_url: Mapped[str | None] = mapped_column(
+        String(2048), nullable=True
+    )
     # Canonical fingerprint of the accepted handoff payload (conflict detection).
     request_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

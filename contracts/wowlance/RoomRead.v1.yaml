@@ -28,6 +28,7 @@ response_200:
     founder_sub: { type: string }
     handoff_id: { type: string, format: uuid }
     staffing_unlocked: { type: boolean }
+    meeting_url: { type: string, nullable: true }
     created_at: { type: string, format: date-time }
     strategy:
       type: object

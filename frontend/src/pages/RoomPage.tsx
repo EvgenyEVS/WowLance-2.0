@@ -75,8 +75,29 @@ function RoomView({
   onReload: () => void
 }) {
   const [rosterVersion, setRosterVersion] = useState(0)
+  const [meetBusy, setMeetBusy] = useState(false)
+  const [meetError, setMeetError] = useState<string | null>(null)
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
+
+  async function ensureMeet() {
+    setMeetBusy(true)
+    setMeetError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(room.id)}/meet/ensure`,
+        { method: 'POST', headers: { 'X-Actor-Sub': 'founder-demo-sub' } },
+      )
+      if (!res.ok) {
+        setMeetError(`HTTP ${res.status}`)
+        return
+      }
+      onReload()
+    } finally {
+      setMeetBusy(false)
+    }
+  }
+
   return (
     <>
       <h1>{room.name}</h1>
@@ -91,6 +112,32 @@ function RoomView({
         <dt>Founder</dt>
         <dd>{room.founder_sub}</dd>
       </dl>
+      <section className="block">
+        <h2>Meet (Jitsi stub)</h2>
+        {room.meeting_url ? (
+          <>
+            <p>
+              <strong>Ссылка на звонок:</strong>{' '}
+              <a href={room.meeting_url} target="_blank" rel="noopener noreferrer">
+                {room.meeting_url}
+              </a>
+            </p>
+            <p className="hint">Ссылка уже создана (идемпотентно).</p>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="slot-action"
+              disabled={meetBusy}
+              onClick={() => void ensureMeet()}
+            >
+              Ensure meeting / Создать ссылку
+            </button>
+            {meetError ? <p className="error">{meetError}</p> : null}
+          </>
+        )}
+      </section>
       <section className="block">
         <h2>Strategy</h2>
         <p>
