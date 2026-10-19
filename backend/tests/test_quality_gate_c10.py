@@ -26,6 +26,11 @@ def _create(client, room_id: str, title: str = "Prepare report") -> dict:
 
 
 def _start(client, room_id: str, task_id: str, headers=FREELANCER) -> dict:
+    # C15: actor must be in roster for start
+    client.post(
+        "/internal/v1/roster",
+        json={"freelancer_sub": "freelancer-demo-sub", "display_name": "Demo Freelancer"},
+    )
     r = client.post(
         f"/api/v1/rooms/{room_id}/tasks/{task_id}/start", headers=headers
     )

@@ -1,4 +1,4 @@
-"""C7 room tasks: minimal execution tracker. No roster/assign (C6)."""
+"""C7 room tasks: minimal execution tracker + C15 assignee из roster."""
 
 from __future__ import annotations
 
@@ -7,14 +7,16 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import Room, RoomTask
+from app.db.models import FreelancerRoster, Room, RoomTask
 from app.domain.schemas import (
+    RoomTaskAssignRequest,
     RoomTaskCompleteRequest,
     RoomTaskCreateRequest,
     RoomTaskListResponse,
     RoomTaskOut,
     TaskStatus,
 )
+from app.domain.staffing import FreelancerNotInRosterError
 
 LIST_LIMIT = 100
 
@@ -36,6 +38,12 @@ def _require_room(db: Session, room_id: uuid.UUID) -> Room:
     if room is None:
         raise RoomNotFoundError("room_id does not exist")
     return room
+
+
+def _require_roster(db: Session, sub: str) -> None:
+    """404 freelancer_not_in_roster when sub is not in the local roster."""
+    if db.get(FreelancerRoster, sub) is None:
+        raise FreelancerNotInRosterError("freelancer_not_in_roster")
 
 
 def _task_out(row: RoomTask) -> RoomTaskOut:
@@ -81,6 +89,8 @@ def create_task(
     db: Session, room_id: uuid.UUID, payload: RoomTaskCreateRequest
 ) -> RoomTaskOut:
     room = _require_room(db, room_id)
+    if payload.assignee_sub:
+        _require_roster(db, payload.assignee_sub)
     row = RoomTask(
         id=uuid.uuid4(),
         room_id=room.id,
@@ -103,6 +113,23 @@ def start_task(
     row.status = TaskStatus.in_progress.value
     if not row.assignee_sub:
         row.assignee_sub = actor_sub
+        _require_roster(db, actor_sub)
+    db.commit()
+    db.refresh(row)
+    return _task_out(row)
+
+
+def assign_task(
+    db: Session, room_id: uuid.UUID, task_id: uuid.UUID, assignee_sub: str
+) -> RoomTaskOut:
+    """C15: set assignee on a todo/in_progress task; sub must be in roster."""
+    row = _require_task(db, room_id, task_id)
+    if row.status not in (TaskStatus.todo.value, TaskStatus.in_progress.value):
+        raise InvalidTransitionError(
+            "assignment only on todo or in_progress tasks"
+        )
+    _require_roster(db, assignee_sub)
+    row.assignee_sub = assignee_sub
     db.commit()
     db.refresh(row)
     return _task_out(row)
