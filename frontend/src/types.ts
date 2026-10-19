@@ -12,6 +12,7 @@ export type RoomRead = {
   founder_sub: string
   handoff_id: string
   staffing_unlocked: boolean
+  meeting_url?: string | null
   created_at: string
   strategy: {
     strategy_id: string
@@ -154,4 +155,9 @@ export type RoomHealthPublishResult = {
   event_type: 'RoomHealthSnapshot'
   status: 'published'
   snapshot: RoomHealth
+}
+
+export type MeetEnsureResult = {
+  meeting_url: string
+  status: 'created' | 'already_exists'
 }

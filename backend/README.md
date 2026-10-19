@@ -460,6 +460,37 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/rooms/<room_id>/health/publish
 #      "status": "published", "snapshot": {...} }
 ```
 
+## C14: Meet / Jitsi stub
+
+Комната получает `meeting_url` (stub Jitsi) через
+`POST /api/v1/rooms/{room_id}/meet/ensure`. Контракт:
+[contracts/wowlance/RoomMeet.v1.yaml](../contracts/wowlance/RoomMeet.v1.yaml),
+поле отдаётся в `GET /api/v1/rooms/{room_id}`
+([contracts/wowlance/RoomRead.v1.yaml](../contracts/wowlance/RoomRead.v1.yaml)).
+
+| Правило | Поведение |
+|---------|-----------|
+| URL | `https://meet.jit.si/wowlance-{room_id}` (или `MEET_BASE_URL` env) |
+| Ensure, url пуст | сгенерировать, сохранить, `200 { meeting_url, status: created }` |
+| Ensure, url уже есть | `200 { meeting_url, status: already_exists }` (идемпотентно) |
+| Нет комнаты | `404` |
+| GET room | отдаёт `meeting_url` (null до ensure) |
+| Auth | `X-Actor-Sub` как остальные `/api/v1` мутации (C8 JWT позже) |
+
+```powershell
+# подставить room_id из ответа handoff
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/meet/ensure `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: founder-demo-sub"
+# -> { "meeting_url": "https://meet.jit.si/wowlance-<room_id>", "status": "created" }
+# повтор -> "status": "already_exists", тот же url
+
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
+# -> ... "meeting_url": "https://meet.jit.si/wowlance-<room_id>" ...
+```
+
+Env: `MEET_BASE_URL` (default `https://meet.jit.si`).
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  

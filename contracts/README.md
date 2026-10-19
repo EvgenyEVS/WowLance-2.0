@@ -28,6 +28,8 @@
 | [`wowlance/examples/RoomCreated.sale.json`](wowlance/examples/RoomCreated.sale.json) | пример outbox payload |
 | [`wowlance/RoomHealth.v1.yaml`](wowlance/RoomHealth.v1.yaml) | draft v1 — C13 агрегат комнаты (slots/tasks/leads) для витрины Стратегии |
 | [`wowlance/examples/RoomHealth.sale.json`](wowlance/examples/RoomHealth.sale.json) | пример GET health-ответа |
+| [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — C3 + C5 `pending_strategy` + C14 `meeting_url` |
+| [`wowlance/RoomMeet.v1.yaml`](wowlance/RoomMeet.v1.yaml) | draft v1 — C14 `POST /api/v1/rooms/{room_id}/meet/ensure` (stub Jitsi) |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

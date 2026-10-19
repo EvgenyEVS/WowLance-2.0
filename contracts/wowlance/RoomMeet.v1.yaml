@@ -1,0 +1,26 @@
+# OpenSpec / contract draft — RoomMeet v1 (C14)
+# Stub Jitsi meet link for a room. Live Jitsi API / SSO / iframe — out of scope.
+# Idempotent: repeat ensure returns the same url with status=already_exists.
+
+id: RoomMeet
+version: "1"
+direction: client -> WowLance
+channel: https
+
+paths:
+  ensure:
+    method: POST
+    path: /api/v1/rooms/{room_id}/meet/ensure
+
+response_ensure_200:
+  type: object
+  required: [meeting_url, status]
+  properties:
+    meeting_url: { type: string }
+    status:
+      type: string
+      enum: [created, already_exists]
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "validation failed (bad uuid)" }

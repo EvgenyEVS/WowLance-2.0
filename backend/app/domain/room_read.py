@@ -60,6 +60,7 @@ def get_room_read(db: Session, room_id: uuid.UUID) -> RoomReadResponse:
         founder_sub=room.founder_sub,
         handoff_id=room.handoff_id,
         staffing_unlocked=room.staffing_unlocked,
+        meeting_url=room.meeting_url,
         created_at=room.created_at,
         pending_strategy=pending_out,
         strategy=RoomStrategyOut(
