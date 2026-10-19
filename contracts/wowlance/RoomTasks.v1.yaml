@@ -49,6 +49,14 @@ paths:
     method: POST
     path: /api/v1/rooms/{room_id}/tasks/{task_id}/start
     headers: [X-Actor-Sub]
+  assign:
+    method: POST
+    path: /api/v1/rooms/{room_id}/tasks/{task_id}/assign
+    headers: [X-Actor-Sub]
+    request:
+      required: [assignee_sub]
+      properties:
+        assignee_sub: { type: string }
   complete:
     method: POST
     path: /api/v1/rooms/{room_id}/tasks/{task_id}/complete
@@ -79,7 +87,17 @@ response_list_200:
       type: array
       items: { $ref: "#/task" }
 
+response_assign_200:
+  type: object
+  required: [task]
+  properties:
+    task: { $ref: "#/task" }
+    status:
+      type: string
+      enum: [assigned]
+
 errors:
   - { code: 404, when: "room or task missing" }
+  - { code: 404, when: "assignee_sub not in freelancer roster (freelancer_not_in_roster)" }
   - { code: 409, when: "illegal status transition" }
   - { code: 422, when: "validation or missing X-Actor-Sub on mutating routes" }

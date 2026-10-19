@@ -10,17 +10,20 @@ from sqlalchemy.orm import Session
 from app.auth.deps import get_actor_sub
 from app.db.session import get_db
 from app.domain.schemas import (
+    RoomTaskAssignRequest,
     RoomTaskCompleteRequest,
     RoomTaskCreateRequest,
     RoomTaskListResponse,
     RoomTaskOut,
     RoomTaskRejectRequest,
 )
+from app.domain.staffing import FreelancerNotInRosterError
 from app.domain.tasks import (
     InvalidTransitionError,
     RoomNotFoundError,
     TaskNotFoundError,
     accept_task,
+    assign_task,
     complete_task,
     create_task,
     list_tasks,
@@ -32,7 +35,7 @@ router = APIRouter(prefix="/api/v1/rooms", tags=["tasks"])
 
 
 def _map_errors(exc: Exception) -> None:
-    if isinstance(exc, (RoomNotFoundError, TaskNotFoundError)):
+    if isinstance(exc, (RoomNotFoundError, TaskNotFoundError, FreelancerNotInRosterError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     if isinstance(exc, InvalidTransitionError):
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -76,7 +79,7 @@ def post_room_task(
 ) -> RoomTaskOut:
     try:
         return create_task(db, room_id, payload)
-    except RoomNotFoundError as exc:
+    except (RoomNotFoundError, FreelancerNotInRosterError) as exc:
         _map_errors(exc)
         raise
 
@@ -99,9 +102,41 @@ def post_start_task(
 ) -> RoomTaskOut:
     try:
         return start_task(db, room_id, task_id, actor)
-    except (RoomNotFoundError, TaskNotFoundError, InvalidTransitionError) as exc:
+    except (
+        RoomNotFoundError,
+        TaskNotFoundError,
+        FreelancerNotInRosterError,
+        InvalidTransitionError,
+    ) as exc:
         _map_errors(exc)
         raise
+
+
+@router.post(
+    "/{room_id}/tasks/{task_id}/assign",
+    response_model=RoomTaskOut,
+    responses={
+        200: {"description": "assignee set on todo/in_progress task"},
+        404: {"description": "room/task missing or freelancer_not_in_roster"},
+        409: {"description": "illegal status (submitted/done)"},
+        422: {"description": "missing X-Actor-Sub"},
+    },
+)
+def post_assign_task(
+    room_id: uuid.UUID,
+    task_id: uuid.UUID,
+    payload: RoomTaskAssignRequest,
+    db: Session = Depends(get_db),
+    actor: str = Depends(get_actor_sub),
+) -> RoomTaskOut:
+    """C15: POST /api/v1/rooms/{room_id}/tasks/{task_id}/assign."""
+    try:
+        return assign_task(db, room_id, task_id, payload.assignee_sub)
+    except (RoomNotFoundError, TaskNotFoundError, FreelancerNotInRosterError) as exc:
+        _map_errors(exc)
+        raise
+    except InvalidTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.post(

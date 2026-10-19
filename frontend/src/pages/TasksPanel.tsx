@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch } from '../api'
-import type { RoomTask, TasksList } from '../types'
+import type { RosterMember, RoomTask, TasksList } from '../types'
 
 /** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'freelancer-demo-sub'
@@ -18,6 +18,9 @@ type MutateResult =
 export default function TasksPanel({ roomId }: { roomId: string }) {
   const [state, setState] = useState<TasksState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
+  const [assigneeSub, setAssigneeSub] = useState<string | null>(null)
+  const [roster, setRoster] = useState<RosterMember[]>([])
+  const [rosterBusy, setRosterBusy] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,9 +52,27 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
     return () => controller.abort()
   }, [roomId])
 
+  const loadRoster = useCallback(() => {
+    setRosterBusy(true)
+    apiFetch(`/api/v1/roster`, { signal: new AbortController().signal })
+      .then(async (res) => {
+        if (!res.ok) return
+        const body = (await res.json()) as { members: RosterMember[] }
+        setRoster(body.members ?? [])
+      })
+      .catch(() => {
+        // roster load is non-fatal; tasks still work without assignee
+      })
+      .finally(() => setRosterBusy(false))
+  }, [])
+
   useEffect(() => {
     return loadTasks()
   }, [loadTasks])
+
+  useEffect(() => {
+    loadRoster()
+  }, [loadRoster])
 
   async function mutate(
     path: string,
@@ -103,8 +124,19 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
     event.preventDefault()
     const trimmed = title.trim()
     if (!trimmed) return
-    const result = await mutate('', { title: trimmed })
-    if (result.ok) setTitle('')
+    const result = await mutate('', {
+      title: trimmed,
+      ...(assigneeSub ? { assignee_sub: assigneeSub } : {}),
+    })
+    if (result.ok) {
+      setTitle('')
+      setAssigneeSub(null)
+    }
+  }
+
+  async function assignTask(taskId: string, sub: string) {
+    const result = await mutate(`/${taskId}/assign`, { assignee_sub: sub })
+    if (result.ok) setAssigneeSub(null)
   }
 
   return (
@@ -118,6 +150,21 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
           onChange={(e) => setTitle(e.target.value)}
           disabled={busy}
         />
+        <select
+          value={assigneeSub ?? ''}
+          onChange={(e) => setAssigneeSub(e.target.value || null)}
+          disabled={busy || rosterBusy}
+        >
+          <option value="">— не назначен —</option>
+          {roster.map((m) => (
+            <option key={m.freelancer_sub} value={m.freelancer_sub}>
+              {m.display_name} ({m.freelancer_sub})
+            </option>
+          ))}
+        </select>
+        {roster.length === 0 && !rosterBusy && (
+          <span className="hint">ростер пуст — assignee будет null</span>
+        )}
         <button type="submit" className="slot-action" disabled={busy || !title.trim()}>
           Add
         </button>
@@ -135,6 +182,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
               key={task.id}
               task={task}
               busy={busy}
+              roster={roster}
               onStart={() => void mutate(`/${task.id}/start`)}
               onComplete={(proofUri, proofNote) =>
                 mutate(`/${task.id}/complete`, {
@@ -149,6 +197,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
                   reviewNote ? { review_note: reviewNote } : undefined,
                 )
               }
+              onAssign={(sub) => void assignTask(task.id, sub)}
             />
           ))}
         </ul>
@@ -161,23 +210,32 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
 type TaskItemProps = {
   task: RoomTask
   busy: boolean
+  roster: RosterMember[]
   onStart: () => void
   onComplete: (proofUri: string, proofNote: string) => Promise<MutateResult>
   onAccept: () => void
   onReject: (reviewNote: string) => Promise<MutateResult>
+  onAssign: (sub: string) => void
 }
 
 function TaskItem({
   task,
   busy,
+  roster,
   onStart,
   onComplete,
   onAccept,
   onReject,
+  onAssign,
 }: TaskItemProps) {
   const [proofUri, setProofUri] = useState('')
   const [proofNote, setProofNote] = useState('')
   const [rejectNote, setRejectNote] = useState('')
+  const [assignSub, setAssignSub] = useState<string | null>(null)
+
+  const assignOptions = roster.filter(
+    (m) => m.freelancer_sub !== task.assignee_sub
+  )
 
   async function submitProof(event: React.FormEvent) {
     event.preventDefault()
@@ -195,6 +253,12 @@ function TaskItem({
     if (result.ok) setRejectNote('')
   }
 
+  async function submitAssign() {
+    if (!assignSub) return
+    onAssign(assignSub)
+    setAssignSub(null)
+  }
+
   return (
     <li className="task-item">
       <div className="task-row">
@@ -207,6 +271,30 @@ function TaskItem({
           <button type="button" className="slot-action" disabled={busy} onClick={onStart}>
             Start
           </button>
+        )}
+        {(task.status === 'todo' || task.status === 'in_progress') && (
+          <>
+            <select
+              value={assignSub ?? ''}
+              onChange={(e) => setAssignSub(e.target.value || null)}
+              disabled={busy}
+            >
+              <option value="">назначить</option>
+              {assignOptions.map((m) => (
+                <option key={m.freelancer_sub} value={m.freelancer_sub}>
+                  {m.display_name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="slot-action"
+              disabled={busy || !assignSub}
+              onClick={submitAssign}
+            >
+              Assign
+            </button>
+          </>
         )}
         {task.status === 'submitted' && (
           <>

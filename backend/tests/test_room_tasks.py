@@ -40,16 +40,26 @@ def test_create_and_list_contains_todo(client, sale_payload):
     assert body["tasks"][0]["status"] == "todo"
 
 
+def _start(client, room_id: str, task_id: str, headers=FREELANCER) -> dict:
+    # C15: actor must be in roster for start
+    client.post(
+        "/internal/v1/roster",
+        json={"freelancer_sub": headers.get("X-Actor-Sub", ""), "display_name": "Demo Freelancer"},
+    )
+    r = client.post(
+        f"/api/v1/rooms/{room_id}/tasks/{task_id}/start", headers=headers
+    )
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
 def test_start_then_complete_submits_with_proof(client, sale_payload):
     room_id = _handoff(client, sale_payload)
     task_id = _create(client, room_id)["id"]
 
-    started = client.post(
-        f"/api/v1/rooms/{room_id}/tasks/{task_id}/start", headers=FREELANCER
-    )
-    assert started.status_code == 200, started.text
-    assert started.json()["status"] == "in_progress"
-    assert started.json()["assignee_sub"] == "freelancer-demo-sub"
+    started = _start(client, room_id, task_id)
+    assert started["status"] == "in_progress"
+    assert started["assignee_sub"] == "freelancer-demo-sub"
 
     submitted = client.post(
         f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
@@ -65,6 +75,10 @@ def test_start_then_complete_submits_with_proof(client, sale_payload):
 
 def test_create_keeps_explicit_assignee(client, sale_payload):
     room_id = _handoff(client, sale_payload)
+    client.post(
+        "/internal/v1/roster",
+        json={"freelancer_sub": "pre-assigned-sub", "display_name": "Pre Assigned"},
+    )
     created = _create(client, room_id, assignee_sub="pre-assigned-sub")
     assert created["assignee_sub"] == "pre-assigned-sub"
 
@@ -90,12 +104,7 @@ def test_complete_from_todo_409(client, sale_payload):
 def test_start_already_submitted_409(client, sale_payload):
     room_id = _handoff(client, sale_payload)
     task_id = _create(client, room_id)["id"]
-    assert (
-        client.post(
-            f"/api/v1/rooms/{room_id}/tasks/{task_id}/start", headers=ACTOR
-        ).status_code
-        == 200
-    )
+    _start(client, room_id, task_id)
     assert (
         client.post(
             f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",

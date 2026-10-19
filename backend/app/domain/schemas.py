@@ -325,6 +325,12 @@ class RoomTaskCreateRequest(BaseModel):
     assignee_sub: str | None = None
 
 
+class RoomTaskAssignRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    assignee_sub: str = Field(min_length=1)
+
+
 class RoomTaskCompleteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

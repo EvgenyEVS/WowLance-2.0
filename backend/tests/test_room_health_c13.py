@@ -102,6 +102,10 @@ def test_health_counts_tasks_by_status(client, sale_payload):
     assert created.status_code in (200, 201), created.text
     task_id = created.json()["id"]
 
+    client.post(
+        "/internal/v1/roster",
+        json={"freelancer_sub": "freelancer-demo-sub", "display_name": "Demo Freelancer"},
+    )
     started = client.post(
         f"/api/v1/rooms/{room_id}/tasks/{task_id}/start", headers=ACTOR_TASK
     )

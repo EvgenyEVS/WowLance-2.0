@@ -235,6 +235,31 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/sta
   -H "X-Actor-Sub: freelancer-demo-sub"
 ```
 
+## C15: Task assignee из roster
+
+`assignee_sub` задачи должен быть известным фрилансером из локального ростера (C6).  
+Новый эндпоинт `POST /api/v1/rooms/{room_id}/tasks/{task_id}/assign` назначает исполнителя.
+
+| Правило | Поведение |
+|---------|-----------|
+| Create с `assignee_sub` | суб должен быть в roster, иначе **404** `freelancer_not_in_roster` |
+| Create без `assignee_sub` | OK, `assignee_sub: null` |
+| Start без assignee | подставляет `actor_sub`; actor должен быть в roster, иначе **404** |
+| Start с уже заданным assignee | актер не валидируется (assignee уже есть) |
+| Assign на `todo`/`in_progress` | устанавливает `assignee_sub` из `{ "assignee_sub": "..." }` |
+| Assign на `submitted`/`done` | **409** недопустимый переход |
+| Assign с субом не из roster | **404** `freelancer_not_in_roster` |
+| Complete/accept/reject | без изменений (C10 as-is) |
+
+```powershell
+# room_id и task_id из handoff/списка задач; фрилансер должен быть в roster
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/assign `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "assignee_sub": "f-1" }'
+# -> { "id": ..., "assignee_sub": "f-1", "status": "todo" }
+```
+
 ## C10: Quality Gate lite
 
 Сдача задачи требует **proof** (URI строкой + короткий note); тимлид **accept/reject**. Без загрузки файлов, рейтингов и выплат. Контракт: [`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml). Миграция: `008_c10_quality_gate` (nullable `proof_uri`, `proof_note`, `reviewed_by_sub`, `review_note` на `room_tasks`).
