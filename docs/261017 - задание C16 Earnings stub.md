@@ -6,14 +6,14 @@
 | **Репозиторий** | [EvgenyEVS/WowLance-2.0](https://github.com/EvgenyEVS/WowLance-2.0) |
 | **Ветка** | `feature/c16-earnings-stub` |
 | **База** | актуальный `main` **после merge C10** (нужен accept → done) |
-| **Параллельность** | ✅ **можно параллельно с C11 · C12 · C13 · C14 · C15 · C17** |
+| **Параллельность** | ✅ **можно параллельно с C11–C15 · C17 · C18–C21** |
 | **Фаза** | C16 (журнал начислений фрилансера, stub) |
 | **Стек** | **FastAPI · React · PostgreSQL · OpenSpec · Superpowers** |
 | **Исполнитель** | сильный стажёр + хороший ИИ |
 | **Срок** | 2–3 дня |
 | **Канон** | [ADR-002](ADR-002-wowlance-2.0-platform-room.md), [AGENTS.md](../AGENTS.md), [07-jira-roles-model](architecture/07-jira-roles-model.md) |
 | **Предыдущее** | [C10 Quality Gate](261017%20-%20задание%20C10%20Quality%20Gate.md) |
-| **Параллель** | [C11](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) · [C12](261017%20-%20задание%20C12%20Slot%20unassign.md) · [C13](261017%20-%20задание%20C13%20Room%20health.md) · [C14](261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) · [C15](261017%20-%20задание%20C15%20Task%20roster%20assignee.md) · [C17](261017%20-%20задание%20C17%20Member%20terminated.md) |
+| **Параллель** | [C11](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) · [C12](261017%20-%20задание%20C12%20Slot%20unassign.md) · [C13](261017%20-%20задание%20C13%20Room%20health.md) · [C14](261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) · [C15](261017%20-%20задание%20C15%20Task%20roster%20assignee.md) · [C17](261017%20-%20задание%20C17%20Member%20terminated.md) · [C18](261019%20-%20задание%20C18%20StaffingUnlocked%20outbox.md) · [C19](261019%20-%20задание%20C19%20CRM%20deal%20status.md) · [C20](261019%20-%20задание%20C20%20Room%20chat.md) · [C21](261019%20-%20задание%20C21%20Internal%20service%20token.md) |
 
 По ролевой модели «я заработал» — **не из Jira**, а журнал WowLance / Billing. Здесь — локальный stub ledger.
 

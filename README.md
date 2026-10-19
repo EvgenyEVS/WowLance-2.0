@@ -64,9 +64,13 @@ Health: http://127.0.0.1:8000/health
 | **C13** | Room health stub → Strategy — [задание](docs/261017%20-%20задание%20C13%20Room%20health.md) ∥ C11 · C12 |
 | **C14** | Meet / Jitsi stub — [задание](docs/261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) ∥ C11–C13 · C15–C17 |
 | **C15** | Task assignee из roster — [задание](docs/261017%20-%20задание%20C15%20Task%20roster%20assignee.md) ∥ C11–C14 · C16–C17 |
-| **C16** | «Я заработал» stub — [задание](docs/261017%20-%20задание%20C16%20Earnings%20stub.md) ∥ C11–C15 · C17 |
-| **C17** | MemberTerminated lite — [задание](docs/261017%20-%20задание%20C17%20Member%20terminated.md) ∥ C11 · C13–C16 (осторожно с C12) |
-| **C18+** | Matching, live adapters, полный RBAC ролей |
+| **C16** | «Я заработал» stub — [задание](docs/261017%20-%20задание%20C16%20Earnings%20stub.md) ∥ C11–C15 · C17–C21 |
+| **C17** | MemberTerminated lite — [задание](docs/261017%20-%20задание%20C17%20Member%20terminated.md) ∥ C11 · C13–C16 · C18–C21 (осторожно с C12) |
+| **C18** | Outbox `StaffingUnlocked` — [задание](docs/261019%20-%20задание%20C18%20StaffingUnlocked%20outbox.md) ∥ C16–C17 · C19–C21 |
+| **C19** | CRM deal-status inbound — [задание](docs/261019%20-%20задание%20C19%20CRM%20deal%20status.md) ∥ C16–C18 · C20–C21 |
+| **C20** | Room chat stub — [задание](docs/261019%20-%20задание%20C20%20Room%20chat.md) ∥ C16–C19 · C21 |
+| **C21** | Internal service-token stub — [задание](docs/261019%20-%20задание%20C21%20Internal%20service%20token.md) ∥ C16–C20 |
+| **C22+** | Matching, rematerialize слотов, live adapters, полный RBAC |
 
 ## Политика оплаты
 

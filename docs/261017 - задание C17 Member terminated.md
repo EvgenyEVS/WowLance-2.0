@@ -6,14 +6,14 @@
 | **Репозиторий** | [EvgenyEVS/WowLance-2.0](https://github.com/EvgenyEVS/WowLance-2.0) |
 | **Ветка** | `feature/c17-member-terminated` |
 | **База** | актуальный `main` **после merge C10** (желательно C6 slots; C12 не обязателен) |
-| **Параллельность** | ✅ **можно параллельно с C11 · C13 · C14 · C15 · C16**; с **C12** — осторожно (оба могут трогать слоты) |
+| **Параллельность** | ✅ **можно параллельно с C11 · C13–C16 · C18–C21**; с **C12** — осторожно (оба могут трогать слоты) |
 | **Фаза** | C17 (фиксация расторжения участника + сигнал наружу stub) |
 | **Стек** | **FastAPI · React · PostgreSQL · OpenSpec · Superpowers** |
 | **Исполнитель** | сильный стажёр + хороший ИИ |
 | **Срок** | 2–3 дня |
 | **Канон** | [ADR-002](ADR-002-wowlance-2.0-platform-room.md), [AGENTS.md](../AGENTS.md), [05-integration-map](architecture/05-integration-map.md) |
 | **Предыдущее** | [C6 Roster assign](261015%20-%20задание%20C6%20Roster%20assign.md) · наследие 1.0 termination |
-| **Параллель** | [C11](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) · [C12](261017%20-%20задание%20C12%20Slot%20unassign.md) · [C13](261017%20-%20задание%20C13%20Room%20health.md) · [C14](261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) · [C15](261017%20-%20задание%20C15%20Task%20roster%20assignee.md) · [C16](261017%20-%20задание%20C16%20Earnings%20stub.md) |
+| **Параллель** | [C11](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) · [C12](261017%20-%20задание%20C12%20Slot%20unassign.md) · [C13](261017%20-%20задание%20C13%20Room%20health.md) · [C14](261017%20-%20задание%20C14%20Meet%20Jitsi%20stub.md) · [C15](261017%20-%20задание%20C15%20Task%20roster%20assignee.md) · [C16](261017%20-%20задание%20C16%20Earnings%20stub.md) · [C18](261019%20-%20задание%20C18%20StaffingUnlocked%20outbox.md) · [C19](261019%20-%20задание%20C19%20CRM%20deal%20status.md) · [C20](261019%20-%20задание%20C20%20Room%20chat.md) · [C21](261019%20-%20задание%20C21%20Internal%20service%20token.md) |
 
 По карте: WowLance → Talent: расторжение / MemberTerminated. Здесь — локальный журнал + unseat + outbox stub.
 
