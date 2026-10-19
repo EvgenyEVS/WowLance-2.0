@@ -17,6 +17,7 @@ from app.api.slots import router as slots_router
 from app.api.strategy_proposals import router as strategy_proposals_router
 from app.api.strategy_publications import router as strategy_publications_router
 from app.api.tasks import router as tasks_router
+from app.api.termination import router as termination_router
 from app.auth.deps import require_user
 
 app = FastAPI(
@@ -53,6 +54,7 @@ app.include_router(leads_router, dependencies=client_auth)
 app.include_router(meet_router, dependencies=client_auth)
 app.include_router(room_health_router, dependencies=client_auth)
 app.include_router(room_health_internal_router)
+app.include_router(termination_router, dependencies=client_auth)
 app.include_router(auth_stub_router)
 
 

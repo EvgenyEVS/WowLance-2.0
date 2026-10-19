@@ -1,0 +1,68 @@
+# OpenSpec / contract draft — MemberTerminated v1 (C17)
+# Termination / расторжение участника комнаты: фиксация с причиной + освобождение слота + outbox для Talent.
+# Живой Talent API / бан в Keycloak — не в C17.
+
+id: MemberTerminated
+version: "1"
+direction: WowLance -> Talent (stub outbox)
+channel: outbox + https API
+
+paths:
+  terminate:
+    method: POST
+    path: /api/v1/rooms/{room_id}/members/{freelancer_sub}/terminate
+    request:
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 1 }
+        slot_id: { type: string, format: uuid, nullable: true }
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/terminations
+
+termination:
+  type: object
+  required: [id, room_id, freelancer_sub, reason, terminated_by_sub, slot_ids, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    freelancer_sub: { type: string }
+    reason: { type: string }
+    terminated_by_sub: { type: string }
+    slot_ids:
+      type: array
+      items: { type: string, format: uuid }
+    created_at: { type: string, format: date-time }
+
+response_terminate_200:
+  type: object
+  required: [status, freelancer_sub, slot_ids]
+  properties:
+    status: { type: string, const: terminated }
+    freelancer_sub: { type: string }
+    slot_ids:
+      type: array
+      items: { type: string, format: uuid }
+
+response_list_200:
+  type: object
+  required: [room_id, terminations]
+  properties:
+    room_id: { type: string, format: uuid }
+    terminations:
+      type: array
+      items: { $ref: "#/termination" }
+
+outbox:
+  table: outbox_messages
+  event_type: MemberTerminated
+  status: sent
+  columns: [id, event_type, idempotency_key, payload, status, created_at, sent_at]
+  payload:
+    required: [room_id, freelancer_sub, reason, terminated_by_sub, terminated_at, slot_ids]
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 404, when: "freelancer_sub not seated on a filled slot (not_seated)" }
+  - { code: 409, when: "slot_not_filled (explicit slot_id not filled)" }
+  - { code: 422, when: "validation or missing reason / missing X-Actor-Sub" }

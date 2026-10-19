@@ -516,6 +516,34 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
 
 Env: `MEET_BASE_URL` (default `https://meet.jit.si`).
 
+## C17: Member terminated (расторжение участника)
+
+При расторжении фрилансера с комнаты фиксируется акт с причиной, слот освобождается,
+пишется журнал `room_terminations` и outbox `MemberTerminated` (stub для Talent).
+Контракт: [`contracts/wowlance/MemberTerminated.v1.yaml`](../contracts/wowlance/MemberTerminated.v1.yaml).
+
+| Правило | Поведение |
+|---------|-----------|
+| Участник в комнате | есть **filled** слот с этим `freelancer_sub` (слот = seat, отдельной membership-таблицы нет) |
+| POST …/terminate | тело `{ reason (обязательно), slot_id? }`; слот(ы) → open, журнал + outbox в одной транзакции |
+| Нет filled слота для sub | **404** `not_seated` |
+| Пустая причина | **422** |
+| Повтор terminate без нового сита | **404** `not_seated` |
+| GET …/terminations | список расторжений комнаты |
+| Отличие от C12 unassign | Terminate = причина + история + outbox; Unassign = просто слот свободен |
+
+```powershell
+# room_id из handoff; slot_id из GET slots; freelancer_sub должен быть на filled слоте
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/members/<freelancer_sub>/terminate `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: teamlead-demo-sub" `
+  -d '{ "reason": "Redundancy / end of contract" }'
+# -> { "status": "terminated", "freelancer_sub": "...", "slot_ids": [...] }
+
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/terminations
+# -> { "room_id": "...", "terminations": [...] }
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  

@@ -161,3 +161,9 @@ export type MeetEnsureResult = {
   meeting_url: string
   status: 'created' | 'already_exists'
 }
+
+export type TerminateMemberResult = {
+  status: 'terminated'
+  freelancer_sub: string
+  slot_ids: string[]
+}

@@ -1,0 +1,8 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "freelancer_sub": "f-1",
+  "reason": "Redundancy / end of contract",
+  "terminated_by_sub": "teamlead-demo-sub",
+  "slot_ids": ["22222222-2222-2222-2222-222222222222"],
+  "terminated_at": "2026-10-17T12:00:00+00:00"
+}
