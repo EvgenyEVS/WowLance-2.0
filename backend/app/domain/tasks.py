@@ -7,7 +7,9 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db.models import FreelancerRoster, Room, RoomTask
+from app.domain.earnings import record_for_accepted_task
 from app.domain.schemas import (
     RoomTaskAssignRequest,
     RoomTaskCompleteRequest,
@@ -161,13 +163,15 @@ def complete_task(
 def accept_task(
     db: Session, room_id: uuid.UUID, task_id: uuid.UUID, actor_sub: str
 ) -> RoomTaskOut:
-    """submitted -> done (teamlead accept)."""
+    """submitted -> done (teamlead accept). C16: record earnings for assignee."""
     row = _require_task(db, room_id, task_id)
     if row.status != TaskStatus.submitted.value:
         raise InvalidTransitionError("only a submitted task can be accepted")
     row.status = TaskStatus.done.value
     row.reviewed_by_sub = actor_sub
     row.review_note = None
+    if row.assignee_sub:
+        record_for_accepted_task(db, room_id, task_id, row.assignee_sub)
     db.commit()
     db.refresh(row)
     return _task_out(row)

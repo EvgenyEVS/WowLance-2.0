@@ -161,3 +161,21 @@ export type MeetEnsureResult = {
   meeting_url: string
   status: 'created' | 'already_exists'
 }
+
+export type EarningsEntry = {
+  id: string
+  room_id: string
+  task_id: string
+  freelancer_sub: string
+  amount: string
+  currency: string
+  source: string
+  created_at: string
+}
+
+export type EarningsList = {
+  room_id: string
+  total_amount: string
+  currency: string
+  entries: EarningsEntry[]
+}

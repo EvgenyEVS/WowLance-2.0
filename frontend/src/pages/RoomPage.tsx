@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch } from '../api'
-import type { RoomRead } from '../types'
+import type { EarningsList, RoomRead } from '../types'
 import LeadsPanel from './LeadsPanel'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
@@ -77,6 +77,9 @@ function RoomView({
   const [rosterVersion, setRosterVersion] = useState(0)
   const [meetBusy, setMeetBusy] = useState(false)
   const [meetError, setMeetError] = useState<string | null>(null)
+  const [earnings, setEarnings] = useState<EarningsList | null>(null)
+  const [earningsBusy, setEarningsBusy] = useState(false)
+  const [earningsError, setEarningsError] = useState<string | null>(null)
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
 
@@ -97,6 +100,27 @@ function RoomView({
       setMeetBusy(false)
     }
   }
+
+  async function loadEarnings() {
+    setEarningsBusy(true)
+    setEarningsError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(room.id)}/earnings`
+      )
+      if (!res.ok) {
+        setEarningsError(`HTTP ${res.status}`)
+        return
+      }
+      setEarnings((await res.json()) as EarningsList)
+    } finally {
+      setEarningsBusy(false)
+    }
+  }
+
+  useEffect(() => {
+    loadEarnings()
+  }, [room.id])
 
   return (
     <>
@@ -166,6 +190,33 @@ function RoomView({
       <TasksPanel roomId={room.id} />
       <LeadsPanel roomId={room.id} />
       <RoomHealthPanel roomId={room.id} />
+      <section className="block">
+        <h2>Earned (stub)</h2>
+        {earningsBusy ? (
+          <p className="hint">Loading earned…</p>
+        ) : earningsError ? (
+          <p className="error">{earningsError}</p>
+        ) : (
+          <>
+            <p>
+              <strong>Total:</strong> {earnings?.total_amount} {earnings?.currency}
+            </p>
+            {earnings?.entries.length === 0 ? (
+              <p className="hint">No earnings yet. Accept a task with an assignee to accrue.</p>
+            ) : (
+              <ul className="task-list">
+                {earnings?.entries.map((e) => (
+                  <li key={e.id} className="task-item">
+                    <span className="task-title">{e.freelancer_sub}</span>
+                    <span className="hint task-assignee">{e.amount} {e.currency}</span>
+                    <span className="hint task-status">{e.source}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </section>
       <section className="block">
         <h2>Documents</h2>
         {docs.length === 0 ? (

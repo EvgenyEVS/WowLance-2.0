@@ -260,6 +260,34 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/ass
 # -> { "id": ..., "assignee_sub": "f-1", "status": "todo" }
 ```
 
+## C16: «Я заработал» stub
+
+При accept задачи (C10) с `assignee_sub` создаётся запись в локальном ledger `earnings_entries`.  
+Контракт: [`contracts/wowlance/RoomEarnings.v1.yaml`](../contracts/wowlance/RoomEarnings.v1.yaml).
+
+| Правило | Поведение |
+|---------|-----------|
+| Accept с `assignee_sub` | insert earnings: `room_id`, `task_id`, `freelancer_sub`, `amount`, `currency`, `source=task_accepted` |
+| Accept без `assignee_sub` | earnings не создаётся (task всё равно done) |
+| Повторный accept того же task | невозможно (уже done); UNIQUE `task_id` в earnings |
+| `amount` | константа stub из `EARNINGS_TASK_AMOUNT` (default `10.00`) |
+| `currency` | из `EARNINGS_CURRENCY` (default `USD`) |
+| GET earnings | `GET /api/v1/rooms/{room_id}/earnings` → `{ room_id, total_amount, currency, entries }` |
+| Reject | не создаёт и не откатывает earnings |
+
+Env: `EARNINGS_TASK_AMOUNT` (Decimal, default `10.00`), `EARNINGS_CURRENCY` (default `USD`).
+
+```powershell
+# room_id и task_id из handoff/списка задач; accept задачи с assignee_sub
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/accept `
+  -H "X-Actor-Sub: teamlead-demo-sub"
+
+# список начислений по комнате
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/earnings
+# -> { "room_id": "...", "total_amount": "10.00", "currency": "USD",
+#      "entries": [{ "task_id": "...", "freelancer_sub": "...", "amount": "10.00", ...}] }
+```
+
 ## C10: Quality Gate lite
 
 Сдача задачи требует **proof** (URI строкой + короткий note); тимлид **accept/reject**. Без загрузки файлов, рейтингов и выплат. Контракт: [`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml). Миграция: `008_c10_quality_gate` (nullable `proof_uri`, `proof_note`, `reviewed_by_sub`, `review_note` на `room_tasks`).
