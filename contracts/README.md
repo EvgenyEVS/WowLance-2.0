@@ -33,6 +33,8 @@
 | [`wowlance/examples/RoomEarnings.sale.json`](wowlance/examples/RoomEarnings.sale.json) | пример ответа списка начислений |
 | [`wowlance/MemberTerminated.v1.yaml`](wowlance/MemberTerminated.v1.yaml) | draft v1 — C17 `POST …/terminate` + `GET …/terminations` (расторжение участника) |
 | [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
+| [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
+| [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

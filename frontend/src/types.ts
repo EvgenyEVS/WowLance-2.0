@@ -185,3 +185,16 @@ export type TerminateMemberResult = {
   freelancer_sub: string
   slot_ids: string[]
 }
+
+export type RoomMessage = {
+  id: string
+  room_id: string
+  author_sub: string
+  body: string
+  created_at: string
+}
+
+export type MessagesList = {
+  room_id: string
+  messages: RoomMessage[]
+}
