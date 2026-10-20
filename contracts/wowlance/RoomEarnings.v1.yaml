@@ -1,0 +1,45 @@
+# OpenSpec / contract draft — RoomEarnings v1 (C16)
+# Stub earnings ledger: начисления фрилансеру за принятые задачи (accept -> done).
+# Живой Billing / выплаты / налоги — не в C16.
+
+id: RoomEarnings
+version: "1"
+direction: WowLance internal / UI
+channel: https
+
+entry:
+  type: object
+  required: [id, room_id, task_id, freelancer_sub, amount, currency, source, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    task_id: { type: string, format: uuid }
+    freelancer_sub: { type: string }
+    amount: { type: string, description: "decimal as string" }
+    currency: { type: string }
+    source: { type: string, const: task_accepted }
+    created_at: { type: string, format: date-time }
+
+paths:
+  list_room:
+    method: GET
+    path: /api/v1/rooms/{room_id}/earnings
+
+response_200:
+  type: object
+  required: [room_id, total_amount, currency, entries]
+  properties:
+    room_id: { type: string, format: uuid }
+    total_amount: { type: string, description: "decimal as string" }
+    currency: { type: string }
+    entries:
+      type: array
+      items: { $ref: "#/entry" }
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "validation failed (bad uuid)" }
+
+outbox (опционально):
+  event_type: TaskAccepted
+  payload: { room_id, task_id, freelancer_sub, amount, currency }

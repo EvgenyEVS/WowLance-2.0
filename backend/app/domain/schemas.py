@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Literal
 from uuid import UUID
@@ -445,3 +446,21 @@ class MeetStatus(str, Enum):
 class MeetEnsureResponse(BaseModel):
     meeting_url: str
     status: MeetStatus
+
+
+class EarningsEntryOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    task_id: UUID
+    freelancer_sub: str
+    amount: str  # decimal as string
+    currency: str
+    source: str
+    created_at: datetime
+
+
+class EarningsListResponse(BaseModel):
+    room_id: UUID
+    total_amount: str  # decimal as string
+    currency: str
+    entries: list[EarningsEntryOut]

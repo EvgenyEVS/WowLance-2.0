@@ -1,4 +1,5 @@
 from pathlib import Path
+from decimal import Decimal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -32,6 +33,10 @@ class Settings(BaseSettings):
     @property
     def verify_audience(self) -> str | None:
         return self.keycloak_audience or None
+
+    # C16: stub earnings amount per accepted task (Decimal, as string in API).
+    earnings_task_amount: Decimal = Decimal("10.00")
+    earnings_currency: str = "USD"
 
 
 settings = Settings()
