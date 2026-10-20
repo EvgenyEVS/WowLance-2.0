@@ -247,6 +247,46 @@ export default function SlotsPanel({
     }
   }
 
+  async function terminate(slot: FunctionSlot) {
+    const reason = window.prompt('Причина расторжения (обязательно):')
+    if (reason === null || !reason.trim()) return
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(roomId)}/members/${encodeURIComponent(
+          slot.freelancer_sub ?? ''
+        )}/terminate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Sub': ACTOR_SUB,
+          },
+          body: JSON.stringify({ reason: reason.trim() }),
+        },
+      )
+      if (res.status === 404) {
+        setError('Member not seated (404). Reload the list.')
+        loadSlots()
+        return
+      }
+      if (res.status === 409) {
+        setError('Slot not filled (409). Reload the list.')
+        loadSlots()
+        return
+      }
+      if (!res.ok) {
+        setError(`HTTP ${res.status}`)
+        return
+      }
+      patchSlot({ slot: { ...slot, status: 'open', freelancer_sub: null } })
+      loadSlots()
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <section className="block">
       <h2>Slots</h2>
@@ -314,6 +354,14 @@ export default function SlotsPanel({
                         onClick={() => void unassign(slot)}
                       >
                         Unassign
+                      </button>
+                      <button
+                        type="button"
+                        className="slot-action"
+                        disabled={busy}
+                        onClick={() => void terminate(slot)}
+                      >
+                        Terminate
                       </button>
                       <select
                         value={picked[slot.id] ?? ''}

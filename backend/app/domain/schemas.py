@@ -464,3 +464,31 @@ class EarningsListResponse(BaseModel):
     total_amount: str  # decimal as string
     currency: str
     entries: list[EarningsEntryOut]
+
+
+class TerminateMemberRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(min_length=1)
+    slot_id: UUID | None = None
+
+
+class TerminateMemberResponse(BaseModel):
+    status: str  # "terminated"
+    freelancer_sub: str
+    slot_ids: list[UUID]
+
+
+class RoomTerminationOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    freelancer_sub: str
+    reason: str
+    terminated_by_sub: str
+    slot_ids: list[UUID]
+    created_at: datetime
+
+
+class RoomTerminationListResponse(BaseModel):
+    room_id: UUID
+    terminations: list[RoomTerminationOut]

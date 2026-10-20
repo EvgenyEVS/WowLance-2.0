@@ -385,3 +385,28 @@ class EarningsEntry(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class RoomTermination(Base):
+    """C17 termination journal: one row per member termination event."""
+
+    __tablename__ = "room_terminations"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    freelancer_sub: Mapped[str] = mapped_column(String(255), nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    terminated_by_sub: Mapped[str] = mapped_column(String(255), nullable=False)
+    slot_ids: Mapped[list[uuid.UUID]] = mapped_column(
+        JSONB, nullable=False, server_default="[]"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

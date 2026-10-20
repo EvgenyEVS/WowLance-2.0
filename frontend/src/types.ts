@@ -179,3 +179,9 @@ export type EarningsList = {
   currency: string
   entries: EarningsEntry[]
 }
+
+export type TerminateMemberResult = {
+  status: 'terminated'
+  freelancer_sub: string
+  slot_ids: string[]
+}

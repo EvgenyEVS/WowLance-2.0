@@ -31,6 +31,8 @@
 | [`wowlance/RoomMeet.v1.yaml`](wowlance/RoomMeet.v1.yaml) | draft v1 — C14 `POST /api/v1/rooms/{room_id}/meet/ensure` (stub Jitsi) |
 | [`wowlance/RoomEarnings.v1.yaml`](wowlance/RoomEarnings.v1.yaml) | draft v1 — C16 `GET /api/v1/rooms/{room_id}/earnings` (stub ledger) |
 | [`wowlance/examples/RoomEarnings.sale.json`](wowlance/examples/RoomEarnings.sale.json) | пример ответа списка начислений |
+| [`wowlance/MemberTerminated.v1.yaml`](wowlance/MemberTerminated.v1.yaml) | draft v1 — C17 `POST …/terminate` + `GET …/terminations` (расторжение участника) |
+| [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

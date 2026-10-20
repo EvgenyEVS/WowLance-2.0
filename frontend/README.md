@@ -1,6 +1,7 @@
 # WowLance 2.0 — frontend (React + Vite)
 
-C3–C9 room shell. C12 slot unassign/reassign. C13 room health card. No login.  
+C3–C9 room shell. C12 slot unassign/reassign. C13 room health card. C16 earnings. C17 member termination. No login.  
+
 Slots: after entitlement + **Materialize slots**.  
 Roster (C6): add a freelancer (sub + name) → **Assign** on an `open` slot with `X-Actor-Sub: teamlead-demo-sub`; filled slots show the seated freelancer.  
 Slot unassign/reassign (C12): a `filled` slot has **Unassign** (→ `open`, sub cleared) and a **Reassign to…** picker + **Reassign** (swap the seated person; same sub → idempotent `already_assigned`). Reassign on an `open` slot shows a 409 — use Assign instead.  
@@ -11,6 +12,7 @@ Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accep
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
 Room health (C13): card on the room page shows slots/tasks/leads aggregates; **Refresh** re-reads `GET …/health`, **Publish snapshot** writes an outbox `RoomHealthSnapshot` row (stub).
 Earned (C16): block on the room page shows total earned + entries per accepted task (`GET …/earnings`). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
+Member termination (C17): on a **filled** slot, **Terminate** button (next to **Unassign**) prompts for a reason → `POST …/members/{sub}/terminate` → frees the slot, writes `room_terminations` journal + outbox `MemberTerminated`. **Unassign** = just frees the slot (no journal/outbox); **Terminate** = с причиной и историей.
 
 ## Login / token (C8)
 
