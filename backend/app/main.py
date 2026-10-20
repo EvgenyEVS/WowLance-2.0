@@ -1,7 +1,8 @@
 """WowLance 2.0 API (FastAPI + PostgreSQL)."""
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.auth_stub import router as auth_stub_router
 from app.api.entitlements import router as entitlements_router
@@ -20,12 +21,19 @@ from app.api.strategy_publications import router as strategy_publications_router
 from app.api.tasks import router as tasks_router
 from app.api.termination import router as termination_router
 from app.auth.deps import require_user
+from app.config import settings
 
 app = FastAPI(
     title="WowLance 2.0",
     description="Room microservice — see /docs and repo contracts/",
     version="0.1.0",
 )
+
+# C21 fail-fast: strict internal auth requires a non-empty service token.
+if not settings.internal_auth_disabled and not settings.internal_service_token:
+    raise RuntimeError(
+        "INTERNAL_SERVICE_TOKEN must be set when INTERNAL_AUTH_DISABLED=false"
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,8 +47,24 @@ app.add_middleware(
 )
 
 # C8: client routes require a valid Keycloak JWT when AUTH_DISABLED=false.
-# /health and /internal/v1/* stay open (service token later — do not protect them).
+# /health and /internal/v1/* stay open (C21 guards /internal/v1/* separately).
 client_auth = [Depends(require_user)]
+
+
+@app.middleware("http")
+async def internal_service_token_guard(request: Request, call_next):
+    """C21: require X-Service-Token on /internal/v1/* when strict mode is on."""
+    if settings.internal_auth_disabled:
+        return await call_next(request)
+    if request.url.path.startswith("/internal/v1/"):
+        token = request.headers.get("x-service-token")
+        if not token or token != settings.internal_service_token:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Internal service token required"},
+            )
+    return await call_next(request)
+
 
 app.include_router(handoffs_router)
 app.include_router(entitlements_router)

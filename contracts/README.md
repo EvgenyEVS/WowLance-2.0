@@ -19,6 +19,7 @@
 | [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 трекер задач + C10 Quality Gate (`submitted`/`proof_*`, accept/reject) + C15 assignee из roster (assign) |
 | [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач (todo/in_progress/submitted + proof) |
 | [`wowlance/AuthBearer.v1.yaml`](wowlance/AuthBearer.v1.yaml) | draft v1 — C8 Bearer JWT на `/api/v1/*` + shadow User |
+| [`wowlance/InternalServiceAuth.v1.yaml`](wowlance/InternalServiceAuth.v1.yaml) | draft v1 — C21 service-token на `/internal/v1/*` (X-Service-Token) |
 
 | [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | draft v1 — C9 лиды комнаты (open → hot → handed_to_crm) |
 | [`wowlance/examples/RoomLeads.sale.json`](wowlance/examples/RoomLeads.sale.json) | пример list-ответа лидов |
