@@ -22,6 +22,10 @@
       "notes": null,
       "status": "handed_to_crm",
       "crm_ref": "crm-stub:13131313-1313-1313-1313-131313131313",
+      "deal_status": "won",
+      "deal_amount": 15000.00,
+      "deal_currency": "USD",
+      "deal_updated_at": "2026-10-16T10:30:00+00:00",
       "created_at": "2026-10-16T08:30:00+00:00",
       "updated_at": "2026-10-16T10:15:00+00:00"
     }

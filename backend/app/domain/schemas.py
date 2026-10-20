@@ -361,6 +361,10 @@ class RoomLeadOut(BaseModel):
     notes: str | None = None
     status: LeadStatus
     crm_ref: str | None = None
+    deal_status: str | None = None
+    deal_amount: str | None = None  # decimal as string
+    deal_currency: str | None = None
+    deal_updated_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -464,6 +468,32 @@ class EarningsListResponse(BaseModel):
     total_amount: str  # decimal as string
     currency: str
     entries: list[EarningsEntryOut]
+
+
+class DealStatus(str, Enum):
+    won = "won"
+    lost = "lost"
+    in_progress = "in_progress"
+    unknown = "unknown"
+
+
+class CrmDealStatusRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    crm_ref: str = Field(min_length=1)
+    deal_status: DealStatus
+    amount: float | None = None
+    currency: str | None = None
+
+
+class CrmDealStatusResponse(BaseModel):
+    room_id: UUID
+    lead_id: UUID
+    crm_ref: str
+    deal_status: str
+    deal_amount: str | None = None  # decimal as string
+    deal_currency: str | None = None
+    deal_updated_at: datetime | None = None
 
 
 class TerminateMemberRequest(BaseModel):

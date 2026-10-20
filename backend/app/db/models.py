@@ -318,6 +318,14 @@ class RoomLead(Base):
         String(32), nullable=False, default="open", server_default="open"
     )
     crm_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    deal_status: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    deal_amount: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+    deal_currency: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    deal_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

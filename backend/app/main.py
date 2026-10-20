@@ -7,6 +7,7 @@ from app.api.auth_stub import router as auth_stub_router
 from app.api.entitlements import router as entitlements_router
 from app.api.handoffs import router as handoffs_router
 from app.api.earnings import router as earnings_router
+from app.api.leads import crm_router as crm_router
 from app.api.leads import router as leads_router
 from app.api.meet import router as meet_router
 from app.api.rooms import router as rooms_router
@@ -44,6 +45,7 @@ client_auth = [Depends(require_user)]
 
 app.include_router(handoffs_router)
 app.include_router(entitlements_router)
+app.include_router(crm_router)
 app.include_router(rooms_router, dependencies=client_auth)
 app.include_router(slots_router, dependencies=client_auth)
 app.include_router(strategy_publications_router)

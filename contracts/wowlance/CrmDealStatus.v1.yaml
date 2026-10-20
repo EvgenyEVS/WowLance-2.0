@@ -1,0 +1,54 @@
+# OpenSpec / contract draft — CrmDealStatus v1 (C19)
+# Inbound CRM/SRM webhook: обновляет стадию сделки на лиде (stub, без live CRM/OAuth).
+# Находит лид по crm_ref; меняет только handed_to_crm лиды (иначе 409).
+
+id: CrmDealStatus
+version: "1"
+direction: CRM/SRM -> WowLance
+channel: https
+path: /internal/v1/crm/deal-status
+method: POST
+
+request:
+  type: object
+  required: [crm_ref, deal_status]
+  properties:
+    crm_ref: { type: string }
+    deal_status:
+      type: string
+      enum: [won, lost, in_progress, unknown]
+    amount:
+      type: number
+      nullable: true
+    currency:
+      type: string
+      nullable: true
+
+response_200:
+  type: object
+  required: [room_id, lead_id, crm_ref, deal_status, deal_updated_at]
+  properties:
+    room_id: { type: string, format: uuid }
+    lead_id: { type: string, format: uuid }
+    crm_ref: { type: string }
+    deal_status:
+      type: string
+      enum: [won, lost, in_progress, unknown]
+    deal_amount: { type: number, nullable: true }
+    deal_currency: { type: string, nullable: true }
+    deal_updated_at: { type: string, format: date-time }
+
+# room_leads additions (C19):
+#   deal_status: string | null
+#   deal_amount: number | null
+#   deal_currency: string | null
+#   deal_updated_at: datetime | null
+
+errors:
+  - { code: 404, when: "crm_ref does not match any lead" }
+  - { code: 409, when: "lead is not in handed_to_crm (lead_not_handed)" }
+  - { code: 422, when: "validation failed" }
+
+notes:
+  - "Idempotent: повтор с тем же deal_status → 200, без изменений."
+  - "Исходящий outbox не обязателен в C19 (inbound)."

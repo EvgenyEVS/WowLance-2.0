@@ -33,6 +33,8 @@
 | [`wowlance/examples/RoomEarnings.sale.json`](wowlance/examples/RoomEarnings.sale.json) | пример ответа списка начислений |
 | [`wowlance/MemberTerminated.v1.yaml`](wowlance/MemberTerminated.v1.yaml) | draft v1 — C17 `POST …/terminate` + `GET …/terminations` (расторжение участника) |
 | [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
+| [`wowlance/CrmDealStatus.v1.yaml`](wowlance/CrmDealStatus.v1.yaml) | draft v1 — C19 inbound вебхук CRM deal-status (обновляет deal_* на лиде) |
+| [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | дополнен полями deal_* (C19) |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

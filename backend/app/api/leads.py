@@ -11,13 +11,17 @@ from app.db.session import get_db
 from app.domain.leads import (
     InvalidTransitionError,
     LeadNotFoundError,
+    LeadNotHandledError,
     RoomNotFoundError,
+    apply_deal_status,
     create_lead,
     handoff_to_crm,
     list_leads,
     mark_hot,
 )
 from app.domain.schemas import (
+    CrmDealStatusRequest,
+    CrmDealStatusResponse,
     LeadHandoffResponse,
     RoomLeadCreateRequest,
     RoomLeadListResponse,
@@ -25,6 +29,7 @@ from app.domain.schemas import (
 )
 
 router = APIRouter(prefix="/api/v1/rooms", tags=["leads"])
+crm_router = APIRouter(prefix="/internal/v1/crm", tags=["crm"])
 
 
 def _actor_sub(x_actor_sub: str | None) -> str:
@@ -130,3 +135,42 @@ def post_handoff_crm(
     except (RoomNotFoundError, LeadNotFoundError, InvalidTransitionError) as exc:
         _map_errors(exc)
         raise
+
+
+@crm_router.post(
+    "/deal-status",
+    response_model=CrmDealStatusResponse,
+    responses={
+        200: {"description": "deal-status applied (idempotent)"},
+        404: {"description": "crm_ref does not match any lead"},
+        409: {"description": "lead is not in handed_to_crm (lead_not_handed)"},
+        422: {"description": "validation failed"},
+    },
+)
+def post_crm_deal_status(
+    payload: CrmDealStatusRequest,
+    db: Session = Depends(get_db),
+) -> CrmDealStatusResponse:
+    """POST /internal/v1/crm/deal-status — inbound CRM deal-status stub."""
+    try:
+        lead = apply_deal_status(
+            db,
+            crm_ref=payload.crm_ref,
+            deal_status=payload.deal_status.value,
+            amount=payload.amount,
+            currency=payload.currency,
+        )
+    except LeadNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except LeadNotHandledError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    return CrmDealStatusResponse(
+        room_id=lead.room_id,
+        lead_id=lead.id,
+        crm_ref=lead.crm_ref or "",
+        deal_status=lead.deal_status,
+        deal_amount=lead.deal_amount,
+        deal_currency=lead.deal_currency,
+        deal_updated_at=lead.deal_updated_at,
+    )

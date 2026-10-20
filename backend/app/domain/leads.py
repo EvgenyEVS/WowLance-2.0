@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -34,6 +35,10 @@ class RoomNotFoundError(Exception):
 
 class LeadNotFoundError(Exception):
     """No lead for the given (room_id, lead_id)."""
+
+
+class LeadNotHandledError(Exception):
+    """Lid not in handed_to_crm; deal-status cannot be applied (lead_not_handed)."""
 
 
 class InvalidTransitionError(Exception):
@@ -64,6 +69,10 @@ def _lead_out(row: RoomLead) -> RoomLeadOut:
         notes=row.notes,
         status=LeadStatus(row.status),
         crm_ref=row.crm_ref,
+        deal_status=row.deal_status,
+        deal_amount=str(row.deal_amount) if row.deal_amount is not None else None,
+        deal_currency=row.deal_currency,
+        deal_updated_at=row.deal_updated_at,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -156,3 +165,46 @@ def handoff_to_crm(
         crm_ref=lead.crm_ref,
         status=LeadHandoffStatus.handed,
     )
+
+
+def apply_deal_status(
+    db: Session,
+    crm_ref: str,
+    deal_status: str,
+    amount,
+    currency: str | None,
+) -> RoomLeadOut:
+    """C19: apply CRM deal-status to a handed_to_crm lead by crm_ref.
+
+    Idempotent: repeat with the same status → 200, no write.
+    Raises LeadNotFoundError (404) / LeadNotHandledError (409).
+    """
+    lead = db.scalar(
+        select(RoomLead).where(RoomLead.crm_ref == crm_ref)
+    )
+    if lead is None:
+        raise LeadNotFoundError("crm_ref does not match any lead")
+    if lead.status != LeadStatus.handed_to_crm.value:
+        raise LeadNotHandledError("lead_not_handed")
+
+    already = (
+        lead.deal_status == deal_status
+        and lead.deal_currency == currency
+        and (
+            lead.deal_amount is None
+            if amount is None
+            else lead.deal_amount == Decimal(str(amount))
+        )
+    )
+    if already:
+        return _lead_out(lead)
+
+    updated_at = datetime.now(timezone.utc)
+    lead.deal_status = deal_status
+    if amount is not None:
+        lead.deal_amount = Decimal(str(amount))
+    lead.deal_currency = currency
+    lead.deal_updated_at = updated_at
+    db.commit()
+    db.refresh(lead)
+    return _lead_out(lead)
