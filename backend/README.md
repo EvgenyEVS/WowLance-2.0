@@ -126,6 +126,35 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots
 
 Sale example → два слота `seller` `#1` и `#2`, `status: open`.
 
+## C22: Rematerialize слотов после Strategy Accept
+
+После C5 Accept активный снимок может сменить `staffing_intent`, а слоты C4 остаются
+от старого materialize. Явный `POST …/slots/rematerialize` приводит seats в соответствие
+с новым intent:
+
+- недостающие `(role_key, seat_index)` → создаются `open`;
+- лишние `open` → `cancelled`;
+- лишние `filled` → **не сносятся**, возвращаются в `orphaned_filled` (тимлид решает вручную);
+- без изменений → `status: already_synced`;
+- при изменениях → `status: rematerialized`.
+
+Требует `staffing_unlocked=true`, иначе **403**. Неизвестная комната → **404**.  
+Авто-rematerialize внутри Accept **не делается** (только явный POST).
+
+`POST /api/v1/rooms/{room_id}/slots/rematerialize`  
+([`contracts/wowlance/StaffingSlots.v1.yaml`](../contracts/wowlance/StaffingSlots.v1.yaml)).
+
+| Статус | Когда |
+|--------|-------|
+| **200** | `status: rematerialized` или `already_synced`, тело: `slots` + опц. `orphaned_filled` |
+| **403** | `staffing_unlocked=false` (`detail: staffing_locked`) |
+| **404** | нет комнаты |
+
+```powershell
+# после handoff + entitlement + materialize, подставить room_id
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/rematerialize
+```
+
 ## C5: Strategy publish / Accept / Reject
 
 Новая версия стратегии не применяется молча.  
@@ -719,8 +748,7 @@ cd backend
 - Живой Keycloak в compose / demo realm (C8 закрыт stub-JWKS, см. выше)  
 - Matching / live Talent / shortlist  
 - Quality Gate: proof-файлы в S3, рейтинги (reject с причиной — уже C10)  
-- Пересборка слотов после Accept  
-- Скачивание файлов из object storage  
+- Скачивание файлов из object storage
 - Живой CRM / OAuth: сейчас `HotLeadToCrm` только в локальном outbox  
 - Живой webhook Billing  
 
