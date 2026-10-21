@@ -4,6 +4,7 @@ import type {
   FunctionSlot,
   MaterializeResult,
   RosterMember,
+  RematerializeResult,
   SlotAssignResult,
   SlotReassignResult,
   SlotUnassignResult,
@@ -34,6 +35,7 @@ export default function SlotsPanel({
   const [error, setError] = useState<string | null>(null)
   const [roster, setRoster] = useState<RosterMember[]>([])
   const [picked, setPicked] = useState<Record<string, string>>({})
+  const [orphanedFilled, setOrphanedFilled] = useState<FunctionSlot[]>([])
 
   const loadSlots = useCallback(() => {
     const controller = new AbortController()
@@ -105,6 +107,37 @@ export default function SlotsPanel({
       }
       const body = (await res.json()) as MaterializeResult
       setState({ kind: 'ok', slots: body.slots })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function rematerialize() {
+    setBusy(true)
+    setError(null)
+    setOrphanedFilled([])
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/rematerialize`,
+        { method: 'POST' },
+      )
+      if (res.status === 403) {
+        setState({ kind: 'forbidden' })
+        return
+      }
+      if (res.status === 404) {
+        setState({ kind: 'not_found' })
+        return
+      }
+      if (!res.ok) {
+        setState({ kind: 'error', message: `HTTP ${res.status}` })
+        return
+      }
+      const body = (await res.json()) as RematerializeResult
+      setState({ kind: 'ok', slots: body.slots })
+      if (body.orphaned_filled && body.orphaned_filled.length > 0) {
+        setOrphanedFilled(body.orphaned_filled)
+      }
     } finally {
       setBusy(false)
     }
@@ -302,6 +335,14 @@ export default function SlotsPanel({
           >
             Materialize slots
           </button>
+          <button
+            type="button"
+            className="slot-action"
+            onClick={() => void rematerialize()}
+            disabled={busy}
+          >
+            Rematerialize
+          </button>
           {state.kind === 'loading' && <p className="hint">Loading slots…</p>}
           {state.kind === 'forbidden' && (
             <p className="error">Slots locked (403).</p>
@@ -392,6 +433,16 @@ export default function SlotsPanel({
                 </li>
               ))}
             </ul>
+          )}
+          {orphanedFilled.length > 0 && (
+            <p className="hint">
+              Заполненные слоты вне нового плана (не удалены автоматически):{' '}
+              {orphanedFilled.map((s) => (
+                <span key={s.id}>
+                  {s.role_key} #{s.seat_index}
+                </span>
+              ))}
+            </p>
           )}
           {roster.length === 0 ? (
             <p className="hint">Roster empty — add a freelancer above (or via curl).</p>

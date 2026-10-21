@@ -15,6 +15,7 @@ from app.domain.schemas import (
     SlotReassignResponse,
     SlotUnassignResponse,
     StaffingMaterializeResponse,
+    StaffingRematerializeResponse,
     StaffingSlotsListResponse,
 )
 from app.domain.staffing import (
@@ -28,6 +29,7 @@ from app.domain.staffing import (
     assign_slot,
     list_slots,
     materialize_slots,
+    rematerialize_slots,
     reassign_slot,
     unassign_slot,
 )
@@ -82,6 +84,26 @@ def post_materialize_slots(
 ) -> StaffingMaterializeResponse:
     try:
         return materialize_slots(db, room_id)
+    except (RoomNotFoundError, StaffingLockedError) as exc:
+        _map_errors(exc)
+        raise
+
+
+@router.post(
+    "/{room_id}/slots/rematerialize",
+    response_model=StaffingRematerializeResponse,
+    responses={
+        200: {"description": "rematerialized or already_synced"},
+        403: {"description": "staffing_locked"},
+        404: {"description": "room_id does not exist"},
+    },
+)
+def post_rematerialize_slots(
+    room_id: uuid.UUID,
+    db: Session = Depends(get_db),
+) -> StaffingRematerializeResponse:
+    try:
+        return rematerialize_slots(db, room_id)
     except (RoomNotFoundError, StaffingLockedError) as exc:
         _map_errors(exc)
         raise
