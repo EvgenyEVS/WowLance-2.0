@@ -38,5 +38,15 @@ class Settings(BaseSettings):
     earnings_task_amount: Decimal = Decimal("10.00")
     earnings_currency: str = "USD"
 
+    # C21: internal service-token guard on /internal/v1/* (stub, без Keycloak).
+    # Default open (localhost/pytest). Strict mode: INTERNAL_AUTH_DISABLED=false.
+    internal_auth_disabled: bool = True
+    internal_service_token: str = ""
+
+    @property
+    def internal_guard_required(self) -> bool:
+        """False when internal routes are open (default/dev/tests)."""
+        return not self.internal_auth_disabled
+
 
 settings = Settings()

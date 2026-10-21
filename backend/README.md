@@ -642,6 +642,42 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages
 curl -s "http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages?limit=10"
 ```
 
+## C21: Internal service-token stub (защита /internal/v1/*)
+
+C8 оставил `/internal/v1/*` открытым. C21 закрывает этот долг stub-сервитным секретом, без Keycloak client-credentials / Gateway.
+
+| Правило | Поведение |
+|---------|-----------|
+| `INTERNAL_AUTH_DISABLED=true` (default) | `/internal/v1/*` открыт, как раньше (C1 regression) |
+| `INTERNAL_AUTH_DISABLED=false` | `/internal/v1/*` требует `X-Service-Token: <secret>` |
+| Нет/неверный токен в строгом режиме | **401** (не 403) |
+| Пустой `INTERNAL_SERVICE_TOKEN` в строгом режиме | fail-fast при старте приложения |
+| `/health`, `/docs`, `/auth/*`, `/api/v1/*` | без service token (C8 JWT отдельно) |
+
+Контракт: [contracts/wowlance/InternalServiceAuth.v1.yaml](../contracts/wowlance/InternalServiceAuth.v1.yaml).
+
+Env (`.env` / `.env.example`):
+```
+INTERNAL_AUTH_DISABLED=true    # dev/tests: внутренние routes открыты
+# INTERNAL_AUTH_DISABLED=false # строгий режим
+# INTERNAL_SERVICE_TOKEN=change-me-in-prod
+```
+
+curl (строгий режим):
+```powershell
+# без токена -> 401
+curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
+  -H "Content-Type: application/json" `
+  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+
+# с токеном -> 201
+curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
+  -H "Content-Type: application/json" `
+  -H "X-Service-Token: change-me-in-prod" `
+  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+```
+
+C18/C19 internal пути покрываются тем же префикс-guard автоматически.
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  
