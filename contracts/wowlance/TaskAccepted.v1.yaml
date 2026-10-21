@@ -1,0 +1,35 @@
+# OpenSpec / contract draft — TaskAccepted v1 (C24)
+# Outbound event when a task is accepted (submitted -> done).
+# C24 scope: persist into the local outbox (status=sent, sync stub); live bus later.
+# One row per accepted task; idempotent by task id.
+
+id: TaskAccepted
+version: "1"
+direction: WowLance -> Talent/platform
+channel: outbox
+idempotency_key: task:{task_id}:TaskAccepted
+
+payload:
+  type: object
+  required: [room_id, task_id, reviewed_by_sub, accepted_at]
+  properties:
+    room_id: { type: string, format: uuid }
+    task_id: { type: string, format: uuid }
+    assignee_sub: { type: string, nullable: true }
+    reviewed_by_sub: { type: string }
+    proof_uri: { type: string, nullable: true }
+    accepted_at: { type: string, format: date-time }
+    amount: { type: string, nullable: true }
+    currency: { type: string, nullable: true }
+
+outbox:
+  table: outbox_messages
+  event_type: TaskAccepted
+  status:
+    enum: [pending, sent, failed]
+    c24: sent
+  columns: [id, event_type, idempotency_key, payload, status, created_at, sent_at]
+  unique: idempotency_key
+
+bus_stub:
+  note: "no live broker/HTTP to Talent, no OAuth, no Keycloak"

@@ -1,0 +1,10 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "task_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+  "assignee_sub": "f-1234",
+  "reviewed_by_sub": "teamlead-demo-sub",
+  "proof_uri": "https://drive.example.com/report.pdf",
+  "accepted_at": "2026-10-21T12:00:00+00:00",
+  "amount": "10.00",
+  "currency": "USD"
+}

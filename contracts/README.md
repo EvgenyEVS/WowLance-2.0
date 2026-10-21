@@ -40,6 +40,8 @@
 | [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | дополнен полями deal_* (C19) |
 | [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
 | [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
+| [`wowlance/TaskAccepted.v1.yaml`](wowlance/TaskAccepted.v1.yaml) | draft v1 — C24 Outbox TaskAccepted при accept задачи (submitted → done) |
+| [`wowlance/examples/TaskAccepted.example.json`](wowlance/examples/TaskAccepted.example.json) | пример payload outbox-строки |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
