@@ -1,0 +1,31 @@
+# OpenSpec / contract draft — StaffingUnlocked v1 (C18)
+# Исходящее событие при первом unlock staffing комнаты после entitlement (C2).
+# Симметрично RoomCreated (C11). Живой брокер / HTTP к Order — не в C18.
+
+id: StaffingUnlocked
+version: "1"
+direction: WowLance -> platform (Order/Strategy/bus)
+channel: outbox
+idempotency_key: room:{id}:StaffingUnlocked
+
+payload:
+  type: object
+  required: [room_id, entitlement_id, unlocked_at, staffing_unlocked]
+  properties:
+    room_id: { type: string, format: uuid }
+    entitlement_id: { type: string, format: uuid }
+    founder_sub: { type: string, nullable: true }
+    unlocked_at: { type: string, format: date-time }
+    staffing_unlocked: { type: boolean, const: true }
+
+outbox:
+  table: outbox_messages
+  event_type: StaffingUnlocked
+  status:
+    enum: [pending, sent, failed]
+    c18: sent
+  columns: [id, event_type, idempotency_key, payload, status, created_at, sent_at]
+  unique: idempotency_key
+
+bus_stub:
+  note: "no live broker/HTTP to Strategy, no OAuth, no Keycloak"

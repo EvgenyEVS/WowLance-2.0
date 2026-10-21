@@ -288,6 +288,46 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/earnings
 #      "entries": [{ "task_id": "...", "freelancer_sub": "...", "amount": "10.00", ...}] }
 ```
 
+## C18: Outbox `StaffingUnlocked` при первом unlock staffing
+
+При первом успешном unlock (`staffing_unlocked` false → true) по `POST /internal/v1/entitlements` пишется строка в `outbox_messages` (`event_type: StaffingUnlocked`, `status: sent`) в той же транзакции, что и grant. Контракт:
+[contracts/wowlance/StaffingUnlocked.v1.yaml](../contracts/wowlance/StaffingUnlocked.v1.yaml),
+пример — [contracts/wowlance/examples/StaffingUnlocked.sale.json](../contracts/wowlance/examples/StaffingUnlocked.sale.json).
+
+| Правило | Поведение |
+|---------|-----------|
+| Когда | Только при первом переходе `staffing_unlocked` false → true в этом запросе |
+| idempotency_key | `room:{id}:StaffingUnlocked` (отдельно от RoomCreated, т.к. колонка globally unique) |
+| event_type | `StaffingUnlocked` |
+| status | `sent` (stub, без брокера) |
+| sent_at | `now` |
+| Повтор entitlement (`already_granted`) | **не** создаёт вторую outbox-строку |
+| 404 / 409 | комната и outbox не меняются |
+| Атомарность | grant + outbox коммитятся вместе |
+
+Payload минимум: `room_id`, `entitlement_id`, `unlocked_at`, `staffing_unlocked: true`, `founder_sub`.
+
+Проверка SQL:
+
+```sql
+SELECT event_type, idempotency_key, status, sent_at, payload
+FROM outbox_messages
+WHERE event_type = 'StaffingUnlocked';
+```
+
+```powershell
+# room_id из ответа handoff (201 created), затем entitlement (см. C2)
+curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
+  -H "Content-Type: application/json" `
+  -d '{
+    "entitlement_id": "33333333-3333-3333-3333-333333333333",
+    "room_id": "<room_id from handoff>",
+    "source": "stub"
+  }'
+```
+
+Повтор того же `entitlement_id` → `200` + `"status":"already_granted"`, второй outbox-строки нет.
+
 ## C10: Quality Gate lite
 
 Сдача задачи требует **proof** (URI строкой + короткий note); тимлид **accept/reject**. Без загрузки файлов, рейтингов и выплат. Контракт: [`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml). Миграция: `008_c10_quality_gate` (nullable `proof_uri`, `proof_note`, `reviewed_by_sub`, `review_note` на `room_tasks`).
