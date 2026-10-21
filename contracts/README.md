@@ -27,7 +27,7 @@
 | [`wowlance/examples/HotLeadToCrm.json`](wowlance/examples/HotLeadToCrm.json) | пример outbox payload |
 | [`wowlance/RoomCreated.v1.yaml`](wowlance/RoomCreated.v1.yaml) | draft v1 — C11 исходящее событие RoomCreated при создании комнаты (outbox) |
 | [`wowlance/examples/RoomCreated.sale.json`](wowlance/examples/RoomCreated.sale.json) | пример outbox payload |
-| [`wowlance/RoomHealth.v1.yaml`](wowlance/RoomHealth.v1.yaml) | draft v1 — C13 агрегат комнаты (slots/tasks/leads) для витрины Стратегии |
+| [`wowlance/RoomHealth.v1.yaml`](wowlance/RoomHealth.v1.yaml) | draft v1 — C13 агрегат комнаты (slots/tasks/leads) для витрины Стратегии + **C25 earnings блок** |
 | [`wowlance/examples/RoomHealth.sale.json`](wowlance/examples/RoomHealth.sale.json) | пример GET health-ответа |
 | [`wowlance/RoomMeet.v1.yaml`](wowlance/RoomMeet.v1.yaml) | draft v1 — C14 `POST /api/v1/rooms/{room_id}/meet/ensure` (stub Jitsi) |
 | [`wowlance/RoomEarnings.v1.yaml`](wowlance/RoomEarnings.v1.yaml) | draft v1 — C16 `GET /api/v1/rooms/{room_id}/earnings` (stub ledger) |

@@ -24,5 +24,10 @@
     "total": 2,
     "hot": 1,
     "handed_to_crm": 1
+  },
+  "earnings": {
+    "total_amount": "0.00",
+    "currency": "USD",
+    "entries_count": 0
   }
 }
