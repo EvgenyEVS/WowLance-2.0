@@ -418,6 +418,12 @@ class RoomHealthLeadsOut(BaseModel):
     handed_to_crm: int = 0
 
 
+class RoomHealthEarningsOut(BaseModel):
+    total_amount: str = "0.00"
+    currency: str
+    entries_count: int = 0
+
+
 class RoomHealthOut(BaseModel):
     room_id: UUID
     captured_at: datetime
@@ -425,6 +431,7 @@ class RoomHealthOut(BaseModel):
     slots: RoomHealthSlotsOut
     tasks: RoomHealthTasksOut
     leads: RoomHealthLeadsOut
+    earnings: RoomHealthEarningsOut
 
 
 class RoomHealthPublishStatus(str, Enum):
