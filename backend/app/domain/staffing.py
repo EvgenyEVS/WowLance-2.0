@@ -18,11 +18,13 @@ from app.domain.schemas import (
     FunctionSlotOut,
     MaterializeStatus,
     ReassignStatus,
+    RematerializeStatus,
     SlotAssignResponse,
     SlotReassignResponse,
     SlotStatus,
     SlotUnassignResponse,
     StaffingMaterializeResponse,
+    StaffingRematerializeResponse,
     StaffingSlotsListResponse,
     UnassignStatus,
 )
@@ -195,6 +197,90 @@ def materialize_slots(db: Session, room_id: uuid.UUID) -> StaffingMaterializeRes
         room_id=room.id,
         status=status,
         slots=[_slot_out(row) for row in rows],
+    )
+
+
+def rematerialize_slots(
+    db: Session, room_id: uuid.UUID
+) -> StaffingRematerializeResponse:
+    """C22: синхронизировать слоты комнаты с активным staffing_intent.
+
+    - недостающие (role_key, seat_index) → создать `open`;
+    - лишние `open` → `cancelled`;
+    - лишние `filled` → не трогать, вернуть в `orphaned_filled`;
+    - без изменений → `already_synced`.
+    """
+    room = _require_unlocked_room(db, room_id)
+    snapshot = _active_snapshot(room)
+    intent = snapshot.staffing_intent if snapshot is not None else None
+    planned = planned_seats_from_intent(intent)
+    existing = _list_slot_rows(db, room.id)
+
+    planned_keys = {(seat.role_key, seat.seat_index) for seat in planned}
+    existing_by_key = {(row.role_key, row.seat_index): row for row in existing}
+
+    orphaned_filled: list[FunctionSlotOut] = []
+    changed = False
+
+    # Лишние слоты, которых нет в новом intent.
+    for key, row in existing_by_key.items():
+        if key in planned_keys:
+            continue
+        if row.status == SlotStatus.filled.value:
+            orphaned_filled.append(_slot_out(row))
+        elif row.status == SlotStatus.open.value:
+            row.status = SlotStatus.cancelled.value
+            changed = True
+        # filled остаются как есть — тимлид решит вручную
+
+    # Недостающие слоты из нового intent.
+    missing = [
+        seat
+        for seat in planned
+        if (seat.role_key, seat.seat_index) not in existing_by_key
+    ]
+    if missing:
+        changed = True
+        for seat in missing:
+            db.add(
+                RoomFunctionSlot(
+                    id=uuid.uuid4(),
+                    room_id=room.id,
+                    role_key=seat.role_key,
+                    seat_index=seat.seat_index,
+                    level_min=seat.level_min,
+                    status=SlotStatus.open.value,
+                    freelancer_sub=None,
+                )
+            )
+
+    if not changed:
+        rows = _list_slot_rows(db, room.id)
+        return StaffingRematerializeResponse(
+            room_id=room.id,
+            status=RematerializeStatus.already_synced,
+            slots=[_slot_out(row) for row in rows],
+            orphaned_filled=orphaned_filled,
+        )
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        rows = _list_slot_rows(db, room.id)
+        return StaffingRematerializeResponse(
+            room_id=room.id,
+            status=RematerializeStatus.already_synced,
+            slots=[_slot_out(row) for row in rows],
+            orphaned_filled=orphaned_filled,
+        )
+
+    rows = _list_slot_rows(db, room.id)
+    return StaffingRematerializeResponse(
+        room_id=room.id,
+        status=RematerializeStatus.rematerialized,
+        slots=[_slot_out(row) for row in rows],
+        orphaned_filled=orphaned_filled,
     )
 
 
