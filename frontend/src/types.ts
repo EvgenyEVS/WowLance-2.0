@@ -148,6 +148,13 @@ export type RoomHealth = {
   slots: { total: number; open: number; filled: number; cancelled: number }
   tasks: { todo: number; in_progress: number; submitted: number; done: number }
   leads: { total: number; hot: number; handed_to_crm: number }
+  earnings: { total_amount: string; currency: string; entries_count: number }
+}
+
+export type RoomHealthEarnings = {
+  total_amount: string
+  currency: string
+  entries_count: number
 }
 
 export type RoomHealthPublishResult = {
