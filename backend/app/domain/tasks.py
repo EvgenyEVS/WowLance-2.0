@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.db.models import FreelancerRoster, Room, RoomTask
+from app.db.models import FreelancerRoster, OutboxMessage, Room, RoomTask
 from app.domain.earnings import record_for_accepted_task
 from app.domain.schemas import (
     RoomTaskAssignRequest,
@@ -46,6 +47,55 @@ def _require_roster(db: Session, sub: str) -> None:
     """404 freelancer_not_in_roster when sub is not in the local roster."""
     if db.get(FreelancerRoster, sub) is None:
         raise FreelancerNotInRosterError("freelancer_not_in_roster")
+
+
+TASK_ACCEPTED_EVENT = "TaskAccepted"
+
+
+def _task_accepted_outbox(
+    db: Session,
+    task_id: uuid.UUID,
+    room_id: uuid.UUID,
+    reviewed_by_sub: str,
+    assignee_sub: str | None,
+    proof_uri: str | None,
+    accepted_at: datetime,
+    earnings_amount=None,
+    earnings_currency: str | None = None,
+) -> None:
+    """C24: outbox TaskAccepted для принятой задачи (submitted -> done).
+
+    Идемпотентно по task_id: повторный accept невозможен (уже done),
+    но UNIQUE idempotency_key страхует от дублей. Создаётся в той же
+    транзакции, что и статус done + earnings row.
+    """
+    key = f"task:{task_id}:TaskAccepted"
+    existing = db.scalar(
+        select(OutboxMessage).where(OutboxMessage.idempotency_key == key)
+    )
+    if existing is not None:
+        return
+    payload = {
+        "room_id": str(room_id),
+        "task_id": str(task_id),
+        "assignee_sub": assignee_sub,
+        "reviewed_by_sub": reviewed_by_sub,
+        "proof_uri": proof_uri,
+        "accepted_at": accepted_at.isoformat(),
+    }
+    if earnings_amount is not None:
+        payload["amount"] = str(earnings_amount)
+        payload["currency"] = earnings_currency
+    db.add(
+        OutboxMessage(
+            id=uuid.uuid4(),
+            event_type=TASK_ACCEPTED_EVENT,
+            idempotency_key=key,
+            payload=payload,
+            status="sent",
+            sent_at=accepted_at,
+        )
+    )
 
 
 def _task_out(row: RoomTask) -> RoomTaskOut:
@@ -163,15 +213,31 @@ def complete_task(
 def accept_task(
     db: Session, room_id: uuid.UUID, task_id: uuid.UUID, actor_sub: str
 ) -> RoomTaskOut:
-    """submitted -> done (teamlead accept). C16: record earnings for assignee."""
+    """submitted -> done (teamlead accept). C16: record earnings for assignee.
+    C24: outbox TaskAccepted в той же транзакции, что и done + earnings."""
     row = _require_task(db, room_id, task_id)
     if row.status != TaskStatus.submitted.value:
         raise InvalidTransitionError("only a submitted task can be accepted")
     row.status = TaskStatus.done.value
     row.reviewed_by_sub = actor_sub
     row.review_note = None
+    accepted_at = datetime.now(timezone.utc)
+    earnings_entry = None
     if row.assignee_sub:
-        record_for_accepted_task(db, room_id, task_id, row.assignee_sub)
+        earnings_entry = record_for_accepted_task(
+            db, room_id, task_id, row.assignee_sub
+        )
+    _task_accepted_outbox(
+        db,
+        task_id=task_id,
+        room_id=room_id,
+        reviewed_by_sub=actor_sub,
+        assignee_sub=row.assignee_sub,
+        proof_uri=row.proof_uri,
+        accepted_at=accepted_at,
+        earnings_amount=earnings_entry.amount if earnings_entry else None,
+        earnings_currency=earnings_entry.currency if earnings_entry else None,
+    )
     db.commit()
     db.refresh(row)
     return _task_out(row)
