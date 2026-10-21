@@ -517,6 +517,33 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/rea
 # -> { "slot": { ... "status": "filled", "freelancer_sub": "f-2" }, "status": "reassigned" }
 ```
 
+## C23: Matching lite (shortlist для слота)
+
+Тонкий срез подбора кандидатов на **open** слот из локального roster (без live Talent).  
+`GET /api/v1/rooms/{room_id}/slots/{slot_id}/match?limit=5`  
+([`contracts/wowlance/SlotMatch.v1.yaml`](../contracts/wowlance/SlotMatch.v1.yaml)).
+
+Правила:
+- Слот должен быть `open`, комната `staffing_unlocked` — иначе **409** / **403**.
+- Кандидаты: все из `freelancer_roster`, кроме уже seated в этой комнате.
+- Скор: +2 если `level_min` слота совместим с `level` фрилансера (или `level_min` отсутствует = ок); +1 за каждый совпадающий skill (`role_key` слота ∩ `roster.skills`).
+- Сортировка: `score` desc, затем `freelancer_sub` asc; `limit` default 5, max 20.
+- Ответ: `{ slot_id, candidates: [{ freelancer_sub, display_name, skills, level, score }] }`.
+- Match **не** меняет БД.
+
+| Статус | Когда |
+|--------|-------|
+| **200** | shortlist кандидатов |
+| **403** | `staffing_unlocked=false` (`detail: staffing_locked`) |
+| **404** | нет комнаты или слота в комнате |
+| **409** | слот не `open` (`detail: slot_not_open`) |
+| **422** | `limit` вне диапазона 1–20 |
+
+```powershell
+# после handoff + entitlement + materialize, подставить room_id и slot_id
+curl -s "http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/match?limit=5"
+```
+
 ## C13: Room health → Strategy
 
 Соседнему сервису Strategy нужен один контракт «здоровье комнаты»: сколько
