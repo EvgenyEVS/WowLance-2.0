@@ -1,0 +1,19 @@
+{
+  "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "messages": [
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "author_sub": "founder-demo-sub",
+      "body": "Привет, команда! Стартуем обзвон лидов.",
+      "created_at": "2026-10-17T10:15:00+00:00"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "room_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "author_sub": "freelancer-demo-sub",
+      "body": "Принял. Первые два лида перевел в hot.",
+      "created_at": "2026-10-17T10:20:00+00:00"
+    }
+  ]
+}

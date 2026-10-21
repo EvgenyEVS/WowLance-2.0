@@ -87,6 +87,7 @@ class Room(Base):
     )
     tasks: Mapped[list[RoomTask]] = relationship(back_populates="room")
     leads: Mapped[list[RoomLead]] = relationship(back_populates="room")
+    messages: Mapped[list[RoomMessage]] = relationship(back_populates="room")
 
 
 class StrategySnapshot(Base):
@@ -410,3 +411,26 @@ class RoomTermination(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class RoomMessage(Base):
+    """C20 room chat message: author + body, immutable after create."""
+
+    __tablename__ = "room_messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    author_sub: Mapped[str] = mapped_column(String(255), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    room: Mapped[Room] = relationship(back_populates="messages")

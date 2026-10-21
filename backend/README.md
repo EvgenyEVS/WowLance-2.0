@@ -612,6 +612,36 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/terminations
 # -> { "room_id": "...", "terminations": [...] }
 ```
 
+## C20: Room chat stub (сообщения комнаты)
+
+Тонкая лента сообщений комнаты: список + отправка, без WebSocket. Контракт:
+[contracts/wowlance/RoomMessages.v1.yaml](../contracts/wowlance/RoomMessages.v1.yaml).
+
+| Правило | Поведение |
+|---------|-----------|
+| GET …/messages | Последние N сообщений (default 50, max 100), по created_at asc |
+| POST …/messages | Тело `{ "body": "…" }` (1–2000 chars), автор = актер, 201 |
+| Нет комнаты | **404** |
+| Пустой body / >2000 chars | **422** |
+| Без X-Actor-Sub (AUTH_DISABLED=true) | **422** |
+| Редактирование/удаление | вне scope C20 (нет) |
+
+```powershell
+# room_id из handoff; X-Actor-Sub обязателен (stub)
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: founder-demo-sub" `
+  -d '{ "body": "Привет, команда!" }'
+# -> { "id": "...", "room_id": "...", "author_sub": "...",
+#      "body": "Привет, команду!", "created_at": "..." }
+
+# список последних сообщений
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages
+# -> { "room_id": "...", "messages": [...] }
+
+curl -s "http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages?limit=10"
+```
+
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  
