@@ -612,6 +612,50 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/terminations
 # -> { "room_id": "...", "terminations": [...] }
 ```
 
+## C19: Inbound вебхук CRM deal-status (стадия сделки на лиде)
+
+C9 отдаёт Hot в CRM (outbox stub). По обратному вебхуку CRM шлёт стадию сделки.
+Endpoint `POST /internal/v1/crm/deal-status` обновляет `deal_*` поля на лиде
+(`handed_to_crm` только). Контракт:
+[contracts/wowlance/CrmDealStatus.v1.yaml](../contracts/wowlance/CrmDealStatus.v1.yaml).
+
+| Правило | Поведение |
+|---------|-----------|
+| Поиск лида | по `crm_ref` (из C9 handoff: `crm-stub:<lead_id>`) |
+| Лид не найден | **404** |
+| Лид не в `handed_to_crm` | **409** `lead_not_handed` |
+| Успех | 200 + `deal_status`, опц. `deal_amount`/`deal_currency`, `deal_updated_at` |
+| Повтор с тем же статусом | 200 идемпотентно (без повторной записи) |
+| Исходящий outbox | не обязателен в C19 (inbound) |
+| GET leads | отдаёт новые поля `deal_*` |
+
+Body:
+```json
+{
+  "crm_ref": "crm-stub:<lead_id>",
+  "deal_status": "won",
+  "amount": 15000.00,
+  "currency": "USD"
+}
+```
+
+```powershell
+# после handoff-crm (лид в handed_to_crm, crm_ref = crm-stub:<lead_id>)
+curl -s -X POST http://127.0.0.1:8000/internal/v1/crm/deal-status `
+  -H "Content-Type: application/json" `
+  -d '{
+    "crm_ref": "crm-stub:<lead_id>",
+    "deal_status": "won",
+    "amount": 15000,
+    "currency": "USD"
+  }'
+# -> { "room_id": "...", "lead_id": "...", "crm_ref": "...",
+#      "deal_status": "won", "deal_amount": "15000.00", "deal_currency": "USD",
+#      "deal_updated_at": "..." }
+```
+
+Повтор того же `deal_status` → `200` (идемпотентно). `deal_status` на `open`/`hot` → `409`.
+
 ## C20: Room chat stub (сообщения комнаты)
 
 Тонкая лента сообщений комнаты: список + отправка, без WebSocket. Контракт:

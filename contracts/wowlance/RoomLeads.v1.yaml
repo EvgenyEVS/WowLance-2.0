@@ -21,6 +21,10 @@ lead:
       type: string
       enum: [open, hot, handed_to_crm]
     crm_ref: { type: string, nullable: true }
+    deal_status: { type: string, nullable: true }
+    deal_amount: { type: number, nullable: true }
+    deal_currency: { type: string, nullable: true }
+    deal_updated_at: { type: string, format: date-time, nullable: true }
     created_at: { type: string, format: date-time }
     updated_at: { type: string, format: date-time }
 
@@ -47,6 +51,16 @@ paths:
     method: POST
     path: /api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm
     headers: [X-Actor-Sub]
+  deal_status:
+    method: POST
+    path: /internal/v1/crm/deal-status
+    request:
+      required: [crm_ref, deal_status]
+      properties:
+        crm_ref: { type: string }
+        deal_status: { type: string, enum: [won, lost, in_progress, unknown] }
+        amount: { type: number, nullable: true }
+        currency: { type: string, nullable: true }
 
 transitions:
   create: "-> open"
@@ -74,7 +88,23 @@ response_handoff_200:
       type: string
       enum: [handed, already_handed]
 
+response_deal_status_200:
+  type: object
+  required: [room_id, lead_id, crm_ref, deal_status, deal_updated_at]
+  properties:
+    room_id: { type: string, format: uuid }
+    lead_id: { type: string, format: uuid }
+    crm_ref: { type: string }
+    deal_status:
+      type: string
+      enum: [won, lost, in_progress, unknown]
+    deal_amount: { type: number, nullable: true }
+    deal_currency: { type: string, nullable: true }
+    deal_updated_at: { type: string, format: date-time }
+
 errors:
   - { code: 404, when: "room or lead missing" }
+  - { code: 404, when: "crm_ref does not match any lead (deal-status)" }
   - { code: 409, when: "illegal transition (mark-hot on non-open; handoff from open)" }
+  - { code: 409, when: "lead is not in handed_to_crm (lead_not_handed; deal-status)" }
   - { code: 422, when: "validation or missing X-Actor-Sub on mutating routes" }

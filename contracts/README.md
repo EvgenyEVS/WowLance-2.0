@@ -36,6 +36,8 @@
 | [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
 | [`wowlance/StaffingUnlocked.v1.yaml`](wowlance/StaffingUnlocked.v1.yaml) | draft v1 — C18 исходящее событие StaffingUnlocked при первом unlock staffing (outbox) |
 | [`wowlance/examples/StaffingUnlocked.sale.json`](wowlance/examples/StaffingUnlocked.sale.json) | пример outbox payload |
+| [`wowlance/CrmDealStatus.v1.yaml`](wowlance/CrmDealStatus.v1.yaml) | draft v1 — C19 inbound вебхук CRM deal-status (обновляет deal_* на лиде) |
+| [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | дополнен полями deal_* (C19) |
 | [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
 | [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
 
