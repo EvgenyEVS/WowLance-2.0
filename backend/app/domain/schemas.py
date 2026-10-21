@@ -294,6 +294,19 @@ class SlotReassignResponse(BaseModel):
     status: ReassignStatus
 
 
+class MatchCandidateOut(BaseModel):
+    freelancer_sub: str
+    display_name: str
+    skills: list[str] | None = None
+    level: str | None = None
+    score: int
+
+
+class SlotMatchResponse(BaseModel):
+    slot_id: UUID
+    candidates: list[MatchCandidateOut]
+
+
 class TaskStatus(str, Enum):
     todo = "todo"
     in_progress = "in_progress"

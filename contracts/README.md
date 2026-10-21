@@ -38,6 +38,7 @@
 | [`wowlance/examples/StaffingUnlocked.sale.json`](wowlance/examples/StaffingUnlocked.sale.json) | пример outbox payload |
 | [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
 | [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
+| [`wowlance/SlotMatch.v1.yaml`](wowlance/SlotMatch.v1.yaml) | draft v1 — C23 Matching lite (GET …/slots/{slot_id}/match shortlist из локального roster) |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
