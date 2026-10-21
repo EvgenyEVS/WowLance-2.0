@@ -288,6 +288,41 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/earnings
 #      "entries": [{ "task_id": "...", "freelancer_sub": "...", "amount": "10.00", ...}] }
 ```
 
+## C24: Outbox `TaskAccepted` при accept задачи
+
+При успешном accept (`submitted` → `done`) в **той же транзакции** пишется строка в
+`outbox_messages` (`event_type: TaskAccepted`, `status: sent`) рядом с C16 earnings.
+Контракт: [`contracts/wowlance/TaskAccepted.v1.yaml`](../contracts/wowlance/TaskAccepted.v1.yaml),
+пример — [`contracts/wowlance/examples/TaskAccepted.example.json`](../contracts/wowlance/examples/TaskAccepted.example.json).
+
+| Правило | Поведение |
+|---------|-----------|
+| Когда | Только при успешном accept → `done` |
+| event_type | `TaskAccepted` |
+| status | `sent` (stub, без брокера) |
+| sent_at | `now` (время accept) |
+| idempotency_key | `task:{task_id}:TaskAccepted` (unique, дубль не создаёт second row) |
+| Повторный accept | невозможно (уже done) → **409** |
+| Атомарность | status done + earnings row + outbox коммитятся вместе |
+| Accept без assignee | outbox всё равно (assignee_sub: null); earnings может отсутствовать |
+
+Payload минимум: `room_id`, `task_id`, `assignee_sub`, `reviewed_by_sub`, `proof_uri`, `accepted_at`;
+optional `amount`/`currency` если earnings создан.
+
+Проверка SQL:
+
+```sql
+SELECT event_type, idempotency_key, status, sent_at, payload
+FROM outbox_messages
+WHERE event_type = 'TaskAccepted';
+```
+
+```powershell
+# room_id + task_id из handoff/списка задач; accept задачи (с assignee для earnings)
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/accept `
+  -H "X-Actor-Sub: teamlead-demo-sub"
+```
+
 ## C18: Outbox `StaffingUnlocked` при первом unlock staffing
 
 При первом успешном unlock (`staffing_unlocked` false → true) по `POST /internal/v1/entitlements` пишется строка в `outbox_messages` (`event_type: StaffingUnlocked`, `status: sent`) в той же транзакции, что и grant. Контракт:
