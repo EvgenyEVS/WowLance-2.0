@@ -70,7 +70,11 @@ Health: http://127.0.0.1:8000/health
 | **C19** | CRM deal-status inbound — [задание](docs/261019%20-%20задание%20C19%20CRM%20deal%20status.md) ∥ C16–C18 · C20–C21 |
 | **C20** | Room chat stub — [задание](docs/261019%20-%20задание%20C20%20Room%20chat.md) ∥ C16–C19 · C21 |
 | **C21** | Internal service-token stub — [задание](docs/261019%20-%20задание%20C21%20Internal%20service%20token.md) ∥ C16–C20 |
-| **C22+** | Matching, rematerialize слотов, live adapters, полный RBAC |
+| **C22** | Slot rematerialize — [задание](docs/261021%20-%20задание%20C22%20Slot%20rematerialize.md) ∥ C19 · C23–C25 |
+| **C23** | Matching lite — [задание](docs/261021%20-%20задание%20C23%20Matching%20lite.md) ∥ C19 · C22 · C24–C25 |
+| **C24** | Outbox `TaskAccepted` — [задание](docs/261021%20-%20задание%20C24%20TaskAccepted%20outbox.md) ∥ C19 · C22–C23 · C25 |
+| **C25** | Earned в Room health — [задание](docs/261021%20-%20задание%20C25%20Health%20earnings.md) ∥ C19 · C22–C24 |
+| **C26+** | Полный RBAC, live adapters, Gateway |
 
 ## Политика оплаты
 

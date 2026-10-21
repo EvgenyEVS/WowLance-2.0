@@ -19,3 +19,21 @@
 08:33:18 [vite] (client) page reload src/main.tsx
 08:33:18 [vite] (client) hmr update /src/index.css
 08:33:18 [vite] server restarted.
+08:38:19 [vite] changed tsconfig file detected: C:/Программирование/Стажировка Wowlance/WowLance-2.0/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+08:38:19 [vite] changed tsconfig file detected: C:/Программирование/Стажировка Wowlance/WowLance-2.0/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+08:38:19 [vite] (client) page reload index.html
+08:38:19 [vite] vite.config.ts changed, restarting server...
+08:38:19 [vite] (client) page reload index.html
+08:38:19 [vite] server restarted.
+08:40:39 [vite] changed tsconfig file detected: C:/Программирование/Стажировка Wowlance/WowLance-2.0/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+08:40:39 [vite] (client) page reload index.html
+08:40:39 [vite] vite.config.ts changed, restarting server...
+08:40:39 [vite] vite.config.ts changed, restarting server...
+08:40:39 [vite] server restarted.
+07:46:49 [vite] changed tsconfig file detected: C:/Программирование/Стажировка Wowlance/WowLance-2.0/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+07:46:49 [vite] (client) page reload index.html
+07:46:50 [vite] changed tsconfig file detected: C:/Программирование/Стажировка Wowlance/WowLance-2.0/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+07:46:50 [vite] (client) page reload index.html
+07:46:50 [vite] vite.config.ts changed, restarting server...
+07:46:50 [vite] vite.config.ts changed, restarting server...
+07:46:50 [vite] server restarted.

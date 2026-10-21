@@ -3,6 +3,7 @@
 | Файл | Содержание |
 |------|------------|
 | [ADR-002](ADR-002-wowlance-2.0-platform-room.md) | Канон продукта и границ сервиса |
+| [261021 — оценка готовности и качества](261021%20-%20оценка%20готовности%20и%20качества.md) | Готовность stub/live, качество кода (21.10) |
 | [architecture/](architecture/) | Overview, A/B/C, integration map (из пакета 2.0) |
 | [261010 — C1 FounderHandoff](261010%20-%20задание%20C1%20FounderHandoff.md) | Handoff → комната + snapshot |
 | [261010 — C2 Entitlement](261010%20-%20задание%20C2%20Entitlement%20unlock.md) | Unlock staffing |
