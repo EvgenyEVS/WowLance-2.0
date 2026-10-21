@@ -19,6 +19,7 @@
 | [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 трекер задач + C10 Quality Gate (`submitted`/`proof_*`, accept/reject) + C15 assignee из roster (assign) |
 | [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач (todo/in_progress/submitted + proof) |
 | [`wowlance/AuthBearer.v1.yaml`](wowlance/AuthBearer.v1.yaml) | draft v1 — C8 Bearer JWT на `/api/v1/*` + shadow User |
+| [`wowlance/InternalServiceAuth.v1.yaml`](wowlance/InternalServiceAuth.v1.yaml) | draft v1 — C21 service-token на `/internal/v1/*` (X-Service-Token) |
 
 | [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | draft v1 — C9 лиды комнаты (open → hot → handed_to_crm) |
 | [`wowlance/examples/RoomLeads.sale.json`](wowlance/examples/RoomLeads.sale.json) | пример list-ответа лидов |
@@ -33,8 +34,12 @@
 | [`wowlance/examples/RoomEarnings.sale.json`](wowlance/examples/RoomEarnings.sale.json) | пример ответа списка начислений |
 | [`wowlance/MemberTerminated.v1.yaml`](wowlance/MemberTerminated.v1.yaml) | draft v1 — C17 `POST …/terminate` + `GET …/terminations` (расторжение участника) |
 | [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
+| [`wowlance/StaffingUnlocked.v1.yaml`](wowlance/StaffingUnlocked.v1.yaml) | draft v1 — C18 исходящее событие StaffingUnlocked при первом unlock staffing (outbox) |
+| [`wowlance/examples/StaffingUnlocked.sale.json`](wowlance/examples/StaffingUnlocked.sale.json) | пример outbox payload |
 | [`wowlance/CrmDealStatus.v1.yaml`](wowlance/CrmDealStatus.v1.yaml) | draft v1 — C19 inbound вебхук CRM deal-status (обновляет deal_* на лиде) |
 | [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | дополнен полями deal_* (C19) |
+| [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
+| [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 

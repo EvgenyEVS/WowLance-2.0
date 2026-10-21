@@ -1,0 +1,31 @@
+# OpenSpec / contract draft — InternalServiceAuth v1 (C21)
+# Сервисный секрет на внутренние эндпоинты /internal/v1/* (stub, без Keycloak / Gateway).
+# C8 user JWT на /api/v1/* не меняется.
+
+id: InternalServiceAuth
+version: "1"
+applies_to: /internal/v1/*
+header: X-Service-Token
+when: INTERNAL_AUTH_DISABLED=false
+errors: [401]
+
+config:
+  INTERNAL_AUTH_DISABLED: "true"   # true — dev/tests, internal routes открыты
+  INTERNAL_SERVICE_TOKEN: ""       # непустая строка секрета в строгом режиме
+
+rules:
+  - when: "INTERNAL_AUTH_DISABLED=true"
+    then: "/internal/v1/* без заголовка — OK (реgression C1)"
+  - when: "INTERNAL_AUTH_DISABLED=false + нет X-Service-Token"
+    then: "/internal/v1/* → 401"
+  - when: "INTERNAL_AUTH_DISABLED=false + неверный X-Service-Token"
+    then: "/internal/v1/* → 401"
+  - when: "INTERNAL_AUTH_DISABLED=false + верный X-Service-Token"
+    then: "/internal/v1/* — как раньше"
+  - scope: [/health, /docs, /auth/*, /api/v1/*]
+    then: "без требования service token (не защищать повторно)"
+
+notes:
+  - "Способ передачи: X-Service-Token: <secret> (рекомендация)."
+  - "Пустой INTERNAL_SERVICE_TOKEN при INTERNAL_AUTH_DISABLED=false → fail-fast при старте."
+  - "C18/C19 internal paths покрываются тем же префикс-guard автоматически."

@@ -120,6 +120,10 @@ export type RoomLead = {
   notes?: string | null
   status: LeadStatus
   crm_ref?: string | null
+  deal_status?: string | null
+  deal_amount?: string | null
+  deal_currency?: string | null
+  deal_updated_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -184,4 +188,17 @@ export type TerminateMemberResult = {
   status: 'terminated'
   freelancer_sub: string
   slot_ids: string[]
+}
+
+export type RoomMessage = {
+  id: string
+  room_id: string
+  author_sub: string
+  body: string
+  created_at: string
+}
+
+export type MessagesList = {
+  room_id: string
+  messages: RoomMessage[]
 }

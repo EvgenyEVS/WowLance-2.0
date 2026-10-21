@@ -207,5 +207,5 @@ def test_regression_tasks_and_outbox_untouched(client, db_session, sale_payload)
     from app.db.models import OutboxMessage
 
     events = db_session.scalars(select(OutboxMessage)).all()
-    assert len(events) == 1
-    assert events[0].event_type == "RoomCreated"
+    assert len(events) == 2
+    assert {e.event_type for e in events} == {"RoomCreated", "StaffingUnlocked"}

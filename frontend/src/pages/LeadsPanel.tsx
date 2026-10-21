@@ -139,6 +139,16 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
               {lead.crm_ref ? (
                 <code className="hint">{lead.crm_ref}</code>
               ) : null}
+              {lead.status === 'handed_to_crm' && lead.deal_status && (
+                <>
+                  <span className="hint task-assignee">
+                    deal: {lead.deal_status}
+                    {lead.deal_amount && lead.deal_currency
+                      ? ` ${lead.deal_amount} ${lead.deal_currency}`
+                      : ''}
+                  </span>
+                </>
+              )}
               {lead.status === 'open' && (
                 <button
                   type="button"

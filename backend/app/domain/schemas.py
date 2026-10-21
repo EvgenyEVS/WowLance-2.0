@@ -522,3 +522,22 @@ class RoomTerminationOut(BaseModel):
 class RoomTerminationListResponse(BaseModel):
     room_id: UUID
     terminations: list[RoomTerminationOut]
+
+
+class RoomMessageOut(BaseModel):
+    id: UUID
+    room_id: UUID
+    author_sub: str
+    body: str
+    created_at: datetime
+
+
+class RoomMessageListResponse(BaseModel):
+    room_id: UUID
+    messages: list[RoomMessageOut]
+
+
+class RoomMessageCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=1, max_length=2000)

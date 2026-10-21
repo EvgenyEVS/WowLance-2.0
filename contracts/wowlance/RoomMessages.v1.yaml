@@ -1,0 +1,60 @@
+# OpenSpec / contract draft — RoomMessages v1 (C20)
+# Room chat stub: список сообщений комнаты + отправка нового.
+# Живого WebSocket / SSE нет (достаточно poll Refresh), вложений нет.
+
+id: RoomMessages
+version: "1"
+channel: https
+
+message:
+  type: object
+  required: [id, room_id, author_sub, body, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    author_sub: { type: string }
+    body: { type: string, minLength: 1, maxLength: 2000 }
+    created_at: { type: string, format: date-time }
+
+paths:
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/messages
+    query:
+      limit: { type: integer, minimum: 1, maximum: 100, default: 50 }
+  post:
+    method: POST
+    path: /api/v1/rooms/{room_id}/messages
+    headers: [X-Actor-Sub]
+    request:
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 2000 }
+
+response_list_200:
+  type: object
+  required: [room_id, messages]
+  properties:
+    room_id: { type: string, format: uuid }
+    messages:
+      type: array
+      items: { $ref: "#/message" }
+
+response_post_201:
+  type: object
+  required: [id, room_id, author_sub, body, created_at]
+  properties:
+    id: { type: string, format: uuid }
+    room_id: { type: string, format: uuid }
+    author_sub: { type: string }
+    body: { type: string }
+    created_at: { type: string, format: date-time }
+
+errors:
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "body пустой или длиннее 2000 символов; без X-Actor-Sub (AUTH_DISABLED=true)" }
+
+notes:
+  - "Автор сообщения = актер запроса (get_actor_sub)."
+  - "Порядок: по created_at asc. Лимит по умолчанию 50, максимум 100."
+  - "Редактирование/удаление — вне scope C20."

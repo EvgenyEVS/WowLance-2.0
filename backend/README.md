@@ -288,6 +288,46 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/earnings
 #      "entries": [{ "task_id": "...", "freelancer_sub": "...", "amount": "10.00", ...}] }
 ```
 
+## C18: Outbox `StaffingUnlocked` при первом unlock staffing
+
+При первом успешном unlock (`staffing_unlocked` false → true) по `POST /internal/v1/entitlements` пишется строка в `outbox_messages` (`event_type: StaffingUnlocked`, `status: sent`) в той же транзакции, что и grant. Контракт:
+[contracts/wowlance/StaffingUnlocked.v1.yaml](../contracts/wowlance/StaffingUnlocked.v1.yaml),
+пример — [contracts/wowlance/examples/StaffingUnlocked.sale.json](../contracts/wowlance/examples/StaffingUnlocked.sale.json).
+
+| Правило | Поведение |
+|---------|-----------|
+| Когда | Только при первом переходе `staffing_unlocked` false → true в этом запросе |
+| idempotency_key | `room:{id}:StaffingUnlocked` (отдельно от RoomCreated, т.к. колонка globally unique) |
+| event_type | `StaffingUnlocked` |
+| status | `sent` (stub, без брокера) |
+| sent_at | `now` |
+| Повтор entitlement (`already_granted`) | **не** создаёт вторую outbox-строку |
+| 404 / 409 | комната и outbox не меняются |
+| Атомарность | grant + outbox коммитятся вместе |
+
+Payload минимум: `room_id`, `entitlement_id`, `unlocked_at`, `staffing_unlocked: true`, `founder_sub`.
+
+Проверка SQL:
+
+```sql
+SELECT event_type, idempotency_key, status, sent_at, payload
+FROM outbox_messages
+WHERE event_type = 'StaffingUnlocked';
+```
+
+```powershell
+# room_id из ответа handoff (201 created), затем entitlement (см. C2)
+curl -s -X POST http://127.0.0.1:8000/internal/v1/entitlements `
+  -H "Content-Type: application/json" `
+  -d '{
+    "entitlement_id": "33333333-3333-3333-3333-333333333333",
+    "room_id": "<room_id from handoff>",
+    "source": "stub"
+  }'
+```
+
+Повтор того же `entitlement_id` → `200` + `"status":"already_granted"`, второй outbox-строки нет.
+
 ## C10: Quality Gate lite
 
 Сдача задачи требует **proof** (URI строкой + короткий note); тимлид **accept/reject**. Без загрузки файлов, рейтингов и выплат. Контракт: [`contracts/wowlance/RoomTasks.v1.yaml`](../contracts/wowlance/RoomTasks.v1.yaml). Миграция: `008_c10_quality_gate` (nullable `proof_uri`, `proof_note`, `reviewed_by_sub`, `review_note` на `room_tasks`).
@@ -615,6 +655,73 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/crm/deal-status `
 ```
 
 Повтор того же `deal_status` → `200` (идемпотентно). `deal_status` на `open`/`hot` → `409`.
+
+## C20: Room chat stub (сообщения комнаты)
+
+Тонкая лента сообщений комнаты: список + отправка, без WebSocket. Контракт:
+[contracts/wowlance/RoomMessages.v1.yaml](../contracts/wowlance/RoomMessages.v1.yaml).
+
+| Правило | Поведение |
+|---------|-----------|
+| GET …/messages | Последние N сообщений (default 50, max 100), по created_at asc |
+| POST …/messages | Тело `{ "body": "…" }` (1–2000 chars), автор = актер, 201 |
+| Нет комнаты | **404** |
+| Пустой body / >2000 chars | **422** |
+| Без X-Actor-Sub (AUTH_DISABLED=true) | **422** |
+| Редактирование/удаление | вне scope C20 (нет) |
+
+```powershell
+# room_id из handoff; X-Actor-Sub обязателен (stub)
+curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages `
+  -H "Content-Type: application/json" `
+  -H "X-Actor-Sub: founder-demo-sub" `
+  -d '{ "body": "Привет, команда!" }'
+# -> { "id": "...", "room_id": "...", "author_sub": "...",
+#      "body": "Привет, команду!", "created_at": "..." }
+
+# список последних сообщений
+curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages
+# -> { "room_id": "...", "messages": [...] }
+
+curl -s "http://127.0.0.1:8000/api/v1/rooms/<room_id>/messages?limit=10"
+```
+
+## C21: Internal service-token stub (защита /internal/v1/*)
+
+C8 оставил `/internal/v1/*` открытым. C21 закрывает этот долг stub-сервитным секретом, без Keycloak client-credentials / Gateway.
+
+| Правило | Поведение |
+|---------|-----------|
+| `INTERNAL_AUTH_DISABLED=true` (default) | `/internal/v1/*` открыт, как раньше (C1 regression) |
+| `INTERNAL_AUTH_DISABLED=false` | `/internal/v1/*` требует `X-Service-Token: <secret>` |
+| Нет/неверный токен в строгом режиме | **401** (не 403) |
+| Пустой `INTERNAL_SERVICE_TOKEN` в строгом режиме | fail-fast при старте приложения |
+| `/health`, `/docs`, `/auth/*`, `/api/v1/*` | без service token (C8 JWT отдельно) |
+
+Контракт: [contracts/wowlance/InternalServiceAuth.v1.yaml](../contracts/wowlance/InternalServiceAuth.v1.yaml).
+
+Env (`.env` / `.env.example`):
+```
+INTERNAL_AUTH_DISABLED=true    # dev/tests: внутренние routes открыты
+# INTERNAL_AUTH_DISABLED=false # строгий режим
+# INTERNAL_SERVICE_TOKEN=change-me-in-prod
+```
+
+curl (строгий режим):
+```powershell
+# без токена -> 401
+curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
+  -H "Content-Type: application/json" `
+  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+
+# с токеном -> 201
+curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
+  -H "Content-Type: application/json" `
+  -H "X-Service-Token: change-me-in-prod" `
+  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+```
+
+C18/C19 internal пути покрываются тем же префикс-guard автоматически.
 ## Тесты
 
 Нужен живой Postgres из `docker compose`.  

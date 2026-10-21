@@ -7,6 +7,7 @@ import RosterPanel from './RosterPanel'
 import RoomHealthPanel from './RoomHealthPanel'
 import SlotsPanel from './SlotsPanel'
 import TasksPanel from './TasksPanel'
+import ChatPanel from './ChatPanel'
 
 type LoadState =
   | { kind: 'loading' }
@@ -189,6 +190,7 @@ function RoomView({
       />
       <TasksPanel roomId={room.id} />
       <LeadsPanel roomId={room.id} />
+      <ChatPanel roomId={room.id} />
       <RoomHealthPanel roomId={room.id} />
       <section className="block">
         <h2>Earned (stub)</h2>

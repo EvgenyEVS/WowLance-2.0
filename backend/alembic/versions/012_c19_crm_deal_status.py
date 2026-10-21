@@ -10,7 +10,6 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
 
 revision: str = "012_c19_crm_deal_status"
 down_revision: Union[str, Sequence[str], None] = "011_merge_c16_c17_heads"

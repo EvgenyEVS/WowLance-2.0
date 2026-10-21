@@ -10,6 +10,8 @@ Tasks (C7): **Add** / **Start** with stub header `X-Actor-Sub: freelancer-demo-s
 Tasks assignee (C15): при **Add** можно выбрать исполнителя из ростера (`GET /api/v1/roster`); `assignee_sub` должен быть в roster, иначе 404. **Start** без assignee подставляет `X-Actor-Sub` — актер тоже должен быть в ростере. На задачах в `todo`/`in_progress` доступен **Assign** для смены исполнителя.  
 Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accept** / **Reject** (optional reason) as `X-Actor-Sub: teamlead-demo-sub`. Proof shown on the card; reject keeps proof for resubmit.  
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
+C19 Deal status: после `Hand to CRM` вебхук `POST /internal/v1/crm/deal-status` ставит `deal_status` (+ `deal_amount`/`deal_currency`) на лид в статусе `handed_to_crm`, показывается в списке лидов.
+Chat (C20): **ChatPanel** на RoomPage — список сообщений + форма **Send** + **Refresh** (poll, без WebSocket). Автор = `X-Actor-Sub`.
 Room health (C13): card on the room page shows slots/tasks/leads aggregates; **Refresh** re-reads `GET …/health`, **Publish snapshot** writes an outbox `RoomHealthSnapshot` row (stub).
 Earned (C16): block on the room page shows total earned + entries per accepted task (`GET …/earnings`). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
 Member termination (C17): on a **filled** slot, **Terminate** button (next to **Unassign**) prompts for a reason → `POST …/members/{sub}/terminate` → frees the slot, writes `room_terminations` journal + outbox `MemberTerminated`. **Unassign** = just frees the slot (no journal/outbox); **Terminate** = с причиной и историей.

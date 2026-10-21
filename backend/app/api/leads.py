@@ -11,7 +11,7 @@ from app.db.session import get_db
 from app.domain.leads import (
     InvalidTransitionError,
     LeadNotFoundError,
-    LeadNotHandledError,
+    LeadNotEligibleError,
     RoomNotFoundError,
     apply_deal_status,
     create_lead,
@@ -162,7 +162,7 @@ def post_crm_deal_status(
         )
     except LeadNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except LeadNotHandledError as exc:
+    except LeadNotEligibleError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return CrmDealStatusResponse(
@@ -170,7 +170,7 @@ def post_crm_deal_status(
         lead_id=lead.id,
         crm_ref=lead.crm_ref or "",
         deal_status=lead.deal_status,
-        deal_amount=lead.deal_amount,
+        deal_amount=str(lead.deal_amount) if lead.deal_amount is not None else None,
         deal_currency=lead.deal_currency,
         deal_updated_at=lead.deal_updated_at,
     )

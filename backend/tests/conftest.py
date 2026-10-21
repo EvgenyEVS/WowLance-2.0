@@ -74,6 +74,16 @@ def _auth_disabled_for_tests():
     settings.auth_disabled = True
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _internal_auth_disabled_for_tests():
+    """C21: pytest runs with internal service-token guard disabled by default."""
+    settings.internal_auth_disabled = True
+    settings.internal_service_token = ""
+    yield
+    settings.internal_auth_disabled = True
+    settings.internal_service_token = ""
+
+
 @pytest.fixture(scope="session")
 def engine():
     test_url = _test_database_url()

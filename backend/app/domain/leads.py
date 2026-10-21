@@ -37,8 +37,8 @@ class LeadNotFoundError(Exception):
     """No lead for the given (room_id, lead_id)."""
 
 
-class LeadNotHandledError(Exception):
-    """Lid not in handed_to_crm; deal-status cannot be applied (lead_not_handed)."""
+class LeadNotEligibleError(Exception):
+    """Лид не в handed_to_crm; deal-status нельзя применить (lead_not_handed)."""
 
 
 class InvalidTransitionError(Exception):
@@ -185,7 +185,7 @@ def apply_deal_status(
     if lead is None:
         raise LeadNotFoundError("crm_ref does not match any lead")
     if lead.status != LeadStatus.handed_to_crm.value:
-        raise LeadNotHandledError("lead_not_handed")
+        raise LeadNotEligibleError("lead_not_handed")
 
     already = (
         lead.deal_status == deal_status
