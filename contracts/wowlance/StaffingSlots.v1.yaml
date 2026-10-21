@@ -5,6 +5,8 @@
 # Requires the stub header X-Actor-Sub (missing: 422). Idempotent on repeat.
 # C12 unassign: filled -> open (freelancer_sub cleared); 409 slot_not_filled otherwise.
 # C12 reassign: swap the person on an already filled slot; 409 slot_not_filled on open.
+# C22 rematerialize: sync seats to active staffing_intent — add open, cancel extra open,
+# filled orphans reported in orphaned_filled (не сносятся автоматически). Явный POST.
 
 id: StaffingSlots
 version: "1"
@@ -41,6 +43,9 @@ paths:
       required: [freelancer_sub]
       properties:
         freelancer_sub: { type: string }
+  rematerialize:
+    method: POST
+    path: /api/v1/rooms/{room_id}/slots/rematerialize
 
 slot:
   type: object
@@ -105,6 +110,21 @@ response_reassign_200:
       type: string
       enum: [reassigned, already_assigned]
 
+response_rematerialize_200:
+  type: object
+  required: [room_id, status, slots]
+  properties:
+    room_id: { type: string, format: uuid }
+    status:
+      type: string
+      enum: [rematerialized, already_synced]
+    slots:
+      type: array
+      items: { $ref: "#/slot" }
+    orphaned_filled:
+      type: array
+      items: { $ref: "#/slot" }
+
 errors:
   - { code: 403, when: "staffing_unlocked is false (detail: staffing_locked)" }
   - { code: 404, when: "room_id does not exist" }
@@ -112,4 +132,6 @@ errors:
   - { code: 404, when: "unassign/reassign: slot_id not in room or reassign freelancer_sub not in roster (detail: slot_id does not exist in this room / freelancer_not_in_roster)" }
   - { code: 409, when: "assign: slot already filled by another (slot_already_filled) or freelancer already seated in this room (already_seated)" }
   - { code: 409, when: "unassign/reassign: slot is not filled (slot_not_filled); reassign sub already seated elsewhere (already_seated)" }
+  - { code: 403, when: "rematerialize: staffing_unlocked is false (detail: staffing_locked)" }
+  - { code: 404, when: "rematerialize: room_id does not exist" }
   - { code: 422, when: "validation failed or missing X-Actor-Sub on assign/unassign/reassign" }

@@ -187,6 +187,18 @@ class StaffingMaterializeResponse(BaseModel):
     slots: list[FunctionSlotOut]
 
 
+class RematerializeStatus(str, Enum):
+    rematerialized = "rematerialized"
+    already_synced = "already_synced"
+
+
+class StaffingRematerializeResponse(BaseModel):
+    room_id: UUID
+    status: RematerializeStatus
+    slots: list[FunctionSlotOut]
+    orphaned_filled: list[FunctionSlotOut] = []
+
+
 class StrategyPublishedRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
