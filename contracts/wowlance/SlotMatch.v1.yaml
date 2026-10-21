@@ -1,0 +1,46 @@
+# OpenSpec / contract draft — SlotMatch v1 (C23)
+# Matching lite: shortlist кандидатов из локального roster для open слота.
+# Читает только локальный roster. Live Talent API не вызывается.
+# GET …/slots/{slot_id}/match?limit=5
+# Слот должен быть open + room unlocked; иначе 409 / 403.
+# Кандидаты: не seated в комнате. Скор: level (+2) + skills overlap (+1).
+# Match не меняет БД.
+
+id: SlotMatch
+version: "1"
+direction: client -> WowLance
+channel: https
+
+paths:
+  match:
+    method: GET
+    path: /api/v1/rooms/{room_id}/slots/{slot_id}/match
+    query:
+      limit: { type: integer, minimum: 1, maximum: 20, default: 5 }
+
+candidate:
+  type: object
+  required: [freelancer_sub, display_name, skills, level, score]
+  properties:
+    freelancer_sub: { type: string }
+    display_name: { type: string }
+    skills:
+      type: array
+      items: { type: string }
+    level: { type: string, nullable: true }
+    score: { type: integer, minimum: 0 }
+
+response_match_200:
+  type: object
+  required: [slot_id, candidates]
+  properties:
+    slot_id: { type: string, format: uuid }
+    candidates:
+      type: array
+      items: { $ref: "#/candidate" }
+
+errors:
+  - { code: 403, when: "staffing_unlocked is false (detail: staffing_locked)" }
+  - { code: 404, when: "room_id does not exist or slot_id not in this room" }
+  - { code: 409, when: "slot is not open (detail: slot_not_open)" }
+  - { code: 422, when: "validation failed (limit > 20 or < 1)" }

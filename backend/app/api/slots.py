@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.domain.schemas import (
     SlotAssignRequest,
     SlotAssignResponse,
+    SlotMatchResponse,
     SlotReassignResponse,
     SlotUnassignResponse,
     StaffingMaterializeResponse,
@@ -33,6 +34,7 @@ from app.domain.staffing import (
     reassign_slot,
     unassign_slot,
 )
+from app.domain.matching import DEFAULT_LIMIT, SlotNotOpenError, match_candidates
 
 router = APIRouter(prefix="/api/v1/rooms", tags=["slots"])
 
@@ -87,6 +89,35 @@ def post_materialize_slots(
     except (RoomNotFoundError, StaffingLockedError) as exc:
         _map_errors(exc)
         raise
+
+
+@router.get(
+    "/{room_id}/slots/{slot_id}/match",
+    response_model=SlotMatchResponse,
+    responses={
+        200: {"description": "shortlist of candidates for the open slot"},
+        403: {"description": "staffing_locked"},
+        404: {"description": "room_id does not exist or slot not in this room"},
+        409: {"description": "slot_not_open"},
+        422: {"description": "validation failed (limit out of range)"},
+    },
+)
+def get_slot_match(
+    room_id: uuid.UUID,
+    slot_id: uuid.UUID,
+    limit: int = DEFAULT_LIMIT,
+    db: Session = Depends(get_db),
+) -> SlotMatchResponse:
+    try:
+        return match_candidates(db, room_id, slot_id, limit)
+    except (RoomNotFoundError, SlotNotFoundError) as exc:
+        _map_errors(exc)
+        raise
+    except StaffingLockedError as exc:
+        _map_errors(exc)
+        raise
+    except SlotNotOpenError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.post(

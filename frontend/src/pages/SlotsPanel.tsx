@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { apiFetch } from '../api'
 import type {
   FunctionSlot,
+  MatchCandidate,
   MaterializeResult,
   RosterMember,
   RematerializeResult,
   SlotAssignResult,
+  SlotMatchResult,
   SlotReassignResult,
   SlotUnassignResult,
   SlotsList,
@@ -36,10 +38,12 @@ export default function SlotsPanel({
   const [roster, setRoster] = useState<RosterMember[]>([])
   const [picked, setPicked] = useState<Record<string, string>>({})
   const [orphanedFilled, setOrphanedFilled] = useState<FunctionSlot[]>([])
+  const [matchResults, setMatchResults] = useState<Record<string, { candidates: MatchCandidate[] }>>({})
 
   const loadSlots = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
+    setMatchResults({})
     apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/slots`, {
       signal: controller.signal,
     })
@@ -138,6 +142,38 @@ export default function SlotsPanel({
       if (body.orphaned_filled && body.orphaned_filled.length > 0) {
         setOrphanedFilled(body.orphaned_filled)
       }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function suggest(slot: FunctionSlot) {
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await apiFetch(
+        `/api/v1/rooms/${encodeURIComponent(roomId)}/slots/${encodeURIComponent(
+          slot.id,
+        )}/match`,
+      )
+      if (res.status === 403) {
+        setError('Staffing locked (403).')
+        return
+      }
+      if (res.status === 404) {
+        setError('Slot not found (404).')
+        return
+      }
+      if (res.status === 409) {
+        setError('Slot is not open (409).')
+        return
+      }
+      if (!res.ok) {
+        setError(`HTTP ${res.status}`)
+        return
+      }
+      const body = (await res.json()) as SlotMatchResult
+      setMatchResults((prev) => ({ ...prev, [slot.id]: { candidates: body.candidates } }))
     } finally {
       setBusy(false)
     }
@@ -362,6 +398,34 @@ export default function SlotsPanel({
                   <span className="hint">{slot.status}</span>
                   {slot.status === 'open' ? (
                     <>
+                      <button
+                        type="button"
+                        className="slot-action"
+                        disabled={busy}
+                        onClick={() => void suggest(slot)}
+                      >
+                        Suggest
+                      </button>
+                      {matchResults[slot.id] && (
+                        <ul className="slot-list">
+                          {matchResults[slot.id].candidates.map((c) => (
+                            <li key={c.freelancer_sub}>
+                              {c.display_name} ({c.freelancer_sub}) — score {c.score}{' '}
+                              {c.skills?.join(', ') ?? ''}
+                              <button
+                                type="button"
+                                className="slot-action"
+                                disabled={busy || !(picked[slot.id] ?? '').trim()}
+                                onClick={() => {
+                                  setPicked((prev) => ({ ...prev, [slot.id]: c.freelancer_sub }))
+                                }}
+                              >
+                                Pick
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <select
                         value={picked[slot.id] ?? ''}
                         onChange={(e) =>

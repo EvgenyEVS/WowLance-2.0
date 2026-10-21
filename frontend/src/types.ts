@@ -95,6 +95,19 @@ export type SlotReassignResult = {
   status: 'reassigned' | 'already_assigned'
 }
 
+export type MatchCandidate = {
+  freelancer_sub: string
+  display_name: string
+  skills: string[] | null
+  level: string | null
+  score: number
+}
+
+export type SlotMatchResult = {
+  slot_id: string
+  candidates: MatchCandidate[]
+}
+
 export type TaskStatus = 'todo' | 'in_progress' | 'submitted' | 'done'
 
 export type RoomTask = {

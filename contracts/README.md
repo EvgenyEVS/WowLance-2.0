@@ -42,6 +42,7 @@
 | [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
 | [`wowlance/TaskAccepted.v1.yaml`](wowlance/TaskAccepted.v1.yaml) | draft v1 — C24 Outbox TaskAccepted при accept задачи (submitted → done) |
 | [`wowlance/examples/TaskAccepted.example.json`](wowlance/examples/TaskAccepted.example.json) | пример payload outbox-строки |
+| [`wowlance/SlotMatch.v1.yaml`](wowlance/SlotMatch.v1.yaml) | draft v1 — C23 Matching lite (GET …/slots/{slot_id}/match shortlist из локального roster) |
 
 Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
 
