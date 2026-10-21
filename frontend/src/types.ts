@@ -56,6 +56,13 @@ export type MaterializeResult = {
   slots: FunctionSlot[]
 }
 
+export type RematerializeResult = {
+  room_id: string
+  status: 'rematerialized' | 'already_synced'
+  slots: FunctionSlot[]
+  orphaned_filled: FunctionSlot[]
+}
+
 export type RosterMember = {
   freelancer_sub: string
   display_name: string
