@@ -12,7 +12,10 @@ Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accep
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
 C19 Deal status: после `Hand to CRM` вебхук `POST /internal/v1/crm/deal-status` ставит `deal_status` (+ `deal_amount`/`deal_currency`) на лид в статусе `handed_to_crm`, показывается в списке лидов.
 Chat (C20): **ChatPanel** на RoomPage — список сообщений + форма **Send** + **Refresh** (poll, без WebSocket). Автор = `X-Actor-Sub`.
-Room health (C13): card on the room page shows slots/tasks/leads aggregates; **Refresh** re-reads `GET …/health`, **Publish snapshot** writes an outbox `RoomHealthSnapshot` row (stub).
+Room health (C13 + C25): card on the room page shows slots/tasks/leads aggregates
+plus the **Earned** block (`total_amount`, `currency`, `entries_count`) from the
+stub earnings ledger; **Refresh** re-reads `GET …/health`, **Publish snapshot**
+writes an outbox `RoomHealthSnapshot` row (stub).
 Earned (C16): block on the room page shows total earned + entries per accepted task (`GET …/earnings`). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
 Member termination (C17): on a **filled** slot, **Terminate** button (next to **Unassign**) prompts for a reason → `POST …/members/{sub}/terminate` → frees the slot, writes `room_terminations` journal + outbox `MemberTerminated`. **Unassign** = just frees the slot (no journal/outbox); **Terminate** = с причиной и историей.
 

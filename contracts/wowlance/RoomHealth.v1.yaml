@@ -20,7 +20,7 @@ paths:
 
 snapshot:
   type: object
-  required: [room_id, captured_at, room, slots, tasks, leads]
+  required: [room_id, captured_at, room, slots, tasks, leads, earnings]
   properties:
     room_id: { type: string, format: uuid }
     captured_at: { type: string, format: date-time }
@@ -56,6 +56,13 @@ snapshot:
         total: { type: integer, minimum: 0 }
         hot: { type: integer, minimum: 0 }
         handed_to_crm: { type: integer, minimum: 0 }
+    earnings:
+      type: object
+      required: [total_amount, currency, entries_count]
+      properties:
+        total_amount: { type: string }
+        currency: { type: string }
+        entries_count: { type: integer, minimum: 0 }
 
 response_get_200:
   $ref: "#/snapshot"

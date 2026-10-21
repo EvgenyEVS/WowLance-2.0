@@ -9,12 +9,15 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.models import OutboxMessage, Room, RoomFunctionSlot, RoomLead, RoomTask
+from app.config import settings
+from app.db.models import EarningsEntry, OutboxMessage, Room, RoomFunctionSlot, RoomLead, RoomTask
 from app.domain.schemas import (
+    RoomHealthEarningsOut,
     RoomHealthLeadsOut,
     RoomHealthOut,
     RoomHealthPublishResponse,
@@ -81,6 +84,20 @@ def build_room_health(db: Session, room_id: uuid.UUID) -> RoomHealthOut:
         handed_to_crm=lead_counts.get("handed_to_crm", 0),
     )
 
+    earnings_rows = list(
+        db.scalars(
+            select(EarningsEntry).where(EarningsEntry.room_id == room.id)
+        ).all()
+    )
+    total_amount = sum(
+        (e.amount for e in earnings_rows), Decimal("0")
+    ).quantize(Decimal("0.01"))
+    earnings = RoomHealthEarningsOut(
+        total_amount=str(total_amount),
+        currency=settings.earnings_currency,
+        entries_count=len(earnings_rows),
+    )
+
     return RoomHealthOut(
         room_id=room.id,
         captured_at=datetime.now(timezone.utc),
@@ -94,6 +111,7 @@ def build_room_health(db: Session, room_id: uuid.UUID) -> RoomHealthOut:
         slots=slots,
         tasks=tasks,
         leads=leads,
+        earnings=earnings,
     )
 
 

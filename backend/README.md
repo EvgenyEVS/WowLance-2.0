@@ -323,6 +323,37 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/acc
   -H "X-Actor-Sub: teamlead-demo-sub"
 ```
 
+## C25: Earned в Room Health
+
+В снимок здоровья комнаты добавлен блок `earnings` — агрегат из локального stub ledger
+(`earnings_entries`, C16). GET health и publish используют один builder
+(`build_room_health`), поэтому и в GET, и в outbox-payload присутствует earnings.
+
+```yaml
+earnings:
+  total_amount: string   # decimal as string, e.g. "20.00"
+  currency: string       # default USD / из EARNINGS_CURRENCY
+  entries_count: int
+```
+
+| Правило | Поведение |
+|---------|-----------|
+| Источник | `SELECT sum(amount), count(*) FROM earnings_entries WHERE room_id = ...` |
+| Нет earnings | `total_amount="0.00"`, `entries_count=0` (не 404) |
+| currency | из `EARNINGS_CURRENCY` (default `USD`) |
+| Get health | `GET /api/v1/rooms/{room_id}/health` — тело включает `earnings` |
+| Publish | `POST /internal/v1/rooms/{room_id}/health/publish` — outbox `RoomHealthSnapshot` с earnings в payload |
+
+Проверка SQL:
+
+```sql
+SELECT
+  COALESCE(to_char(sum(amount), 'FM999999990.00'), '0.00') AS total_amount,
+  count(*) AS entries_count
+FROM earnings_entries
+WHERE room_id = '<room_id>';
+```
+
 ## C18: Outbox `StaffingUnlocked` при первом unlock staffing
 
 При первом успешном unlock (`staffing_unlocked` false → true) по `POST /internal/v1/entitlements` пишется строка в `outbox_messages` (`event_type: StaffingUnlocked`, `status: sent`) в той же транзакции, что и grant. Контракт:

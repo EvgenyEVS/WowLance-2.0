@@ -81,6 +81,11 @@ export default function RoomHealthPanel({ roomId }: { roomId: string }) {
         <dd>
           {leads.total} total · {leads.hot} hot · {leads.handed_to_crm} handed
         </dd>
+        <dt>Earned</dt>
+        <dd>
+          {health.earnings.total_amount} {health.earnings.currency} ·
+          {health.earnings.entries_count} entries
+        </dd>
         <dt>Captured</dt>
         <dd>{new Date(health.captured_at).toLocaleString()}</dd>
       </dl>
