@@ -56,5 +56,5 @@ errors:
 
 notes:
   - "Автор сообщения = актер запроса (get_actor_sub)."
-  - "Порядок: по created_at asc. Лимит по умолчанию 50, максимум 100."
+  - "Порядок ответа: oldest first. Лимит отбирает последние N (ORDER BY created_at desc + reverse). Default 50, max 100."
   - "Редактирование/удаление — вне scope C20."

@@ -394,7 +394,9 @@ export default function SlotsPanel({
           )}
           {state.kind === 'error' && <p className="error">{state.message}</p>}
           {state.kind === 'ok' && state.slots.length === 0 && (
-            <p className="hint">No seats in staffing intent.</p>
+            <p className="hint">
+              No seats yet. Click Materialize after entitlement, then Assign from roster.
+            </p>
           )}
           {state.kind === 'ok' && state.slots.length > 0 && (
             <ul className="slot-list">
@@ -422,7 +424,7 @@ export default function SlotsPanel({
                               <button
                                 type="button"
                                 className="slot-action"
-                                disabled={busy || !(picked[slot.id] ?? '').trim()}
+                                disabled={busy}
                                 onClick={() => {
                                   setPicked((prev) => ({ ...prev, [slot.id]: c.freelancer_sub }))
                                 }}
@@ -511,7 +513,7 @@ export default function SlotsPanel({
             </ul>
           )}
           {orphanedFilled.length > 0 && (
-            <p className="hint">
+            <p className="hint orphaned-hint">
               Заполненные слоты вне нового плана (не удалены автоматически):{' '}
               {orphanedFilled.map((s) => (
                 <span key={s.id}>

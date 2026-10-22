@@ -242,3 +242,48 @@ code {
 .task-review {
   color: #b45309;
 }
+
+.orphaned-hint {
+  border: 1px solid #f0c36d;
+  background: #fff8e8;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    margin: 1rem auto;
+    padding: 0 0.75rem;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+
+  .task-form,
+  .task-proof-form,
+  .task-row,
+  .pending-actions {
+    flex-wrap: wrap;
+  }
+
+  .task-form input,
+  .task-proof-form input,
+  select,
+  .open-form input {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .slot-list,
+  .task-item,
+  .docs code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}

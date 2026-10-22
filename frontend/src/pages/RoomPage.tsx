@@ -199,7 +199,11 @@ function RoomView({
         rosterVersion={rosterVersion}
         canStaff={canStaff}
       />
-      <TasksPanel roomId={room.id} canStaff={canStaff} />
+      <TasksPanel
+        roomId={room.id}
+        canStaff={canStaff}
+        onAccepted={() => void loadEarnings()}
+      />
       <LeadsPanel roomId={room.id} canStaff={canStaff} />
       <ChatPanel roomId={room.id} />
       <RoomHealthPanel roomId={room.id} />

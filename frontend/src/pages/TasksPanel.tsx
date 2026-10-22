@@ -18,9 +18,11 @@ type MutateResult =
 export default function TasksPanel({
   roomId,
   canStaff = true,
+  onAccepted,
 }: {
   roomId: string
   canStaff?: boolean
+  onAccepted?: () => void
 }) {
   const [state, setState] = useState<TasksState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
@@ -120,6 +122,9 @@ export default function TasksPanel({
         return { ok: false, status: res.status, message }
       }
       loadTasks()
+      if (path.endsWith('/accept') && onAccepted) {
+        onAccepted()
+      }
       return { ok: true }
     } finally {
       setBusy(false)
@@ -181,7 +186,9 @@ export default function TasksPanel({
       {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.tasks.length === 0 && (
-        <p className="hint">No tasks yet.</p>
+        <p className="hint">
+          No tasks yet. Add a title, Start, Submit a proof URI, then Accept.
+        </p>
       )}
       {state.kind === 'ok' && state.tasks.length > 0 && (
         <ul className="task-list">

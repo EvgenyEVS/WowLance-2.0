@@ -117,7 +117,9 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
       {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.messages.length === 0 && (
-        <p className="hint">No messages yet. Start the conversation.</p>
+        <p className="hint">
+          No messages yet. Type below and Send — the list shows the latest messages.
+        </p>
       )}
       {state.kind === 'ok' && state.messages.length > 0 && (
         <ul className="task-list">

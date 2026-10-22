@@ -78,7 +78,8 @@ def test_limit_respected(client, sale_payload):
 
     listed = _list_messages(client, room_id, limit=3)
     assert listed.status_code == 200
-    assert len(listed.json()["messages"]) == 3
+    bodies = [m["body"] for m in listed.json()["messages"]]
+    assert bodies == ["msg 2", "msg 3", "msg 4"]
 
 
 def test_unknown_room_404(client, sale_payload):

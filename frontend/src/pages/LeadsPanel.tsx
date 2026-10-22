@@ -133,7 +133,9 @@ export default function LeadsPanel({
       {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.leads.length === 0 && (
-        <p className="hint">No leads yet.</p>
+        <p className="hint">
+          No leads yet. Add a lead, Mark hot, then Hand to CRM.
+        </p>
       )}
       {state.kind === 'ok' && state.leads.length > 0 && (
         <ul className="task-list">
