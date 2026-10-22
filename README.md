@@ -74,7 +74,11 @@ Health: http://127.0.0.1:8000/health
 | **C23** | Matching lite — [задание](docs/261021%20-%20задание%20C23%20Matching%20lite.md) ∥ C19 · C22 · C24–C25 |
 | **C24** | Outbox `TaskAccepted` — [задание](docs/261021%20-%20задание%20C24%20TaskAccepted%20outbox.md) ∥ C19 · C22–C23 · C25 |
 | **C25** | Earned в Room health — [задание](docs/261021%20-%20задание%20C25%20Health%20earnings.md) ∥ C19 · C22–C24 |
-| **C26+** | Полный RBAC, live adapters, Gateway |
+| **C26** | Founder-demo пакет — [задание](docs/261022%20-%20задание%20C26%20Founder%20demo%20pack.md) ∥ C27–C29 |
+| **C27** | Room RBAC lite — [задание](docs/261022%20-%20задание%20C27%20Room%20RBAC.md) ∥ C26 · C28 (осторожно с C29) |
+| **C28** | QA полный прогон C0–C25 — [задание](docs/261022%20-%20задание%20C28%20QA%20C0-C25.md) ∥ C26 · C27 · C29 |
+| **C29** | Room UX polish — [задание](docs/261022%20-%20задание%20C29%20Room%20UX%20polish.md) ∥ C26 · C28 (осторожно с C27) |
+| **C30+** | Live adapters / Gateway — только после `agreed` контрактов с соседями |
 
 ## Политика оплаты
 
