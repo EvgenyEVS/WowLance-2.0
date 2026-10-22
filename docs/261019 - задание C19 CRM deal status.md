@@ -68,7 +68,7 @@ POST /internal/v1/crm/deal-status
 
 ## 5. Контракт
 
-Файл: `contracts/wowlance/CrmDealStatus.v1.yaml` (+ дописать RoomLeads example)
+Файл: `contracts/crm/CrmDealStatus.v1.yaml` (+ дописать RoomLeads example)
 
 ```yaml
 id: CrmDealStatus

@@ -77,8 +77,8 @@ C7 **не** обязан читать roster. Связь «задача → assi
 
 ### 5.1. TalentRosterUpsert
 
-Файл: `contracts/wowlance/TalentRosterUpsert.v1.yaml`  
-Пример: `contracts/wowlance/examples/TalentRosterUpsert.json`
+Файл: `contracts/talent/TalentRosterUpsert.v1.yaml`  
+Пример: `contracts/talent/examples/TalentRosterUpsert.json`
 
 ```yaml
 id: TalentRosterUpsert

@@ -1,7 +1,7 @@
 """C14 stub Jitsi meet adapter: build a meet URL for a room.
 
 No live Jitsi Admin API, no JWT in the link, no recording — see
-`contracts/wowlance/RoomMeet.v1.yaml`. The base URL comes from
+`contracts/meet/RoomMeet.v1.yaml`. The base URL comes from
 `MEET_BASE_URL` env, defaulting to `https://meet.jit.si`.
 """
 

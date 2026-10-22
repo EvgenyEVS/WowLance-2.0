@@ -1,49 +1,37 @@
 # Contracts (OpenSpec)
 
-Контракты сервиса WowLance. **Менять здесь раньше кода** (фаза C0).
+Контракты разложены **по микросервисам-соседям**.  
+Полный реестр с проверкой кода: **[REGISTRY.md](REGISTRY.md)**.
 
-| Файл | Статус |
-|------|--------|
-| [`wowlance/FounderHandoff.v1.yaml`](wowlance/FounderHandoff.v1.yaml) | draft v1 — обязателен для C1 |
-| [`wowlance/examples/FounderHandoff.sale.json`](wowlance/examples/FounderHandoff.sale.json) | пример payload |
-| [`wowlance/EntitlementGranted.v1.yaml`](wowlance/EntitlementGranted.v1.yaml) | draft v1 — обязателен для C2 |
-| [`wowlance/examples/EntitlementGranted.json`](wowlance/examples/EntitlementGranted.json) | пример payload (`room_id` подставить после handoff) |
-| [`wowlance/RoomRead.v1.yaml`](wowlance/RoomRead.v1.yaml) | draft v1 — C3 + C5 `pending_strategy` |
-| [`wowlance/examples/RoomRead.sale.json`](wowlance/examples/RoomRead.sale.json) | пример GET-ответа |
-| [`wowlance/StaffingSlots.v1.yaml`](wowlance/StaffingSlots.v1.yaml) | draft v1 — C4 list/materialize + C6 SlotAssign + C12 Unassign/Reassign + **C22 rematerialize** |
-| [`wowlance/examples/StaffingSlots.sale.json`](wowlance/examples/StaffingSlots.sale.json) | пример list/materialize (один seat `filled`) |
-| [`wowlance/StrategyPublished.v1.yaml`](wowlance/StrategyPublished.v1.yaml) | draft v1 — C5 publish + Accept/Reject |
-| [`wowlance/examples/StrategyPublished.sale.json`](wowlance/examples/StrategyPublished.sale.json) | пример publish (`room_id` после handoff) |
-| [`wowlance/TalentRosterUpsert.v1.yaml`](wowlance/TalentRosterUpsert.v1.yaml) | draft v1 — C6 upsert локального roster (stub Talent) |
-| [`wowlance/examples/TalentRosterUpsert.json`](wowlance/examples/TalentRosterUpsert.json) | пример payload upsert |
-| [`wowlance/RoomTasks.v1.yaml`](wowlance/RoomTasks.v1.yaml) | draft v1 — C7 трекер задач + C10 Quality Gate (`submitted`/`proof_*`, accept/reject) + C15 assignee из roster (assign) |
-| [`wowlance/examples/RoomTasks.sale.json`](wowlance/examples/RoomTasks.sale.json) | пример list-ответа задач (todo/in_progress/submitted + proof) |
-| [`wowlance/AuthBearer.v1.yaml`](wowlance/AuthBearer.v1.yaml) | draft v1 — C8 Bearer JWT на `/api/v1/*` + shadow User |
-| [`wowlance/InternalServiceAuth.v1.yaml`](wowlance/InternalServiceAuth.v1.yaml) | draft v1 — C21 service-token на `/internal/v1/*` (X-Service-Token) |
+| Папка | Микросервис | Контракты |
+|-------|-------------|-----------|
+| [`strategy/`](strategy/) | Strategy (Founder Studio) | FounderHandoff, StrategyPublished (+ Decide), RoomCreated, RoomHealth |
+| [`order/`](order/) | Order / Payments | EntitlementGranted, StaffingUnlocked |
+| [`talent/`](talent/) | Talent | TalentRosterUpsert, MemberTerminated, TaskAccepted |
+| [`crm/`](crm/) | CRM / SRM | HotLeadToCrm, CrmDealStatus |
+| [`keycloak/`](keycloak/) | Keycloak | AuthBearer |
+| [`platform/`](platform/) | Platform / Gateway | InternalServiceAuth |
+| [`meet/`](meet/) | Jitsi / Meet | RoomMeet |
+| [`wowlance/`](wowlance/) | WowLance (API комнаты) | RoomRead, StaffingSlots, SlotMatch, RoomTasks, RoomLeads, RoomMessages, RoomEarnings |
 
-| [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | draft v1 — C9 лиды комнаты (open → hot → handed_to_crm) |
-| [`wowlance/examples/RoomLeads.sale.json`](wowlance/examples/RoomLeads.sale.json) | пример list-ответа лидов |
-| [`wowlance/HotLeadToCrm.v1.yaml`](wowlance/HotLeadToCrm.v1.yaml) | draft v1 — C9 исходящее событие Hot → CRM (outbox) |
-| [`wowlance/examples/HotLeadToCrm.json`](wowlance/examples/HotLeadToCrm.json) | пример outbox payload |
-| [`wowlance/RoomCreated.v1.yaml`](wowlance/RoomCreated.v1.yaml) | draft v1 — C11 исходящее событие RoomCreated при создании комнаты (outbox) |
-| [`wowlance/examples/RoomCreated.sale.json`](wowlance/examples/RoomCreated.sale.json) | пример outbox payload |
-| [`wowlance/RoomHealth.v1.yaml`](wowlance/RoomHealth.v1.yaml) | draft v1 — C13 агрегат комнаты (slots/tasks/leads) для витрины Стратегии + **C25 earnings блок** |
-| [`wowlance/examples/RoomHealth.sale.json`](wowlance/examples/RoomHealth.sale.json) | пример GET health-ответа |
-| [`wowlance/RoomMeet.v1.yaml`](wowlance/RoomMeet.v1.yaml) | draft v1 — C14 `POST /api/v1/rooms/{room_id}/meet/ensure` (stub Jitsi) |
-| [`wowlance/RoomEarnings.v1.yaml`](wowlance/RoomEarnings.v1.yaml) | draft v1 — C16 `GET /api/v1/rooms/{room_id}/earnings` (stub ledger) |
-| [`wowlance/examples/RoomEarnings.sale.json`](wowlance/examples/RoomEarnings.sale.json) | пример ответа списка начислений |
-| [`wowlance/MemberTerminated.v1.yaml`](wowlance/MemberTerminated.v1.yaml) | draft v1 — C17 `POST …/terminate` + `GET …/terminations` (расторжение участника) |
-| [`wowlance/examples/MemberTerminated.sale.json`](wowlance/examples/MemberTerminated.sale.json) | пример outbox payload |
-| [`wowlance/StaffingUnlocked.v1.yaml`](wowlance/StaffingUnlocked.v1.yaml) | draft v1 — C18 исходящее событие StaffingUnlocked при первом unlock staffing (outbox) |
-| [`wowlance/examples/StaffingUnlocked.sale.json`](wowlance/examples/StaffingUnlocked.sale.json) | пример outbox payload |
-| [`wowlance/CrmDealStatus.v1.yaml`](wowlance/CrmDealStatus.v1.yaml) | draft v1 — C19 inbound вебхук CRM deal-status (обновляет deal_* на лиде) |
-| [`wowlance/RoomLeads.v1.yaml`](wowlance/RoomLeads.v1.yaml) | дополнен полями deal_* (C19) |
-| [`wowlance/RoomMessages.v1.yaml`](wowlance/RoomMessages.v1.yaml) | draft v1 — C20 сообщения комнаты (list + post, без WebSocket) |
-| [`wowlance/examples/RoomMessages.sale.json`](wowlance/examples/RoomMessages.sale.json) | пример списка сообщений |
-| [`wowlance/TaskAccepted.v1.yaml`](wowlance/TaskAccepted.v1.yaml) | draft v1 — C24 Outbox TaskAccepted при accept задачи (submitted → done) |
-| [`wowlance/examples/TaskAccepted.example.json`](wowlance/examples/TaskAccepted.example.json) | пример payload outbox-строки |
-| [`wowlance/SlotMatch.v1.yaml`](wowlance/SlotMatch.v1.yaml) | draft v1 — C23 Matching lite (GET …/slots/{slot_id}/match shortlist из локального roster) |
+**Правило:** менять YAML (+ example) в папке сервиса **раньше** кода.  
+Когда появится общий OpenSpec-репозиторий платформы — перенести граничные папки туда, здесь оставить ссылки.
 
-Когда появится общий OpenSpec-репозиторий платформы — перенести схемы туда, здесь оставить версию/ссылку.
+### Быстрые ссылки (граничные)
 
-Следующие (не блокируют скелет): `RoomHealthSnapshot`.
+| Сосед | YAML | Example |
+|------|------|---------|
+| Strategy | [FounderHandoff](strategy/FounderHandoff.v1.yaml) | [sale.json](strategy/examples/FounderHandoff.sale.json) |
+| Strategy | [StrategyPublished](strategy/StrategyPublished.v1.yaml) | [sale.json](strategy/examples/StrategyPublished.sale.json) |
+| Strategy | [RoomCreated](strategy/RoomCreated.v1.yaml) | [sale.json](strategy/examples/RoomCreated.sale.json) |
+| Strategy | [RoomHealth](strategy/RoomHealth.v1.yaml) | [sale.json](strategy/examples/RoomHealth.sale.json) |
+| Order | [EntitlementGranted](order/EntitlementGranted.v1.yaml) | [json](order/examples/EntitlementGranted.json) |
+| Order | [StaffingUnlocked](order/StaffingUnlocked.v1.yaml) | [sale.json](order/examples/StaffingUnlocked.sale.json) |
+| Talent | [TalentRosterUpsert](talent/TalentRosterUpsert.v1.yaml) | [json](talent/examples/TalentRosterUpsert.json) |
+| Talent | [MemberTerminated](talent/MemberTerminated.v1.yaml) | [sale.json](talent/examples/MemberTerminated.sale.json) |
+| Talent | [TaskAccepted](talent/TaskAccepted.v1.yaml) | [example.json](talent/examples/TaskAccepted.example.json) |
+| CRM | [HotLeadToCrm](crm/HotLeadToCrm.v1.yaml) | [json](crm/examples/HotLeadToCrm.json) |
+| CRM | [CrmDealStatus](crm/CrmDealStatus.v1.yaml) | — |
+| Keycloak | [AuthBearer](keycloak/AuthBearer.v1.yaml) | — |
+| Platform | [InternalServiceAuth](platform/InternalServiceAuth.v1.yaml) | — |
+| Meet | [RoomMeet](meet/RoomMeet.v1.yaml) | — |

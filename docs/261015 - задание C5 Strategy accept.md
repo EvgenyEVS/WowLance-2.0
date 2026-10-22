@@ -68,8 +68,8 @@
 
 ### 5.1. StrategyPublished (вход)
 
-Файл: `contracts/wowlance/StrategyPublished.v1.yaml`  
-Пример: `contracts/wowlance/examples/StrategyPublished.sale.json`
+Файл: `contracts/strategy/StrategyPublished.v1.yaml`  
+Пример: `contracts/strategy/examples/StrategyPublished.sale.json`
 
 ```yaml
 id: StrategyPublished

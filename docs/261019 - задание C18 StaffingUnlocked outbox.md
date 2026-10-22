@@ -61,8 +61,8 @@
 
 ## 5. Контракт
 
-Файл: `contracts/wowlance/StaffingUnlocked.v1.yaml`  
-Пример: `contracts/wowlance/examples/StaffingUnlocked.sale.json`
+Файл: `contracts/order/StaffingUnlocked.v1.yaml`  
+Пример: `contracts/order/examples/StaffingUnlocked.sale.json`
 
 ```yaml
 id: StaffingUnlocked

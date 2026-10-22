@@ -10,8 +10,8 @@
 | **Исполнитель** | сильный стажёр + хороший ИИ |
 | **Срок** | 2–4 дня |
 | **Канон** | [ADR-002](ADR-002-wowlance-2.0-platform-room.md), [AGENTS.md](../AGENTS.md) |
-| **Контракт** | [`contracts/wowlance/FounderHandoff.v1.yaml`](../contracts/wowlance/FounderHandoff.v1.yaml) |
-| **Пример** | [`contracts/wowlance/examples/FounderHandoff.sale.json`](../contracts/wowlance/examples/FounderHandoff.sale.json) |
+| **Контракт** | [`contracts/strategy/FounderHandoff.v1.yaml`](../contracts/strategy/FounderHandoff.v1.yaml) |
+| **Пример** | [`contracts/strategy/examples/FounderHandoff.sale.json`](../contracts/strategy/examples/FounderHandoff.sale.json) |
 
 ---
 
@@ -144,7 +144,7 @@ pytest + TestClient; БД — PostgreSQL из compose **или** отдельн�
 Сделай C1:
 1) docker compose db + SQLAlchemy модели User(shadow sub), Room, StrategySnapshot
 2) миграции схемы
-3) POST /internal/v1/handoffs по contracts/wowlance/FounderHandoff.v1.yaml
+3) POST /internal/v1/handoffs по contracts/strategy/FounderHandoff.v1.yaml
    - идемпотентность по handoff_id
    - same id + different payload → 409
    - staffing_unlocked всегда false

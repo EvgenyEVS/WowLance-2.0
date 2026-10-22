@@ -64,8 +64,8 @@ C9 должен быть в базе: нужна таблица `outbox_messages
 
 ## 5. Контракт
 
-Файл: `contracts/wowlance/RoomCreated.v1.yaml`  
-Пример: `contracts/wowlance/examples/RoomCreated.sale.json`
+Файл: `contracts/strategy/RoomCreated.v1.yaml`  
+Пример: `contracts/strategy/examples/RoomCreated.sale.json`
 
 ```yaml
 id: RoomCreated

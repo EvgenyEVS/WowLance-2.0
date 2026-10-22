@@ -71,7 +71,7 @@ Handoff, entitlement, roster upsert, strategy publish, health publish, CRM stubs
 
 ## 5. Контракт
 
-Дописать `contracts/wowlance/AuthBearer.v1.yaml` **или** новый `InternalServiceAuth.v1.yaml`:
+Дописать `contracts/keycloak/AuthBearer.v1.yaml` **или** новый `InternalServiceAuth.v1.yaml`:
 
 ```yaml
 id: InternalServiceAuth

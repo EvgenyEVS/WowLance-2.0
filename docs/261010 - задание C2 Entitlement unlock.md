@@ -49,8 +49,8 @@
 
 ## 4. Контракт (создать в тикете — C0 этого шага)
 
-Файл: `contracts/wowlance/EntitlementGranted.v1.yaml`  
-Пример: `contracts/wowlance/examples/EntitlementGranted.json`
+Файл: `contracts/order/EntitlementGranted.v1.yaml`  
+Пример: `contracts/order/examples/EntitlementGranted.json`
 
 Черновик (можно уточнить имена полей, смысл сохранить):
 
@@ -163,7 +163,7 @@ Content-Type: application/json
 Задание: docs/261010 - задание C2 Entitlement unlock.md
 
 Сделай C2:
-1) contracts/wowlance/EntitlementGranted.v1.yaml + examples/EntitlementGranted.json + строка в contracts/README.md
+1) contracts/order/EntitlementGranted.v1.yaml + examples/EntitlementGranted.json + строка в contracts/README.md
 2) таблица entitlements (или эквивалент) + Alembic migration
 3) POST /internal/v1/entitlements:
    - room exists → staffing_unlocked=true

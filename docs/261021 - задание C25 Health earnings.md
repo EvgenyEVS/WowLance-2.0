@@ -69,7 +69,7 @@ earnings:
 
 ## 5. Контракт
 
-Обновить `contracts/wowlance/RoomHealth.v1.yaml` + example:
+Обновить `contracts/strategy/RoomHealth.v1.yaml` + example:
 
 ```yaml
 earnings:

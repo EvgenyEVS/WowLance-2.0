@@ -107,8 +107,8 @@ lead:
 
 ### 5.2. HotLeadToCrm (outbound)
 
-Файл: `contracts/wowlance/HotLeadToCrm.v1.yaml`  
-Пример: `contracts/wowlance/examples/HotLeadToCrm.json`
+Файл: `contracts/crm/HotLeadToCrm.v1.yaml`  
+Пример: `contracts/crm/examples/HotLeadToCrm.json`
 
 ```yaml
 id: HotLeadToCrm

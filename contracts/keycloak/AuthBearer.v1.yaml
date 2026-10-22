@@ -23,7 +23,7 @@ shadow_user:
 routes:
   protected: [/api/v1/*]
   public: [/health]
-  internal_open_in_c8: [/internal/v1/*]
+  internal: [/internal/v1/*]  # C21: см. platform/InternalServiceAuth (X-Service-Token), не user JWT
 
 config:
   AUTH_DISABLED: "true"   # true — dev/tests, no JWT required (local demo)

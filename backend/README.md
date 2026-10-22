@@ -3,7 +3,7 @@
 ## C1: FounderHandoff
 
 `POST /internal/v1/handoffs` создаёт комнату + immutable `StrategySnapshot` по контракту  
-[`contracts/wowlance/FounderHandoff.v1.yaml`](../contracts/wowlance/FounderHandoff.v1.yaml).
+[`contracts/strategy/FounderHandoff.v1.yaml`](../contracts/strategy/FounderHandoff.v1.yaml).
 
 | Статус | Когда |
 |--------|--------|
@@ -21,7 +21,7 @@
 ## C2: EntitlementGranted
 
 `POST /internal/v1/entitlements` открывает staffing на **уже существующей** комнате  
-([`contracts/wowlance/EntitlementGranted.v1.yaml`](../contracts/wowlance/EntitlementGranted.v1.yaml)).
+([`contracts/order/EntitlementGranted.v1.yaml`](../contracts/order/EntitlementGranted.v1.yaml)).
 
 | Статус | Когда |
 |--------|--------|
@@ -72,7 +72,7 @@ OpenAPI: http://127.0.0.1:8000/docs
 ```powershell
 curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
   -H "Content-Type: application/json" `
-  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+  --data-binary "@..\contracts\strategy\examples\FounderHandoff.sale.json"
 ```
 
 Повтор того же JSON → `200` + `"status":"already_exists"` и тот же `room_id`.
@@ -159,7 +159,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/rematerialize
 
 Новая версия стратегии не применяется молча.  
 `POST /internal/v1/strategy-publications` создаёт `pending` proposal  
-([`contracts/wowlance/StrategyPublished.v1.yaml`](../contracts/wowlance/StrategyPublished.v1.yaml)).
+([`contracts/strategy/StrategyPublished.v1.yaml`](../contracts/strategy/StrategyPublished.v1.yaml)).
 
 | Статус | Когда |
 |--------|--------|
@@ -178,7 +178,7 @@ Reject: active не меняется.
 # room_id из handoff; подставьте его в JSON publication
 curl -s -X POST http://127.0.0.1:8000/internal/v1/strategy-publications `
   -H "Content-Type: application/json" `
-  --data-binary "@..\contracts\wowlance\examples\StrategyPublished.sale.json"
+  --data-binary "@..\contracts\strategy\examples\StrategyPublished.sale.json"
 
 curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>
 
@@ -192,7 +192,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/strategy-proposals/
 Назначение садит человека из roster на **открытый** слот комнаты (per-slot).
 
 `POST /internal/v1/roster` — upsert (idempotent по `freelancer_sub`)  
-([`contracts/wowlance/TalentRosterUpsert.v1.yaml`](../contracts/wowlance/TalentRosterUpsert.v1.yaml)).  
+([`contracts/talent/TalentRosterUpsert.v1.yaml`](../contracts/talent/TalentRosterUpsert.v1.yaml)).  
 `GET /api/v1/roster` — список для UI.  
 `POST /api/v1/rooms/{room_id}/slots/{slot_id}/assign` — назначение  
 ([`contracts/wowlance/StaffingSlots.v1.yaml`](../contracts/wowlance/StaffingSlots.v1.yaml), блок SlotAssign).
@@ -212,7 +212,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/strategy-proposals/
 # 1) upsert фрилансера в roster
 curl -s -X POST http://127.0.0.1:8000/internal/v1/roster `
   -H "Content-Type: application/json" `
-  --data-binary "@..\contracts\wowlance\examples\TalentRosterUpsert.json"
+  --data-binary "@..\contracts\talent\examples\TalentRosterUpsert.json"
 
 curl -s http://127.0.0.1:8000/api/v1/roster
 
@@ -321,8 +321,8 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/earnings
 
 При успешном accept (`submitted` → `done`) в **той же транзакции** пишется строка в
 `outbox_messages` (`event_type: TaskAccepted`, `status: sent`) рядом с C16 earnings.
-Контракт: [`contracts/wowlance/TaskAccepted.v1.yaml`](../contracts/wowlance/TaskAccepted.v1.yaml),
-пример — [`contracts/wowlance/examples/TaskAccepted.example.json`](../contracts/wowlance/examples/TaskAccepted.example.json).
+Контракт: [`contracts/talent/TaskAccepted.v1.yaml`](../contracts/talent/TaskAccepted.v1.yaml),
+пример — [`contracts/talent/examples/TaskAccepted.example.json`](../contracts/talent/examples/TaskAccepted.example.json).
 
 | Правило | Поведение |
 |---------|-----------|
@@ -386,8 +386,8 @@ WHERE room_id = '<room_id>';
 ## C18: Outbox `StaffingUnlocked` при первом unlock staffing
 
 При первом успешном unlock (`staffing_unlocked` false → true) по `POST /internal/v1/entitlements` пишется строка в `outbox_messages` (`event_type: StaffingUnlocked`, `status: sent`) в той же транзакции, что и grant. Контракт:
-[contracts/wowlance/StaffingUnlocked.v1.yaml](../contracts/wowlance/StaffingUnlocked.v1.yaml),
-пример — [contracts/wowlance/examples/StaffingUnlocked.sale.json](../contracts/wowlance/examples/StaffingUnlocked.sale.json).
+[contracts/order/StaffingUnlocked.v1.yaml](../contracts/order/StaffingUnlocked.v1.yaml),
+пример — [contracts/order/examples/StaffingUnlocked.sale.json](../contracts/order/examples/StaffingUnlocked.sale.json).
 
 | Правило | Поведение |
 |---------|-----------|
@@ -454,7 +454,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/tasks/<task_id>/rej
 
 ## C8: Keycloak JWT + shadow User
 
-Клиентские API `/api/v1/*` проверяют `Authorization: Bearer <access_token>` (RS256, JWKS). Первый успешный запрос upsert-ит shadow-пользователя в `users` по `sub`. Контракт: [`contracts/wowlance/AuthBearer.v1.yaml`](../contracts/wowlance/AuthBearer.v1.yaml). Модуль: `app/auth/` (JWT verify + `require_user` + `get_actor_sub`).
+Клиентские API `/api/v1/*` проверяют `Authorization: Bearer <access_token>` (RS256, JWKS). Первый успешный запрос upsert-ит shadow-пользователя в `users` по `sub`. Контракт: [`contracts/keycloak/AuthBearer.v1.yaml`](../contracts/keycloak/AuthBearer.v1.yaml). Модуль: `app/auth/` (JWT verify + `require_user` + `get_actor_sub`).
 
 | Поведение | `AUTH_DISABLED=true` (default, pytest) | `AUTH_DISABLED=false` |
 |-----------|------------------------------------------|------------------------|
@@ -493,7 +493,7 @@ curl.exe -s http://127.0.0.1:8000/api/v1/rooms/<room_id> `
 
 Лиды комнаты: создать → **hot** → выгрузить в CRM (stub). Своя БД, без live CRM / OAuth.  
 ([`contracts/wowlance/RoomLeads.v1.yaml`](../contracts/wowlance/RoomLeads.v1.yaml),
-исходящее событие — [`contracts/wowlance/HotLeadToCrm.v1.yaml`](../contracts/wowlance/HotLeadToCrm.v1.yaml)).
+исходящее событие — [`contracts/crm/HotLeadToCrm.v1.yaml`](../contracts/crm/HotLeadToCrm.v1.yaml)).
 
 | Метод | Путь |
 |-------|------|
@@ -542,8 +542,8 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads
 При первом создании комнаты (`FounderHandoff` → `status: created`) пишется строка в
 `outbox_messages` (`event_type: RoomCreated`, `status: sent`) в той же транзакции,
 что и комната + снимок стратегии. Контракт:
-[contracts/wowlance/RoomCreated.v1.yaml](../contracts/wowlance/RoomCreated.v1.yaml),
-пример — [contracts/wowlance/examples/RoomCreated.sale.json](../contracts/wowlance/examples/RoomCreated.sale.json).
+[contracts/strategy/RoomCreated.v1.yaml](../contracts/strategy/RoomCreated.v1.yaml),
+пример — [contracts/strategy/examples/RoomCreated.sale.json](../contracts/strategy/examples/RoomCreated.sale.json).
 
 | Правило | Поведение |
 |---------|-----------|
@@ -645,7 +645,7 @@ curl -s "http://127.0.0.1:8000/api/v1/rooms/<room_id>/slots/<slot_id>/match?limi
 мест занято, как задачи, сколько Hot/ушло в CRM. C13 даёт **read-only агрегат**
 `GET …/health` + опциональный **publish** в outbox (`RoomHealthSnapshot`,
 stub `sent`, как `HotLeadToCrm`). Живого брокера / HTTP в Strategy нет.
-Контракт: [contracts/wowlance/RoomHealth.v1.yaml](../contracts/wowlance/RoomHealth.v1.yaml).
+Контракт: [contracts/strategy/RoomHealth.v1.yaml](../contracts/strategy/RoomHealth.v1.yaml).
 
 | Метод | Путь |
 |-------|------|
@@ -679,7 +679,7 @@ curl -s -X POST http://127.0.0.1:8000/internal/v1/rooms/<room_id>/health/publish
 
 Комната получает `meeting_url` (stub Jitsi) через
 `POST /api/v1/rooms/{room_id}/meet/ensure`. Контракт:
-[contracts/wowlance/RoomMeet.v1.yaml](../contracts/wowlance/RoomMeet.v1.yaml),
+[contracts/meet/RoomMeet.v1.yaml](../contracts/meet/RoomMeet.v1.yaml),
 поле отдаётся в `GET /api/v1/rooms/{room_id}`
 ([contracts/wowlance/RoomRead.v1.yaml](../contracts/wowlance/RoomRead.v1.yaml)).
 
@@ -710,7 +710,7 @@ Env: `MEET_BASE_URL` (default `https://meet.jit.si`).
 
 При расторжении фрилансера с комнаты фиксируется акт с причиной, слот освобождается,
 пишется журнал `room_terminations` и outbox `MemberTerminated` (stub для Talent).
-Контракт: [`contracts/wowlance/MemberTerminated.v1.yaml`](../contracts/wowlance/MemberTerminated.v1.yaml).
+Контракт: [`contracts/talent/MemberTerminated.v1.yaml`](../contracts/talent/MemberTerminated.v1.yaml).
 
 | Правило | Поведение |
 |---------|-----------|
@@ -739,7 +739,7 @@ curl -s http://127.0.0.1:8000/api/v1/rooms/<room_id>/terminations
 C9 отдаёт Hot в CRM (outbox stub). По обратному вебхуку CRM шлёт стадию сделки.
 Endpoint `POST /internal/v1/crm/deal-status` обновляет `deal_*` поля на лиде
 (`handed_to_crm` только). Контракт:
-[contracts/wowlance/CrmDealStatus.v1.yaml](../contracts/wowlance/CrmDealStatus.v1.yaml).
+[contracts/crm/CrmDealStatus.v1.yaml](../contracts/crm/CrmDealStatus.v1.yaml).
 
 | Правило | Поведение |
 |---------|-----------|
@@ -820,7 +820,7 @@ C8 оставил `/internal/v1/*` открытым. C21 закрывает эт
 | Пустой `INTERNAL_SERVICE_TOKEN` в строгом режиме | fail-fast при старте приложения |
 | `/health`, `/docs`, `/auth/*`, `/api/v1/*` | без service token (C8 JWT отдельно) |
 
-Контракт: [contracts/wowlance/InternalServiceAuth.v1.yaml](../contracts/wowlance/InternalServiceAuth.v1.yaml).
+Контракт: [contracts/platform/InternalServiceAuth.v1.yaml](../contracts/platform/InternalServiceAuth.v1.yaml).
 
 Env (`.env` / `.env.example`):
 ```
@@ -834,13 +834,13 @@ curl (строгий режим):
 # без токена -> 401
 curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
   -H "Content-Type: application/json" `
-  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+  --data-binary "@..\contracts\strategy\examples\FounderHandoff.sale.json"
 
 # с токеном -> 201
 curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
   -H "Content-Type: application/json" `
   -H "X-Service-Token: change-me-in-prod" `
-  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+  --data-binary "@..\contracts\strategy\examples\FounderHandoff.sale.json"
 ```
 
 C18/C19 internal пути покрываются тем же префикс-guard автоматически.

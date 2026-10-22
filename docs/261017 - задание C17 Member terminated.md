@@ -72,8 +72,8 @@
 
 ## 5. Контракт
 
-Файл: `contracts/wowlance/MemberTerminated.v1.yaml`  
-Пример: `contracts/wowlance/examples/MemberTerminated.sale.json`
+Файл: `contracts/talent/MemberTerminated.v1.yaml`  
+Пример: `contracts/talent/examples/MemberTerminated.sale.json`
 
 ```yaml
 id: MemberTerminated

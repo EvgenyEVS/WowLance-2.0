@@ -1,4 +1,4 @@
-"""Pydantic models mirroring OpenSpec contracts under contracts/wowlance/."""
+"""Pydantic models mirroring OpenSpec contracts under contracts/ (см. contracts/REGISTRY.md)."""
 
 from __future__ import annotations
 

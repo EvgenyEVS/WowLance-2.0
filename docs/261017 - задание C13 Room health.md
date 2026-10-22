@@ -78,8 +78,8 @@
 
 ## 5. Контракт
 
-Файл: `contracts/wowlance/RoomHealth.v1.yaml`  
-Пример: `contracts/wowlance/examples/RoomHealth.sale.json`
+Файл: `contracts/strategy/RoomHealth.v1.yaml`  
+Пример: `contracts/strategy/examples/RoomHealth.sale.json`
 
 ```yaml
 id: RoomHealth

@@ -25,7 +25,7 @@ Django [WowLance 1.0](https://github.com/EvgenyEVS/WowLance) — **reference** �
 ## Структура репо
 
 ```text
-contracts/wowlance/   OpenSpec / схемы + examples
+contracts/           OpenSpec (по сервисам; см. REGISTRY.md) / схемы + examples
 backend/              FastAPI
 frontend/             React
 docs/                 ADR + architecture

@@ -60,7 +60,7 @@
 
 ## 5. Контракт
 
-`contracts/wowlance/TaskAccepted.v1.yaml` + example.
+`contracts/talent/TaskAccepted.v1.yaml` + example.
 
 ```yaml
 id: TaskAccepted

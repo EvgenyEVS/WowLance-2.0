@@ -71,7 +71,7 @@
 
 ## 5. Контракт / конфиг (C0 шага)
 
-Файл: `contracts/wowlance/AuthBearer.v1.yaml` (лёгкий):
+Файл: `contracts/keycloak/AuthBearer.v1.yaml` (лёгкий):
 
 ```yaml
 id: AuthBearer
@@ -171,7 +171,7 @@ KEYCLOAK_JWKS_URL=...            # опционально, можно вывес
 Задание: docs/261016 - задание C8 Keycloak JWT.md
 
 Сделай C8:
-1) contracts/wowlance/AuthBearer.v1.yaml + .env.example (AUTH_DISABLED, KEYCLOAK_*)
+1) contracts/keycloak/AuthBearer.v1.yaml + .env.example (AUTH_DISABLED, KEYCLOAK_*)
 2) app/auth: JWT verify (JWKS), get_current_user, shadow upsert User
 3) Require auth on /api/v1/* when AUTH_DISABLED=false; /health and /internal/v1/* stay open
 4) AUTH_DISABLED=true (default for pytest) — полный регресс C1–C7 зелёный

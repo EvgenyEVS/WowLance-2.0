@@ -22,7 +22,7 @@ lead:
       enum: [open, hot, handed_to_crm]
     crm_ref: { type: string, nullable: true }
     deal_status: { type: string, nullable: true }
-    deal_amount: { type: number, nullable: true }
+    deal_amount: { type: string, nullable: true }  # decimal as string (как в CrmDealStatus / schemas)
     deal_currency: { type: string, nullable: true }
     deal_updated_at: { type: string, format: date-time, nullable: true }
     created_at: { type: string, format: date-time }

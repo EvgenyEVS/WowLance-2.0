@@ -55,7 +55,7 @@ UI: http://127.0.0.1:5173
 ```powershell
 curl -s -X POST http://127.0.0.1:8000/internal/v1/handoffs `
   -H "Content-Type: application/json" `
-  --data-binary "@..\contracts\wowlance\examples\FounderHandoff.sale.json"
+  --data-binary "@..\contracts\strategy\examples\FounderHandoff.sale.json"
 ```
 
 2. Copy `room_id` from the JSON.

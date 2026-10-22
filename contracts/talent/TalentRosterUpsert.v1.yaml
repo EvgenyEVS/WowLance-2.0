@@ -11,6 +11,12 @@ paths:
     method: POST
     path: /internal/v1/roster
     headers: []
+    direction: Talent -> WowLance
+  list:
+    method: GET
+    path: /api/v1/roster
+    direction: client -> WowLance
+    note: "локальный roster для assign/match picker (не live Talent)"
 
 request:
   type: object
@@ -40,3 +46,19 @@ response_200:
     status:
       type: string
       enum: [upserted, already_exists]
+
+response_list_200:
+  type: object
+  required: [members]
+  properties:
+    members:
+      type: array
+      items:
+        type: object
+        required: [freelancer_sub, display_name]
+        properties:
+          freelancer_sub: { type: string }
+          display_name: { type: string }
+          skills: { type: array, items: { type: string }, nullable: true }
+          level: { type: string, nullable: true }
+          source: { type: string, enum: [stub, talent] }

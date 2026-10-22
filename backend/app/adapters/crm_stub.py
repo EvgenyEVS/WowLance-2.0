@@ -1,7 +1,7 @@
 """C9 stub CRM adapter: build the HotLeadToCrm payload and a fake crm_ref.
 
 No live CRM HTTP, no OAuth, no Keycloak — see
-`contracts/wowlance/HotLeadToCrm.v1.yaml`. Outbox persistence is done by
+`contracts/crm/HotLeadToCrm.v1.yaml`. Outbox persistence is done by
 `app.domain.leads`; this module only shapes the outgoing event.
 """
 
