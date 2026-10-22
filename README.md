@@ -42,6 +42,8 @@ C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`
 C3 room UI: [frontend/README.md](frontend/README.md) (`GET /api/v1/rooms/{id}` → `/rooms/:roomId`).  
 Health: http://127.0.0.1:8000/health  
 
+**Stub hardening (C32):** [docs/hardening-stub.md](docs/hardening-stub.md) — идемпотентность, 4xx `detail`, логи internal stubs.
+
 **Founder demo (C26):** `powershell -File scripts/founder-demo.ps1` — handoff → entitlement → assign → QG → hot lead → health. Чеклист: [docs/demo/founder-demo.md](docs/demo/founder-demo.md).
 
 **Auth (C8):** по умолчанию `AUTH_DISABLED=true` — `/api/v1/*` открыт (локальный demo).  

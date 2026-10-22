@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.domain.handoff import HandoffConflictError, process_founder_handoff
 from app.domain.schemas import FounderHandoffRequest, FounderHandoffResponse
+from app.stub_log import log_stub
 
 router = APIRouter(prefix="/internal/v1", tags=["handoffs"])
 
@@ -34,7 +35,14 @@ def create_founder_handoff(
     try:
         result = process_founder_handoff(db, body)
     except HandoffConflictError as exc:
+        log_stub("handoff", "conflict", handoff_id=body.handoff_id)
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
+    log_stub(
+        "handoff",
+        result.response.status.value,
+        room_id=result.response.room_id,
+        handoff_id=body.handoff_id,
+    )
     response.status_code = result.http_status
     return result.response

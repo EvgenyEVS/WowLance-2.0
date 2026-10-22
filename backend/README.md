@@ -879,6 +879,11 @@ cd backend
 В `frontend/vite.config` временно proxy на `8001`, либо вызывай API/Swagger на
 `http://127.0.0.1:8001`. После прогона верни proxy на `:8000`.
 
+## C32: Stub hardening
+
+4xx shape, идемпотентность internal POST и логи: [docs/hardening-stub.md](../docs/hardening-stub.md).  
+`GET /health` без изменений. `X-Request-Id` эхо в ответе.
+
 ## C27: Room RBAC lite
 
 Локальные роли комнаты (`room_members`): `founder` | `teamlead` | `member`.  
