@@ -11,7 +11,13 @@ type LeadsState =
   | { kind: 'not_found' }
   | { kind: 'error'; message: string }
 
-export default function LeadsPanel({ roomId }: { roomId: string }) {
+export default function LeadsPanel({
+  roomId,
+  canStaff = true,
+}: {
+  roomId: string
+  canStaff?: boolean
+}) {
   const [state, setState] = useState<LeadsState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
   const [contactName, setContactName] = useState('')
@@ -102,6 +108,7 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
   return (
     <section className="block leads-block">
       <h2>Leads</h2>
+      {canStaff ? (
       <form className="task-form" onSubmit={addLead}>
         <input
           type="text"
@@ -121,11 +128,14 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
           Add
         </button>
       </form>
+      ) : null}
       {state.kind === 'loading' && <p className="hint">Loading leads…</p>}
       {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.leads.length === 0 && (
-        <p className="hint">No leads yet.</p>
+        <p className="hint">
+          No leads yet. Add a lead, Mark hot, then Hand to CRM.
+        </p>
       )}
       {state.kind === 'ok' && state.leads.length > 0 && (
         <ul className="task-list">
@@ -149,7 +159,7 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
                   </span>
                 </>
               )}
-              {lead.status === 'open' && (
+              {canStaff && lead.status === 'open' && (
                 <button
                   type="button"
                   className="slot-action"
@@ -159,7 +169,7 @@ export default function LeadsPanel({ roomId }: { roomId: string }) {
                   Mark hot
                 </button>
               )}
-              {lead.status === 'hot' && (
+              {canStaff && lead.status === 'hot' && (
                 <button
                   type="button"
                   className="slot-action"

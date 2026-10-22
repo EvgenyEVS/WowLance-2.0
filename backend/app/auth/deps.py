@@ -92,3 +92,17 @@ def get_actor_sub(
     if user is None:  # pragma: no cover — require_user already answered 401
         raise HTTPException(status_code=401, detail="Bearer token required", headers=_401_HEADERS)
     return user.sub
+
+
+def get_optional_actor_sub(
+    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+    user: CurrentUser | None = Depends(require_user),
+) -> str | None:
+    """Actor when present; never 422. Used for GET room viewer_role and C27 optional guards."""
+    if settings.auth_disabled:
+        if x_actor_sub is None or not x_actor_sub.strip():
+            return None
+        return x_actor_sub.strip()
+    if user is None:
+        return None
+    return user.sub

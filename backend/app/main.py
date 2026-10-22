@@ -12,6 +12,7 @@ from app.api.leads import crm_router as crm_router
 from app.api.leads import router as leads_router
 from app.api.chat import router as chat_router
 from app.api.meet import router as meet_router
+from app.api.members import router as members_router
 from app.api.rooms import router as rooms_router
 from app.api.room_health import internal_router as room_health_internal_router
 from app.api.room_health import router as room_health_router
@@ -72,6 +73,7 @@ app.include_router(handoffs_router)
 app.include_router(entitlements_router)
 app.include_router(crm_router)
 app.include_router(rooms_router, dependencies=client_auth)
+app.include_router(members_router, dependencies=client_auth)
 app.include_router(slots_router, dependencies=client_auth)
 app.include_router(strategy_publications_router)
 app.include_router(strategy_proposals_router, dependencies=client_auth)

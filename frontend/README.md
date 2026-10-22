@@ -18,6 +18,8 @@ stub earnings ledger; **Refresh** re-reads `GET …/health`, **Publish snapshot*
 writes an outbox `RoomHealthSnapshot` row (stub).
 Earned (C16): block on the room page shows total earned + entries per accepted task (`GET …/earnings`). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
 Member termination (C17): on a **filled** slot, **Terminate** button (next to **Unassign**) prompts for a reason → `POST …/members/{sub}/terminate` → frees the slot, writes `room_terminations` journal + outbox `MemberTerminated`. **Unassign** = just frees the slot (no journal/outbox); **Terminate** = с причиной и историей.
+UX polish (C29): Suggest **Pick** selects the candidate (not disabled). Chat list is the **last** N messages. Earned refreshes after task Accept. Empty slots/tasks/leads/chat hint the next step. Panels wrap under 640px.
+Room RBAC (C27): GET room returns `viewer_role` + `rbac_enforced`. When RBAC is on and the viewer is `member`, the shell hides Terminate / strategy Accept / Assign / QG Accept (API still 403). Default `ROOM_RBAC_DISABLED=true` shows all buttons (demo). Override actor: `sessionStorage.wowlance_actor_sub`.
 
 ## Login / token (C8)
 

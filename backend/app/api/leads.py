@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth.rbac_deps import require_staff
 from app.db.session import get_db
 from app.domain.leads import (
     InvalidTransitionError,
@@ -30,12 +31,6 @@ from app.domain.schemas import (
 
 router = APIRouter(prefix="/api/v1/rooms", tags=["leads"])
 crm_router = APIRouter(prefix="/internal/v1/crm", tags=["crm"])
-
-
-def _actor_sub(x_actor_sub: str | None) -> str:
-    if x_actor_sub is None or not x_actor_sub.strip():
-        raise HTTPException(status_code=422, detail="X-Actor-Sub header is required")
-    return x_actor_sub.strip()
 
 
 def _map_errors(exc: Exception) -> None:
@@ -79,9 +74,8 @@ def post_room_lead(
     room_id: uuid.UUID,
     payload: RoomLeadCreateRequest,
     db: Session = Depends(get_db),
-    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+    actor: str = Depends(require_staff),
 ) -> RoomLeadOut:
-    _actor_sub(x_actor_sub)
     try:
         return create_lead(db, room_id, payload)
     except RoomNotFoundError as exc:
@@ -103,9 +97,8 @@ def post_mark_hot(
     room_id: uuid.UUID,
     lead_id: uuid.UUID,
     db: Session = Depends(get_db),
-    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+    actor: str = Depends(require_staff),
 ) -> RoomLeadOut:
-    actor = _actor_sub(x_actor_sub)
     try:
         return mark_hot(db, room_id, lead_id, actor)
     except (RoomNotFoundError, LeadNotFoundError, InvalidTransitionError) as exc:
@@ -127,9 +120,8 @@ def post_handoff_crm(
     room_id: uuid.UUID,
     lead_id: uuid.UUID,
     db: Session = Depends(get_db),
-    x_actor_sub: str | None = Header(default=None, alias="X-Actor-Sub"),
+    actor: str = Depends(require_staff),
 ) -> LeadHandoffResponse:
-    actor = _actor_sub(x_actor_sub)
     try:
         return handoff_to_crm(db, room_id, lead_id, actor)
     except (RoomNotFoundError, LeadNotFoundError, InvalidTransitionError) as exc:

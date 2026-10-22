@@ -8,9 +8,11 @@ const ACTOR_SUB = 'teamlead-demo-sub'
 export default function PendingStrategyPanel({
   room,
   onDecided,
+  canStaff = true,
 }: {
   room: RoomRead
   onDecided: () => void
+  canStaff?: boolean
 }) {
   const pending = room.pending_strategy
   const [busy, setBusy] = useState(false)
@@ -52,6 +54,7 @@ export default function PendingStrategyPanel({
       <p>
         <strong>Hot criteria.</strong> {pending.hot_criteria}
       </p>
+      {canStaff ? (
       <div className="pending-actions">
         <button
           type="button"
@@ -70,6 +73,9 @@ export default function PendingStrategyPanel({
           Reject
         </button>
       </div>
+      ) : (
+        <p className="hint">Accept/Reject hidden for member role.</p>
+      )}
       {error ? <p className="error">{error}</p> : null}
     </section>
   )

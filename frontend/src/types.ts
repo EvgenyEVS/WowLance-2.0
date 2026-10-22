@@ -32,6 +32,8 @@ export type RoomRead = {
     hot_criteria: string
     status: 'pending'
   } | null
+  viewer_role?: 'founder' | 'teamlead' | 'member' | null
+  rbac_enforced?: boolean
 }
 
 export type FunctionSlot = {

@@ -27,10 +27,12 @@ export default function SlotsPanel({
   roomId,
   staffingUnlocked,
   rosterVersion = 0,
+  canStaff = true,
 }: {
   roomId: string
   staffingUnlocked: boolean
   rosterVersion?: number
+  canStaff?: boolean
 }) {
   const [state, setState] = useState<SlotsState>({ kind: 'loading' })
   const [busy, setBusy] = useState(false)
@@ -363,6 +365,8 @@ export default function SlotsPanel({
         <p className="hint">Slots locked until entitlement</p>
       ) : (
         <>
+          {canStaff ? (
+            <>
           <button
             type="button"
             className="slot-action"
@@ -379,6 +383,8 @@ export default function SlotsPanel({
           >
             Rematerialize
           </button>
+            </>
+          ) : null}
           {state.kind === 'loading' && <p className="hint">Loading slots…</p>}
           {state.kind === 'forbidden' && (
             <p className="error">Slots locked (403).</p>
@@ -388,7 +394,9 @@ export default function SlotsPanel({
           )}
           {state.kind === 'error' && <p className="error">{state.message}</p>}
           {state.kind === 'ok' && state.slots.length === 0 && (
-            <p className="hint">No seats in staffing intent.</p>
+            <p className="hint">
+              No seats yet. Click Materialize after entitlement, then Assign from roster.
+            </p>
           )}
           {state.kind === 'ok' && state.slots.length > 0 && (
             <ul className="slot-list">
@@ -397,6 +405,7 @@ export default function SlotsPanel({
                   <strong>{slot.role_key}</strong> #{slot.seat_index}{' '}
                   <span className="hint">{slot.status}</span>
                   {slot.status === 'open' ? (
+                    canStaff ? (
                     <>
                       <button
                         type="button"
@@ -415,7 +424,7 @@ export default function SlotsPanel({
                               <button
                                 type="button"
                                 className="slot-action"
-                                disabled={busy || !(picked[slot.id] ?? '').trim()}
+                                disabled={busy}
                                 onClick={() => {
                                   setPicked((prev) => ({ ...prev, [slot.id]: c.freelancer_sub }))
                                 }}
@@ -449,9 +458,12 @@ export default function SlotsPanel({
                         Assign
                       </button>
                     </>
+                    ) : null
                   ) : slot.status === 'filled' ? (
                     <>
                       <span className="hint"> → {slot.freelancer_sub}</span>
+                      {canStaff ? (
+                      <>
                       <button
                         type="button"
                         className="slot-action"
@@ -492,6 +504,8 @@ export default function SlotsPanel({
                       >
                         Reassign
                       </button>
+                      </>
+                      ) : null}
                     </>
                   ) : null}
                 </li>
@@ -499,7 +513,7 @@ export default function SlotsPanel({
             </ul>
           )}
           {orphanedFilled.length > 0 && (
-            <p className="hint">
+            <p className="hint orphaned-hint">
               Заполненные слоты вне нового плана (не удалены автоматически):{' '}
               {orphanedFilled.map((s) => (
                 <span key={s.id}>

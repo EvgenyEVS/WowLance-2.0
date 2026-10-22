@@ -12,7 +12,7 @@
 | [`keycloak/`](keycloak/) | Keycloak | AuthBearer |
 | [`platform/`](platform/) | Platform / Gateway | InternalServiceAuth |
 | [`meet/`](meet/) | Jitsi / Meet | RoomMeet |
-| [`wowlance/`](wowlance/) | WowLance (API комнаты) | RoomRead, StaffingSlots, SlotMatch, RoomTasks, RoomLeads, RoomMessages, RoomEarnings |
+| [`wowlance/`](wowlance/) | WowLance (API комнаты) | RoomRead, StaffingSlots, SlotMatch, RoomTasks, RoomLeads, RoomMessages, RoomEarnings, RoomMembers |
 
 **Правило:** менять YAML (+ example) в папке сервиса **раньше** кода.  
 Когда появится общий OpenSpec-репозиторий платформы — перенести граничные папки туда, здесь оставить ссылки.

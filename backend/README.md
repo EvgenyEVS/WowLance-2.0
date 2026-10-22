@@ -879,6 +879,40 @@ cd backend
 В `frontend/vite.config` временно proxy на `8001`, либо вызывай API/Swagger на
 `http://127.0.0.1:8001`. После прогона верни proxy на `:8000`.
 
+## C27: Room RBAC lite
+
+Локальные роли комнаты (`room_members`): `founder` | `teamlead` | `member`.  
+Не Keycloak groups / Gateway. Флаг **`ROOM_RBAC_DISABLED` (default `true`)**: guards — no-op, demo и pytest как раньше.  
+Строгая матрица: `ROOM_RBAC_DISABLED=false`. Нарушение → **403** `forbidden_role`.
+
+| Действие | founder | teamlead | member |
+|----------|---------|----------|--------|
+| Accept/Reject strategy | ✅ | ✅ | ❌ |
+| Assign/unassign/reassign/rematerialize/match | ✅ | ✅ | ❌ |
+| Terminate | ✅ | ✅ | ❌ |
+| Task create / accept/reject QG | ✅ | ✅ | ❌ create/accept; start/complete своих |
+| Lead create/hot/handoff | ✅ | ✅ | ❌ |
+| Chat post / meet ensure | ✅ | ✅ | ✅ |
+| GET room/lists | ✅ | ✅ | ✅ |
+
+Handoff → membership `founder`. Slot assign → upsert `member` (без demote).  
+`POST /api/v1/rooms/{id}/members` `{freelancer_sub, role: teamlead}` — только founder.  
+`GET /api/v1/rooms/{id}/members`. GET room: `viewer_role`, `rbac_enforced`.  
+UI скрывает Terminate/Accept/assign у `member`, только если `rbac_enforced`.
+
+## C26: Founder-demo пакет
+
+Скрипт `scripts/founder-demo.ps1` гоняет существующие stub-endpoints (не пишет в БД в обход API).  
+Чеклист для глаз в UI: [docs/demo/founder-demo.md](../docs/demo/founder-demo.md).
+
+```powershell
+# из корня репо, uvicorn уже на :8000
+powershell -File scripts/founder-demo.ps1
+```
+
+Каждый прогон — новый `handoff_id` / новая комната. `AUTH_DISABLED=true`.  
+Если `INTERNAL_AUTH_DISABLED=false`, скрипт читает `INTERNAL_SERVICE_TOKEN`.
+
 ## Отложено (не C1–C13)
 
 - Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  

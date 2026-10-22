@@ -46,17 +46,18 @@ def _message_out(row: RoomMessage) -> RoomMessageOut:
 def list_messages(
     db: Session, room_id: uuid.UUID, limit: int = LIST_DEFAULT
 ) -> RoomMessageListResponse:
-    """Last `limit` messages of a room, oldest first (created_at asc)."""
+    """Last `limit` messages of a room, returned oldest-first."""
     room = _require_room(db, room_id)
     limit = max(1, min(limit, LIST_LIMIT))
-    rows = list(
+    newest_first = list(
         db.scalars(
             select(RoomMessage)
             .where(RoomMessage.room_id == room.id)
-            .order_by(RoomMessage.created_at.asc(), RoomMessage.id.asc())
+            .order_by(RoomMessage.created_at.desc(), RoomMessage.id.desc())
             .limit(limit)
         ).all()
     )
+    rows = list(reversed(newest_first))
     return RoomMessageListResponse(
         room_id=room.id,
         messages=[_message_out(row) for row in rows],

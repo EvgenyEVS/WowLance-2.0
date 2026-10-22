@@ -75,6 +75,7 @@ class Room(Base):
     )
 
     founder: Mapped[User] = relationship(back_populates="rooms")
+    members: Mapped[list["RoomMember"]] = relationship(back_populates="room")
     strategy_snapshots: Mapped[list[StrategySnapshot]] = relationship(
         back_populates="room"
     )
@@ -419,6 +420,32 @@ class RoomTermination(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class RoomMember(Base):
+    """C27 local membership: founder | teamlead | member (not Keycloak roles)."""
+
+    __tablename__ = "room_members"
+    __table_args__ = (
+        UniqueConstraint("room_id", "user_sub", name="uq_room_members_room_user"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_sub: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    room: Mapped[Room] = relationship(back_populates="members")
 
 
 class RoomMessage(Base):

@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_staff
 from app.db.session import get_db
 from app.domain.schemas import (
     RoomTerminationListResponse,
@@ -49,7 +49,7 @@ def post_terminate_member(
     freelancer_sub: str,
     payload: TerminateMemberRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> TerminateMemberResponse:
     """C17: POST /api/v1/rooms/{room_id}/members/{freelancer_sub}/terminate."""
     try:

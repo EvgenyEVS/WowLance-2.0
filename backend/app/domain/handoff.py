@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import OutboxMessage, Room, StrategySnapshot, User
+from app.domain.rbac import ROLE_FOUNDER, upsert_membership
 from app.domain.schemas import (
     FounderHandoffRequest,
     FounderHandoffResponse,
@@ -70,6 +71,8 @@ def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> Handoff
                 "handoff_id already bound to a different payload"
             )
         # Immutable: do not touch StrategySnapshot or staffing_unlocked on replay.
+        upsert_membership(db, existing.id, existing.founder_sub, ROLE_FOUNDER)
+        db.commit()
         return HandoffResult(
             response=FounderHandoffResponse(
                 room_id=existing.id,
@@ -119,6 +122,7 @@ def process_founder_handoff(db: Session, body: FounderHandoffRequest) -> Handoff
     )
     db.add(room)
     db.add(snapshot)
+    upsert_membership(db, room.id, body.founder_sub, ROLE_FOUNDER)
 
     now = datetime.now(timezone.utc)
     db.add(_room_created_outbox(room.id, body, now))

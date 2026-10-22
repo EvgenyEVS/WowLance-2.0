@@ -12,7 +12,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_member
 from app.db.session import get_db
 from app.domain.meet import RoomNotFoundError, ensure_meeting
 from app.domain.schemas import MeetEnsureResponse
@@ -30,7 +30,7 @@ router = APIRouter(prefix="/api/v1", tags=["meet"])
 )
 def ensure_meet(
     room_id: uuid.UUID,
-    actor_sub: str = Depends(get_actor_sub),
+    actor_sub: str = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> MeetEnsureResponse:
     """POST /api/v1/rooms/{room_id}/meet/ensure — stub Jitsi ensure."""

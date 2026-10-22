@@ -15,7 +15,15 @@ type MutateResult =
   | { ok: true }
   | { ok: false; status: number; message: string }
 
-export default function TasksPanel({ roomId }: { roomId: string }) {
+export default function TasksPanel({
+  roomId,
+  canStaff = true,
+  onAccepted,
+}: {
+  roomId: string
+  canStaff?: boolean
+  onAccepted?: () => void
+}) {
   const [state, setState] = useState<TasksState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
   const [assigneeSub, setAssigneeSub] = useState<string | null>(null)
@@ -114,6 +122,9 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
         return { ok: false, status: res.status, message }
       }
       loadTasks()
+      if (path.endsWith('/accept') && onAccepted) {
+        onAccepted()
+      }
       return { ok: true }
     } finally {
       setBusy(false)
@@ -142,6 +153,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
   return (
     <section className="block tasks-block">
       <h2>Tasks</h2>
+      {canStaff ? (
       <form className="task-form" onSubmit={addTask}>
         <input
           type="text"
@@ -169,11 +181,14 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
           Add
         </button>
       </form>
+      ) : null}
       {state.kind === 'loading' && <p className="hint">Loading tasks…</p>}
       {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.tasks.length === 0 && (
-        <p className="hint">No tasks yet.</p>
+        <p className="hint">
+          No tasks yet. Add a title, Start, Submit a proof URI, then Accept.
+        </p>
       )}
       {state.kind === 'ok' && state.tasks.length > 0 && (
         <ul className="task-list">
@@ -198,6 +213,7 @@ export default function TasksPanel({ roomId }: { roomId: string }) {
                 )
               }
               onAssign={(sub) => void assignTask(task.id, sub)}
+              canStaff={canStaff}
             />
           ))}
         </ul>
@@ -216,6 +232,7 @@ type TaskItemProps = {
   onAccept: () => void
   onReject: (reviewNote: string) => Promise<MutateResult>
   onAssign: (sub: string) => void
+  canStaff: boolean
 }
 
 function TaskItem({
@@ -227,6 +244,7 @@ function TaskItem({
   onAccept,
   onReject,
   onAssign,
+  canStaff,
 }: TaskItemProps) {
   const [proofUri, setProofUri] = useState('')
   const [proofNote, setProofNote] = useState('')
@@ -272,7 +290,7 @@ function TaskItem({
             Start
           </button>
         )}
-        {(task.status === 'todo' || task.status === 'in_progress') && (
+        {canStaff && (task.status === 'todo' || task.status === 'in_progress') && (
           <>
             <select
               value={assignSub ?? ''}
@@ -296,7 +314,7 @@ function TaskItem({
             </button>
           </>
         )}
-        {task.status === 'submitted' && (
+        {canStaff && task.status === 'submitted' && (
           <>
             <button
               type="button"
@@ -357,7 +375,7 @@ function TaskItem({
         <p className="hint task-review">Last reject reason: {task.review_note}</p>
       ) : null}
 
-      {task.status === 'submitted' ? (
+      {canStaff && task.status === 'submitted' ? (
         <input
           type="text"
           value={rejectNote}

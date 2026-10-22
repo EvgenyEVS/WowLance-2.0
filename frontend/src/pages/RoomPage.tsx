@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { viewerSub } from '../actor'
 import { apiFetch } from '../api'
 import type { EarningsList, RoomRead } from '../types'
 import LeadsPanel from './LeadsPanel'
@@ -23,6 +24,7 @@ export default function RoomPage({ roomId }: { roomId: string }) {
     setState({ kind: 'loading' })
     apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}`, {
       signal: controller.signal,
+      headers: { 'X-Actor-Sub': viewerSub() },
     })
       .then(async (res) => {
         if (res.status === 404) {
@@ -81,6 +83,10 @@ function RoomView({
   const [earnings, setEarnings] = useState<EarningsList | null>(null)
   const [earningsBusy, setEarningsBusy] = useState(false)
   const [earningsError, setEarningsError] = useState<string | null>(null)
+  const canStaff =
+    !room.rbac_enforced ||
+    room.viewer_role === 'founder' ||
+    room.viewer_role === 'teamlead'
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
 
@@ -181,15 +187,24 @@ function RoomView({
         ) : null}
         <p className="hint">Version {room.strategy.strategy_version}</p>
       </section>
-      <PendingStrategyPanel room={room} onDecided={onReload} />
+      <PendingStrategyPanel
+        room={room}
+        onDecided={onReload}
+        canStaff={canStaff}
+      />
       <RosterPanel onChanged={() => setRosterVersion((v) => v + 1)} />
       <SlotsPanel
         roomId={room.id}
         staffingUnlocked={room.staffing_unlocked}
         rosterVersion={rosterVersion}
+        canStaff={canStaff}
       />
-      <TasksPanel roomId={room.id} />
-      <LeadsPanel roomId={room.id} />
+      <TasksPanel
+        roomId={room.id}
+        canStaff={canStaff}
+        onAccepted={() => void loadEarnings()}
+      />
+      <LeadsPanel roomId={room.id} canStaff={canStaff} />
       <ChatPanel roomId={room.id} />
       <RoomHealthPanel roomId={room.id} />
       <section className="block">
