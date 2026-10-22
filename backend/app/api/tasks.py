@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.auth.rbac_deps import require_staff, require_task_worker
@@ -53,9 +55,13 @@ def _map_errors(exc: Exception) -> None:
 def get_room_tasks(
     room_id: uuid.UUID,
     db: Session = Depends(get_db),
+    status: Literal[
+        "todo", "in_progress", "submitted", "done", "rejected"
+    ]
+    | None = Query(default=None),
 ) -> RoomTaskListResponse:
     try:
-        return list_tasks(db, room_id)
+        return list_tasks(db, room_id, status=status)
     except RoomNotFoundError as exc:
         _map_errors(exc)
         raise

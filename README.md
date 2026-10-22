@@ -80,7 +80,11 @@ Health: http://127.0.0.1:8000/health
 | **C27** | Room RBAC lite — [задание](docs/261022%20-%20задание%20C27%20Room%20RBAC.md) ∥ C26 · C28 (осторожно с C29) |
 | **C28** | QA полный прогон C0–C25 — [задание](docs/261022%20-%20задание%20C28%20QA%20C0-C25.md) ∥ C26 · C27 · C29 |
 | **C29** | Room UX polish — [задание](docs/261022%20-%20задание%20C29%20Room%20UX%20polish.md) ∥ C26 · C28 (осторожно с C27) |
-| **C30+** | Live adapters / Gateway — только после `agreed` контрактов с соседями |
+| **C30** | Tasks + QG UX — [задание](docs/261022%20-%20задание%20C30%20Tasks%20QG%20UX.md) ∥ C31–C33 |
+| **C31** | Slots & staffing UX — [задание](docs/261022%20-%20задание%20C31%20Slots%20staffing%20UX.md) ∥ C30 · C32 · C33 |
+| **C32** | Stub hardening — [задание](docs/261022%20-%20задание%20C32%20Stub%20hardening.md) ∥ C30 · C31 · C33 |
+| **C33** | Contract owners — [задание](docs/261022%20-%20задание%20C33%20Contract%20owners.md) ∥ C30–C32 |
+| **C34+** | Live adapters / Gateway — только после `agreed` контрактов с соседями |
 
 ## Политика оплаты
 

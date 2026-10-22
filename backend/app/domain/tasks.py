@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import case, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -121,16 +121,26 @@ def _require_task(db: Session, room_id: uuid.UUID, task_id: uuid.UUID) -> RoomTa
     return row
 
 
-def list_tasks(db: Session, room_id: uuid.UUID) -> RoomTaskListResponse:
+def list_tasks(
+    db: Session, room_id: uuid.UUID, status: str | None = None
+) -> RoomTaskListResponse:
     room = _require_room(db, room_id)
-    rows = list(
-        db.scalars(
-            select(RoomTask)
-            .where(RoomTask.room_id == room.id)
-            .order_by(RoomTask.created_at, RoomTask.id)
-            .limit(LIST_LIMIT)
-        ).all()
+    query = select(RoomTask).where(RoomTask.room_id == room.id)
+    if status == "rejected":
+        query = query.where(
+            RoomTask.status == TaskStatus.in_progress.value,
+            RoomTask.review_note.is_not(None),
+        )
+    elif status:
+        query = query.where(RoomTask.status == status)
+    query = (
+        query.order_by(
+            case((RoomTask.status == TaskStatus.submitted.value, 0), else_=1),
+            RoomTask.created_at,
+            RoomTask.id,
+        ).limit(LIST_LIMIT)
     )
+    rows = list(db.scalars(query).all())
     return RoomTaskListResponse(
         room_id=room.id,
         tasks=[_task_out(row) for row in rows],

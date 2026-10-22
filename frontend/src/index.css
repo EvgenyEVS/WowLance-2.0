@@ -243,6 +243,20 @@ code {
   color: #b45309;
 }
 
+.task-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+}
+
+.task-filters .ghost-action,
+.task-filters .slot-action {
+  margin: 0;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.85rem;
+}
+
 .orphaned-hint {
   border: 1px solid #f0c36d;
   background: #fff8e8;
