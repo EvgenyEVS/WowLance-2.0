@@ -257,6 +257,13 @@ code {
   font-size: 0.85rem;
 }
 
+.slot-item.highlight {
+  outline: 2px solid #2e7d32;
+  background: #e8f5e9;
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+}
+
 .orphaned-hint {
   border: 1px solid #f0c36d;
   background: #fff8e8;

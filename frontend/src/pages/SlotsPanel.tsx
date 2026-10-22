@@ -16,6 +16,17 @@ import type {
 /** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'teamlead-demo-sub'
 
+function staffHttpError(status: number): string {
+  if (status === 403) return 'Forbidden (403). Staffing locked or role.'
+  if (status === 404)
+    return 'Not found (404). Slot or freelancer missing — upsert roster first.'
+  if (status === 409)
+    return 'Conflict (409). Slot state changed — refresh the list.'
+  if (status === 422)
+    return 'Validation (422). Check actor header and payload.'
+  return `HTTP ${status}`
+}
+
 type SlotsState =
   | { kind: 'loading' }
   | { kind: 'ok'; slots: FunctionSlot[] }
@@ -41,6 +52,7 @@ export default function SlotsPanel({
   const [picked, setPicked] = useState<Record<string, string>>({})
   const [orphanedFilled, setOrphanedFilled] = useState<FunctionSlot[]>([])
   const [matchResults, setMatchResults] = useState<Record<string, { candidates: MatchCandidate[] }>>({})
+  const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
 
   const loadSlots = useCallback(() => {
     const controller = new AbortController()
@@ -108,7 +120,7 @@ export default function SlotsPanel({
         return
       }
       if (!res.ok) {
-        setState({ kind: 'error', message: `HTTP ${res.status}` })
+        setState({ kind: 'error', message: staffHttpError(res.status) })
         return
       }
       const body = (await res.json()) as MaterializeResult
@@ -136,7 +148,7 @@ export default function SlotsPanel({
         return
       }
       if (!res.ok) {
-        setState({ kind: 'error', message: `HTTP ${res.status}` })
+        setState({ kind: 'error', message: staffHttpError(res.status) })
         return
       }
       const body = (await res.json()) as RematerializeResult
@@ -158,20 +170,8 @@ export default function SlotsPanel({
           slot.id,
         )}/match`,
       )
-      if (res.status === 403) {
-        setError('Staffing locked (403).')
-        return
-      }
-      if (res.status === 404) {
-        setError('Slot not found (404).')
-        return
-      }
-      if (res.status === 409) {
-        setError('Slot is not open (409).')
-        return
-      }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
+        setError(staffHttpError(res.status))
         return
       }
       const body = (await res.json()) as SlotMatchResult
@@ -211,25 +211,14 @@ export default function SlotsPanel({
           body: JSON.stringify({ freelancer_sub: freelancerSub }),
         },
       )
-      if (res.status === 403) {
-        setError('Staffing locked (403).')
-        return
-      }
-      if (res.status === 404) {
-        setError('Slot or freelancer not found (404). Upsert into roster first.')
-        return
-      }
-      if (res.status === 409) {
-        setError('Slot already filled or freelancer already seated (409).')
-        loadSlots()
-        return
-      }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
+        setError(staffHttpError(res.status))
+        if (res.status === 409) loadSlots()
         return
       }
       const body = (await res.json()) as SlotAssignResult
       patchSlot(body)
+      loadSlots()
     } finally {
       setBusy(false)
     }
@@ -251,25 +240,14 @@ export default function SlotsPanel({
           },
         },
       )
-      if (res.status === 403) {
-        setError('Staffing locked (403).')
-        return
-      }
-      if (res.status === 404) {
-        setError('Slot not found (404).')
-        return
-      }
-      if (res.status === 409) {
-        setError('Slot is not filled (409).')
-        loadSlots()
-        return
-      }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
+        setError(staffHttpError(res.status))
+        if (res.status === 409) loadSlots()
         return
       }
       const body = (await res.json()) as SlotUnassignResult
       patchSlot(body)
+      loadSlots()
     } finally {
       setBusy(false)
     }
@@ -294,25 +272,15 @@ export default function SlotsPanel({
           body: JSON.stringify({ freelancer_sub: freelancerSub }),
         },
       )
-      if (res.status === 403) {
-        setError('Staffing locked (403).')
-        return
-      }
-      if (res.status === 404) {
-        setError('Slot or freelancer not found (404). Upsert into roster first.')
-        return
-      }
-      if (res.status === 409) {
-        setError('Slot not filled or freelancer already seated (409).')
-        loadSlots()
-        return
-      }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
+        setError(staffHttpError(res.status))
+        if (res.status === 409) loadSlots()
         return
       }
       const body = (await res.json()) as SlotReassignResult
       patchSlot(body)
+      setHighlightedSlotId(body.slot.id)
+      loadSlots()
     } finally {
       setBusy(false)
     }
@@ -337,18 +305,9 @@ export default function SlotsPanel({
           body: JSON.stringify({ reason: reason.trim() }),
         },
       )
-      if (res.status === 404) {
-        setError('Member not seated (404). Reload the list.')
-        loadSlots()
-        return
-      }
-      if (res.status === 409) {
-        setError('Slot not filled (409). Reload the list.')
-        loadSlots()
-        return
-      }
       if (!res.ok) {
-        setError(`HTTP ${res.status}`)
+        setError(staffHttpError(res.status))
+        if (res.status === 404 || res.status === 409) loadSlots()
         return
       }
       patchSlot({ slot: { ...slot, status: 'open', freelancer_sub: null } })
@@ -360,7 +319,12 @@ export default function SlotsPanel({
 
   return (
     <section className="block">
-      <h2>Slots</h2>
+      <h2>
+        Slots
+        {state.kind === 'ok' && state.slots.length > 0
+          ? ` · ${state.slots.filter((s) => s.status === 'filled').length}/${state.slots.length} занято`
+          : null}
+      </h2>
       {!staffingUnlocked ? (
         <p className="hint">Slots locked until entitlement</p>
       ) : (
@@ -383,6 +347,11 @@ export default function SlotsPanel({
           >
             Rematerialize
           </button>
+          <p className="hint">
+            Rematerialize after Accept strategy / смена functions в snapshot.
+            Occupied seats that fall out of the new plan stay as orphaned — unassign or
+            terminate them manually.
+          </p>
             </>
           ) : null}
           {state.kind === 'loading' && <p className="hint">Loading slots…</p>}
@@ -401,11 +370,18 @@ export default function SlotsPanel({
           {state.kind === 'ok' && state.slots.length > 0 && (
             <ul className="slot-list">
               {state.slots.map((slot) => (
-                <li key={slot.id}>
+                <li
+                  key={slot.id}
+                  className={
+                    highlightedSlotId === slot.id ? 'slot-item highlight' : 'slot-item'
+                  }
+                >
                   <strong>{slot.role_key}</strong> #{slot.seat_index}{' '}
                   <span className="hint">{slot.status}</span>
                   {slot.status === 'open' ? (
-                    canStaff ? (
+                    <>
+                      <span className="badge unlocked">свободен</span>
+                    {canStaff ? (
                     <>
                       <button
                         type="button"
@@ -415,8 +391,16 @@ export default function SlotsPanel({
                       >
                         Suggest
                       </button>
+                      {roster.length === 0 ? (
+                        <span className="hint">
+                          Roster empty — upsert a freelancer first, then Suggest/Pick.
+                        </span>
+                      ) : null}
                       {matchResults[slot.id] && (
                         <ul className="slot-list">
+                          {matchResults[slot.id].candidates.length === 0 ? (
+                            <li className="hint">No candidates. Upsert roster first.</li>
+                          ) : null}
                           {matchResults[slot.id].candidates.map((c) => (
                             <li key={c.freelancer_sub}>
                               {c.display_name} ({c.freelancer_sub}) — score {c.score}{' '}
@@ -458,7 +442,8 @@ export default function SlotsPanel({
                         Assign
                       </button>
                     </>
-                    ) : null
+                    ) : null}
+                    </>
                   ) : slot.status === 'filled' ? (
                     <>
                       <span className="hint"> → {slot.freelancer_sub}</span>
@@ -513,17 +498,20 @@ export default function SlotsPanel({
             </ul>
           )}
           {orphanedFilled.length > 0 && (
-            <p className="hint orphaned-hint">
-              Заполненные слоты вне нового плана (не удалены автоматически):{' '}
+            <div className="hint orphaned-hint">
+              <strong>Orphaned filled seats</strong> — вне нового плана, слот не
+              удалён. Unassign или Terminate вручную:{' '}
               {orphanedFilled.map((s) => (
-                <span key={s.id}>
+                <span key={s.id} className="badge locked">
                   {s.role_key} #{s.seat_index}
                 </span>
               ))}
-            </p>
+            </div>
           )}
           {roster.length === 0 ? (
-            <p className="hint">Roster empty — add a freelancer above (or via curl).</p>
+            <p className="hint">
+              Roster empty — upsert a freelancer in Roster, then Suggest → Pick → Assign.
+            </p>
           ) : null}
           {error ? <p className="error">{error}</p> : null}
         </>
