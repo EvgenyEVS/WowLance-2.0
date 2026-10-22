@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_EXAMPLE = (
-    REPO_ROOT / "contracts" / "wowlance" / "examples" / "StrategyPublished.sale.json"
+    REPO_ROOT / "contracts" / "strategy" / "examples" / "StrategyPublished.sale.json"
 )
 ACTOR = {"X-Actor-Sub": "teamlead-demo-sub"}
 

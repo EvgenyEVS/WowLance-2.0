@@ -24,7 +24,7 @@ from app.db import models  # noqa: F401
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_SALE = (
-    REPO_ROOT / "contracts" / "wowlance" / "examples" / "FounderHandoff.sale.json"
+    REPO_ROOT / "contracts" / "strategy" / "examples" / "FounderHandoff.sale.json"
 )
 TEST_DB_NAME = "wowlance_test"
 
