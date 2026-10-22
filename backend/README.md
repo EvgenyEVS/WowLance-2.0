@@ -879,6 +879,19 @@ cd backend
 В `frontend/vite.config` временно proxy на `8001`, либо вызывай API/Swagger на
 `http://127.0.0.1:8001`. После прогона верни proxy на `:8000`.
 
+## C26: Founder-demo пакет
+
+Скрипт `scripts/founder-demo.ps1` гоняет существующие stub-endpoints (не пишет в БД в обход API).  
+Чеклист для глаз в UI: [docs/demo/founder-demo.md](../docs/demo/founder-demo.md).
+
+```powershell
+# из корня репо, uvicorn уже на :8000
+powershell -File scripts/founder-demo.ps1
+```
+
+Каждый прогон — новый `handoff_id` / новая комната. `AUTH_DISABLED=true`.  
+Если `INTERNAL_AUTH_DISABLED=false`, скрипт читает `INTERNAL_SERVICE_TOKEN`.
+
 ## Отложено (не C1–C13)
 
 - Полный RBAC (teamlead vs freelancer на каждый endpoint), Gateway, token exchange  
