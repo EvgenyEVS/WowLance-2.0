@@ -160,7 +160,7 @@ export default function LeadsPanel({
                 </>
               )}
               {canStaff && lead.status === 'open' && (
-                <button>
+                <button
                   type="button"
                   className="slot-action"
                   disabled={busy}
@@ -170,7 +170,7 @@ export default function LeadsPanel({
                 </button>
               )}
               {canStaff && lead.status === 'hot' && (
-                <button>
+                <button
                   type="button"
                   className="slot-action"
                   disabled={busy}

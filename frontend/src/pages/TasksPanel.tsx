@@ -292,7 +292,7 @@ function TaskItem({
         )}
         {canStaff && (task.status === 'todo' || task.status === 'in_progress') && (
           <>
-            <select>
+            <select
               value={assignSub ?? ''}
               onChange={(e) => setAssignSub(e.target.value || null)}
               disabled={busy}
