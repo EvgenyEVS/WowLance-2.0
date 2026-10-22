@@ -7,6 +7,7 @@
 | **Стек** | FastAPI · React · PostgreSQL · OpenSpec · Superpowers |
 | **Канон** | [ADR-002](docs/ADR-002-wowlance-2.0-platform-room.md) |
 | **Для ИИ / команды** | [AGENTS.md](AGENTS.md) |
+| **Контракты / owners** | [REGISTRY](contracts/REGISTRY.md) · [owners](docs/contracts-owners.md) |
 | **1.0 (reference)** | [EvgenyEVS/WowLance](https://github.com/EvgenyEVS/WowLance) |
 
 ## Структура

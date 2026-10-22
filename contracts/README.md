@@ -1,7 +1,8 @@
 # Contracts (OpenSpec)
 
 Контракты разложены **по микросервисам-соседям**.  
-Полный реестр с проверкой кода: **[REGISTRY.md](REGISTRY.md)**.
+Полный реестр с проверкой кода: **[REGISTRY.md](REGISTRY.md)**.  
+Владельцы / `proposed`→`agreed`: **[docs/contracts-owners.md](../docs/contracts-owners.md)**.
 
 | Папка | Микросервис | Контракты |
 |-------|-------------|-----------|

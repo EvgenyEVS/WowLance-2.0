@@ -20,7 +20,9 @@ contracts/
   wowlance/   ← API комнаты (клиент → WowLance)
 ```
 
-**Статусы:** `draft` — черновик OpenSpec · `aligned` — совпадает с кодом stub · `agreed` — подписан соседом (пока ни одного).
+**Статусы:** `draft` — черновик OpenSpec · `aligned` — совпадает с кодом stub · `proposed` — отдали соседу на review · `agreed` — подписан соседом (пока ни одного).
+
+**Owners / proposed:** таблица владельцев, блокеры live и шаблон пинга — [docs/contracts-owners.md](../docs/contracts-owners.md). Пока нет `agreed` — WowLance продолжает stubs.
 
 **Синонимы из arch-доков → фактический id:**
 
