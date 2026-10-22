@@ -123,6 +123,7 @@ contracts/
 | **RoomLeads** | [wowlance/RoomLeads.v1.yaml](wowlance/RoomLeads.v1.yaml) | leads lifecycle | C9/C19 | aligned* | *исправлено: `deal_amount` string (было number) |
 | **RoomMessages** | [wowlance/RoomMessages.v1.yaml](wowlance/RoomMessages.v1.yaml) | chat | C20 | aligned | list + post |
 | **RoomEarnings** | [wowlance/RoomEarnings.v1.yaml](wowlance/RoomEarnings.v1.yaml) | ledger | C16 | aligned | GET earnings |
+| **RoomMembers** | [wowlance/RoomMembers.v1.yaml](wowlance/RoomMembers.v1.yaml) | membership | C27 | draft | GET list + POST promote teamlead; local roles, not Keycloak |
 
 Примеры: `wowlance/examples/`.
 

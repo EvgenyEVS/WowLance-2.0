@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_staff, require_task_worker
 from app.db.session import get_db
 from app.domain.schemas import (
     RoomTaskAssignRequest,
@@ -75,7 +75,7 @@ def post_room_task(
     room_id: uuid.UUID,
     payload: RoomTaskCreateRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> RoomTaskOut:
     try:
         return create_task(db, room_id, payload)
@@ -98,7 +98,7 @@ def post_start_task(
     room_id: uuid.UUID,
     task_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_task_worker),
 ) -> RoomTaskOut:
     try:
         return start_task(db, room_id, task_id, actor)
@@ -127,7 +127,7 @@ def post_assign_task(
     task_id: uuid.UUID,
     payload: RoomTaskAssignRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> RoomTaskOut:
     """C15: POST /api/v1/rooms/{room_id}/tasks/{task_id}/assign."""
     try:
@@ -154,7 +154,7 @@ def post_complete_task(
     task_id: uuid.UUID,
     payload: RoomTaskCompleteRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_task_worker),
 ) -> RoomTaskOut:
     try:
         return complete_task(db, room_id, task_id, actor, payload)
@@ -177,7 +177,7 @@ def post_accept_task(
     room_id: uuid.UUID,
     task_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> RoomTaskOut:
     try:
         return accept_task(db, room_id, task_id, actor)
@@ -200,7 +200,7 @@ def post_reject_task(
     room_id: uuid.UUID,
     task_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
     payload: RoomTaskRejectRequest | None = None,
 ) -> RoomTaskOut:
     review_note = payload.review_note if payload is not None else None

@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_staff
 from app.db.session import get_db
 from app.domain.schemas import StrategyDecideResponse
 from app.domain.strategy_accept import (
@@ -29,7 +29,7 @@ def post_accept_proposal(
     room_id: uuid.UUID,
     proposal_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> StrategyDecideResponse:
     try:
         return accept_proposal(db, room_id, proposal_id, actor)
@@ -49,7 +49,7 @@ def post_reject_proposal(
     room_id: uuid.UUID,
     proposal_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> StrategyDecideResponse:
     try:
         return reject_proposal(db, room_id, proposal_id, actor)

@@ -52,6 +52,14 @@ response_200:
         staffing_intent:
           type: object
           nullable: true
+    viewer_role:
+      type: string
+      nullable: true
+      enum: [founder, teamlead, member]
+      description: Role of X-Actor-Sub / JWT sub in this room, if any (C27).
+    rbac_enforced:
+      type: boolean
+      description: true when ROOM_RBAC_DISABLED=false
     pending_strategy:
       type: object
       nullable: true

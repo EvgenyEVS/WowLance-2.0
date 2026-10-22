@@ -48,5 +48,9 @@ class Settings(BaseSettings):
         """False when internal routes are open (default/dev/tests)."""
         return not self.internal_auth_disabled
 
+    # C27: room-role guards. Default off so AUTH_DISABLED demo/pytest stay G1–G10 green.
+    # Strict matrix: ROOM_RBAC_DISABLED=false (actor must be a room member).
+    room_rbac_disabled: bool = True
+
 
 settings = Settings()

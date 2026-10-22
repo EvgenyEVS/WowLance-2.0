@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db.models import FreelancerRoster, Room, RoomFunctionSlot, StrategySnapshot
+from app.domain.rbac import ROLE_MEMBER, upsert_membership
 from app.domain.schemas import (
     AssignStatus,
     FunctionSlotOut,
@@ -326,6 +327,7 @@ def assign_slot(
 
     slot.freelancer_sub = freelancer_sub
     slot.status = SlotStatus.filled.value
+    upsert_membership(db, room.id, freelancer_sub, ROLE_MEMBER)
     db.commit()
     db.refresh(slot)
     return SlotAssignResponse(slot=_slot_out(slot), status=AssignStatus.assigned)
@@ -398,6 +400,7 @@ def reassign_slot(
         raise AlreadySeatedError("already_seated")
 
     slot.freelancer_sub = freelancer_sub
+    upsert_membership(db, room.id, freelancer_sub, ROLE_MEMBER)
     db.commit()
     db.refresh(slot)
     return SlotReassignResponse(

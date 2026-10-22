@@ -7,7 +7,9 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.config import settings
 from app.db.models import Room
+from app.domain.rbac import get_membership
 from app.domain.schemas import (
     PendingStrategyOut,
     RoomDocumentOut,
@@ -22,7 +24,9 @@ class RoomNotFoundError(Exception):
     """No room (or active snapshot) for the given id."""
 
 
-def get_room_read(db: Session, room_id: uuid.UUID) -> RoomReadResponse:
+def get_room_read(
+    db: Session, room_id: uuid.UUID, actor_sub: str | None = None
+) -> RoomReadResponse:
     room = db.scalar(
         select(Room)
         .where(Room.id == room_id)
@@ -52,6 +56,12 @@ def get_room_read(db: Session, room_id: uuid.UUID) -> RoomReadResponse:
             status="pending",
         )
 
+    viewer_role = None
+    if actor_sub:
+        membership = get_membership(db, room.id, actor_sub)
+        if membership is not None:
+            viewer_role = membership.role  # type: ignore[assignment]
+
     return RoomReadResponse(
         id=room.id,
         name=room.name,
@@ -63,6 +73,8 @@ def get_room_read(db: Session, room_id: uuid.UUID) -> RoomReadResponse:
         meeting_url=room.meeting_url,
         created_at=room.created_at,
         pending_strategy=pending_out,
+        viewer_role=viewer_role,
+        rbac_enforced=not settings.room_rbac_disabled,
         strategy=RoomStrategyOut(
             strategy_id=snap.strategy_id,
             strategy_version=snap.strategy_version,

@@ -75,6 +75,14 @@ def _auth_disabled_for_tests():
 
 
 @pytest.fixture(scope="session", autouse=True)
+def _rbac_disabled_for_tests():
+    """C27: pytest default is ROOM_RBAC_DISABLED=true (demo / G1–G10)."""
+    settings.room_rbac_disabled = True
+    yield
+    settings.room_rbac_disabled = True
+
+
+@pytest.fixture(scope="session", autouse=True)
 def _internal_auth_disabled_for_tests():
     """C21: pytest runs with internal service-token guard disabled by default."""
     settings.internal_auth_disabled = True

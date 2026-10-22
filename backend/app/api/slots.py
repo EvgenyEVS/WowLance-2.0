@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_staff, require_staff_optional
 from app.db.session import get_db
 from app.domain.schemas import (
     SlotAssignRequest,
@@ -83,6 +83,7 @@ def get_room_slots(
 def post_materialize_slots(
     room_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _actor: str | None = Depends(require_staff_optional),
 ) -> StaffingMaterializeResponse:
     try:
         return materialize_slots(db, room_id)
@@ -107,6 +108,7 @@ def get_slot_match(
     slot_id: uuid.UUID,
     limit: int = DEFAULT_LIMIT,
     db: Session = Depends(get_db),
+    _actor: str | None = Depends(require_staff_optional),
 ) -> SlotMatchResponse:
     try:
         return match_candidates(db, room_id, slot_id, limit)
@@ -132,6 +134,7 @@ def get_slot_match(
 def post_rematerialize_slots(
     room_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _actor: str | None = Depends(require_staff_optional),
 ) -> StaffingRematerializeResponse:
     try:
         return rematerialize_slots(db, room_id)
@@ -156,7 +159,7 @@ def post_assign_slot(
     slot_id: uuid.UUID,
     payload: SlotAssignRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> SlotAssignResponse:
     try:
         return assign_slot(db, room_id, slot_id, payload.freelancer_sub)
@@ -187,7 +190,7 @@ def post_unassign_slot(
     room_id: uuid.UUID,
     slot_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> SlotUnassignResponse:
     try:
         return unassign_slot(db, room_id, slot_id)
@@ -217,7 +220,7 @@ def post_reassign_slot(
     slot_id: uuid.UUID,
     payload: SlotAssignRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_staff),
 ) -> SlotReassignResponse:
     try:
         return reassign_slot(db, room_id, slot_id, payload.freelancer_sub)

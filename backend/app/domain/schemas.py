@@ -152,6 +152,8 @@ class RoomReadResponse(BaseModel):
     strategy: RoomStrategyOut
     pending_strategy: PendingStrategyOut | None = None
     created_at: datetime
+    viewer_role: Literal["founder", "teamlead", "member"] | None = None
+    rbac_enforced: bool = False
 
 
 class SlotStatus(str, Enum):
@@ -573,3 +575,27 @@ class RoomMessageCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     body: str = Field(min_length=1, max_length=2000)
+
+
+class RoomMemberRole(str, Enum):
+    founder = "founder"
+    teamlead = "teamlead"
+    member = "member"
+
+
+class RoomMemberOut(BaseModel):
+    user_sub: str
+    role: RoomMemberRole
+    created_at: datetime
+
+
+class RoomMemberListResponse(BaseModel):
+    room_id: UUID
+    members: list[RoomMemberOut]
+
+
+class RoomMemberPromoteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    freelancer_sub: str = Field(min_length=1)
+    role: Literal["teamlead"] = "teamlead"

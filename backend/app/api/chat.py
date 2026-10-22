@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_actor_sub
+from app.auth.rbac_deps import require_member
 from app.db.session import get_db
 from app.domain.chat import (
     RoomNotFoundError,
@@ -64,7 +64,7 @@ def post_room_message(
     room_id: uuid.UUID,
     payload: RoomMessageCreateRequest,
     db: Session = Depends(get_db),
-    actor: str = Depends(get_actor_sub),
+    actor: str = Depends(require_member),
 ) -> RoomMessageOut:
     """POST /api/v1/rooms/{room_id}/messages — author = actor."""
     try:

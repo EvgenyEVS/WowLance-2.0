@@ -1,0 +1,43 @@
+# OpenSpec / contract draft — RoomMembers v1 (C27)
+# Local room membership (founder / teamlead / member). Not Keycloak realm roles.
+
+id: RoomMembers
+version: "1"
+channel: https
+
+member:
+  type: object
+  required: [user_sub, role]
+  properties:
+    user_sub: { type: string }
+    role:
+      type: string
+      enum: [founder, teamlead, member]
+    created_at: { type: string, format: date-time }
+
+paths:
+  list:
+    method: GET
+    path: /api/v1/rooms/{room_id}/members
+  promote:
+    method: POST
+    path: /api/v1/rooms/{room_id}/members
+    headers: [X-Actor-Sub]
+    request:
+      required: [freelancer_sub, role]
+      properties:
+        freelancer_sub: { type: string, minLength: 1 }
+        role:
+          type: string
+          enum: [teamlead]
+    notes: "Actor must be founder. Creates or upgrades membership to teamlead. Never demotes founder."
+
+errors:
+  - { code: 403, when: "forbidden_role — actor lacks the required room role (ROOM_RBAC_DISABLED=false)" }
+  - { code: 404, when: "room_id does not exist" }
+  - { code: 422, when: "validation or missing X-Actor-Sub (AUTH_DISABLED=true)" }
+
+notes:
+  - "Handoff create upserts founder_sub as role=founder."
+  - "Slot assign upserts freelancer as role=member unless already founder/teamlead."
+  - "ROOM_RBAC_DISABLED default true: guards are no-op (demo/pytest). Strict suite sets false."
