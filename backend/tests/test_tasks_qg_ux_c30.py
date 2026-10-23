@@ -97,6 +97,29 @@ def test_reject_reason_visible_on_list_get(client, sale_payload):
     assert row["proof_uri"] == PROOF["proof_uri"]
 
 
+def test_reject_without_reason_still_in_rejected_filter(client, sale_payload):
+    room_id = _handoff(client, sale_payload)
+    task_id = _seed_task(client, room_id, "no note")
+    assert client.post(
+        f"/api/v1/rooms/{room_id}/tasks/{task_id}/complete",
+        json=PROOF,
+        headers=FREELANCER,
+    ).status_code == 200
+    assert client.post(
+        f"/api/v1/rooms/{room_id}/tasks/{task_id}/reject",
+        json={},
+        headers=ACTOR,
+    ).status_code == 200
+
+    rejected = client.get(
+        f"/api/v1/rooms/{room_id}/tasks", params={"status": "rejected"}
+    )
+    assert rejected.status_code == 200
+    rows = rejected.json()["tasks"]
+    assert [t["id"] for t in rows] == [task_id]
+    assert rows[0]["reviewed_by_sub"] == "teamlead-demo-sub"
+
+
 def test_unknown_status_422(client, sale_payload):
     room_id = _handoff(client, sale_payload)
     r = client.get(f"/api/v1/rooms/{room_id}/tasks", params={"status": "nope"})

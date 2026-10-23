@@ -127,9 +127,10 @@ def list_tasks(
     room = _require_room(db, room_id)
     query = select(RoomTask).where(RoomTask.room_id == room.id)
     if status == "rejected":
+        # Reject always sets reviewed_by_sub; review_note may be empty/None.
         query = query.where(
             RoomTask.status == TaskStatus.in_progress.value,
-            RoomTask.review_note.is_not(None),
+            RoomTask.reviewed_by_sub.is_not(None),
         )
     elif status:
         query = query.where(RoomTask.status == status)

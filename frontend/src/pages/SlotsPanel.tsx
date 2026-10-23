@@ -16,12 +16,28 @@ import type {
 /** Fallback actor for AUTH_DISABLED=true; ignored by the backend when a JWT is sent. */
 const ACTOR_SUB = 'teamlead-demo-sub'
 
-function staffHttpError(status: number): string {
+type StaffErrKind =
+  | 'assign'
+  | 'unassign'
+  | 'reassign'
+  | 'terminate'
+  | 'match'
+  | 'materialize'
+
+function staffHttpError(status: number, kind?: StaffErrKind): string {
   if (status === 403) return 'Forbidden (403). Staffing locked or role.'
   if (status === 404)
     return 'Not found (404). Slot or freelancer missing — upsert roster first.'
-  if (status === 409)
+  if (status === 409) {
+    if (kind === 'assign')
+      return 'Slot already filled or freelancer already seated (409).'
+    if (kind === 'unassign') return 'Slot is not filled (409).'
+    if (kind === 'reassign')
+      return 'Slot not filled or freelancer already seated (409).'
+    if (kind === 'terminate') return 'Slot not filled (409). Reload the list.'
+    if (kind === 'materialize') return 'Slot is not open (409).'
     return 'Conflict (409). Slot state changed — refresh the list.'
+  }
   if (status === 422)
     return 'Validation (422). Check actor header and payload.'
   return `HTTP ${status}`
@@ -120,7 +136,10 @@ export default function SlotsPanel({
         return
       }
       if (!res.ok) {
-        setState({ kind: 'error', message: staffHttpError(res.status) })
+        setState({
+          kind: 'error',
+          message: staffHttpError(res.status, 'materialize'),
+        })
         return
       }
       const body = (await res.json()) as MaterializeResult
@@ -148,7 +167,10 @@ export default function SlotsPanel({
         return
       }
       if (!res.ok) {
-        setState({ kind: 'error', message: staffHttpError(res.status) })
+        setState({
+          kind: 'error',
+          message: staffHttpError(res.status, 'materialize'),
+        })
         return
       }
       const body = (await res.json()) as RematerializeResult
@@ -171,7 +193,7 @@ export default function SlotsPanel({
         )}/match`,
       )
       if (!res.ok) {
-        setError(staffHttpError(res.status))
+        setError(staffHttpError(res.status, 'match'))
         return
       }
       const body = (await res.json()) as SlotMatchResult
@@ -212,7 +234,7 @@ export default function SlotsPanel({
         },
       )
       if (!res.ok) {
-        setError(staffHttpError(res.status))
+        setError(staffHttpError(res.status, 'assign'))
         if (res.status === 409) loadSlots()
         return
       }
@@ -241,7 +263,7 @@ export default function SlotsPanel({
         },
       )
       if (!res.ok) {
-        setError(staffHttpError(res.status))
+        setError(staffHttpError(res.status, 'unassign'))
         if (res.status === 409) loadSlots()
         return
       }
@@ -273,7 +295,7 @@ export default function SlotsPanel({
         },
       )
       if (!res.ok) {
-        setError(staffHttpError(res.status))
+        setError(staffHttpError(res.status, 'reassign'))
         if (res.status === 409) loadSlots()
         return
       }
@@ -306,7 +328,7 @@ export default function SlotsPanel({
         },
       )
       if (!res.ok) {
-        setError(staffHttpError(res.status))
+        setError(staffHttpError(res.status, 'terminate'))
         if (res.status === 404 || res.status === 409) loadSlots()
         return
       }

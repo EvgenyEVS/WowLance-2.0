@@ -40,7 +40,7 @@ paths:
       status:
         type: string
         enum: [todo, in_progress, submitted, done, rejected]
-        description: Optional server-side filter. rejected = in_progress with review_note (C30). List is submitted-first.
+        description: Optional server-side filter. rejected = in_progress with reviewed_by_sub set (C30; review_note optional). List is submitted-first.
   create:
     method: POST
     path: /api/v1/rooms/{room_id}/tasks
