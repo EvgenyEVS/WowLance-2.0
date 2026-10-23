@@ -271,6 +271,82 @@ code {
   border-radius: 6px;
 }
 
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.health-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #e0e6ec;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.health-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.health-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.health-sub {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.health-captured {
+  font-size: 1rem;
+  color: #444;
+}
+
+.health-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.health-actions .slot-action {
+  margin: 0;
+}
+
+.earned-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.earned-head h2 {
+  margin: 0;
+}
+
+.earned-filter {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.earned-filter .slot-action,
+.earned-filter .ghost-action {
+  margin: 0;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 640px) {
   .shell {
     margin: 1rem auto;
@@ -283,6 +359,10 @@ code {
   }
 
   .meta {
+    grid-template-columns: 1fr;
+  }
+
+  .health-grid {
     grid-template-columns: 1fr;
   }
 
