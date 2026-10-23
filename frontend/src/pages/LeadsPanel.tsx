@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch } from '../api'
-import type { LeadsList, RoomLead } from '../types'
+import type { LeadStatus, LeadsList, RoomLead } from '../types'
 
 /** Fallback actor for AUTH_DISABLED=true; ignored when a JWT Bearer is sent. */
 const ACTOR_SUB = 'founder-demo-sub'
 
+type LeadFilter = 'all' | LeadStatus
+
 type LeadsState =
   | { kind: 'loading' }
-  | { kind: 'ok'; leads: RoomLead[] }
+  | { kind: 'ok'; leads: RoomLead[]; total: number }
   | { kind: 'not_found' }
   | { kind: 'error'; message: string }
 
@@ -21,15 +23,18 @@ export default function LeadsPanel({
   const [state, setState] = useState<LeadsState>({ kind: 'loading' })
   const [title, setTitle] = useState('')
   const [contactName, setContactName] = useState('')
+  const [filter, setFilter] = useState<LeadFilter>('all')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadLeads = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/leads`, {
-      signal: controller.signal,
-    })
+    const url =
+      filter === 'all'
+        ? `/api/v1/rooms/${encodeURIComponent(roomId)}/leads`
+        : `/api/v1/rooms/${encodeURIComponent(roomId)}/leads?status=${encodeURIComponent(filter)}`
+    apiFetch(url, { signal: controller.signal })
       .then(async (res) => {
         if (res.status === 404) {
           setState({ kind: 'not_found' })
@@ -40,7 +45,7 @@ export default function LeadsPanel({
           return
         }
         const body = (await res.json()) as LeadsList
-        setState({ kind: 'ok', leads: body.leads })
+        setState({ kind: 'ok', leads: body.leads, total: body.leads.length })
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
@@ -50,7 +55,7 @@ export default function LeadsPanel({
         })
       })
     return () => controller.abort()
-  }, [roomId])
+  }, [roomId, filter])
 
   useEffect(() => {
     return loadLeads()
@@ -71,12 +76,16 @@ export default function LeadsPanel({
         { method: 'POST', headers, body: payload },
       )
       if (res.status === 404) {
-        setError('Room or lead not found (404).')
+        setError('Room or lead not found.')
         return false
       }
       if (res.status === 409) {
-        setError('Illegal lead transition (409). Reload the list.')
+        setError('Illegal lead transition. Reload the list.')
         loadLeads()
+        return false
+      }
+      if (res.status === 422) {
+        setError('Invalid request. Check the input.')
         return false
       }
       if (!res.ok) {
@@ -105,9 +114,14 @@ export default function LeadsPanel({
     }
   }
 
+  const filteredCount = state.kind === 'ok' ? state.total : 0
+
   return (
     <section className="block leads-block">
       <h2>Leads</h2>
+      <p className="hint">
+        Pipeline: open → Mark hot → Hand to CRM → deal status
+      </p>
       {canStaff ? (
       <form className="task-form" onSubmit={addLead}>
         <input
@@ -129,8 +143,21 @@ export default function LeadsPanel({
         </button>
       </form>
       ) : null}
+      <div className="filter-chip-group">
+        {(['all', 'open', 'hot', 'handed_to_crm'] as const).map((f) => (
+          <button
+            key={f}
+            type="button"
+            className={`filter-chip ${filter === f ? 'active' : ''}`}
+            onClick={() => setFilter(f)}
+          >
+            {f === 'all' ? 'All' : f}
+            {state.kind === 'ok' && f !== 'all' ? ` · ${filteredCount}` : ''}
+          </button>
+        ))}
+      </div>
       {state.kind === 'loading' && <p className="hint">Loading leads…</p>}
-      {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
+      {state.kind === 'not_found' && <p className="error">Room not found.</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.leads.length === 0 && (
         <p className="hint">
@@ -149,10 +176,10 @@ export default function LeadsPanel({
               {lead.crm_ref ? (
                 <code className="hint">{lead.crm_ref}</code>
               ) : null}
-              {lead.status === 'handed_to_crm' && lead.deal_status && (
+              {lead.status === 'handed_to_crm' && (
                 <>
                   <span className="hint task-assignee">
-                    deal: {lead.deal_status}
+                    deal: {lead.deal_status ?? '—'}
                     {lead.deal_amount && lead.deal_currency
                       ? ` ${lead.deal_amount} ${lead.deal_currency}`
                       : ''}
