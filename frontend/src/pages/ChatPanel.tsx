@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiFetch } from '../api'
 import type { MessagesList, RoomMessage } from '../types'
 
 /** Fallback actor for AUTH_DISABLED=true; ignored when a JWT Bearer is sent. */
 const ACTOR_SUB = 'founder-demo-sub'
+
+/** Soft poll interval: fetch new messages without showing “Loading…”. */
+const POLL_INTERVAL_MS = 7000
 
 type MessagesState =
   | { kind: 'loading' }
@@ -16,10 +19,10 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
   const [body, setBody] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadMessages = useCallback(() => {
     const controller = new AbortController()
-    setState({ kind: 'loading' })
     apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/messages`, {
       signal: controller.signal,
     })
@@ -29,24 +32,33 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
           return
         }
         if (!res.ok) {
-          setState({ kind: 'error', message: `HTTP ${res.status}` })
+          setState((prev) =>
+            prev.kind === 'ok' ? prev : { kind: 'error', message: `HTTP ${res.status}` }
+          )
           return
         }
         const data = (await res.json()) as MessagesList
         setState({ kind: 'ok', messages: data.messages })
       })
-      .catch((err: unknown) => {
+      .catch((_err: unknown) => {
         if (controller.signal.aborted) return
-        setState({
-          kind: 'error',
-          message: err instanceof Error ? err.message : 'Request failed',
-        })
+        setState((prev) =>
+          prev.kind === 'ok' ? prev : { kind: 'error', message: 'Request failed' }
+        )
       })
     return () => controller.abort()
   }, [roomId])
 
   useEffect(() => {
     return loadMessages()
+  }, [loadMessages])
+
+  // Soft poll: refresh messages periodically without blinking the panel.
+  useEffect(() => {
+    pollTimer.current = setInterval(loadMessages, POLL_INTERVAL_MS)
+    return () => {
+      if (pollTimer.current) clearInterval(pollTimer.current)
+    }
   }, [loadMessages])
 
   async function sendMessage(event: React.FormEvent) {
@@ -68,7 +80,7 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
         },
       )
       if (res.status === 404) {
-        setError('Room not found (404).')
+        setError('Room not found.')
         return
       }
       if (res.status === 422) {
@@ -83,6 +95,17 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
       loadMessages()
     } finally {
       setBusy(false)
+    }
+  }
+
+  function shortTime(iso: string) {
+    try {
+      return new Date(iso).toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return iso
     }
   }
 
@@ -114,7 +137,7 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
         </button>
       </form>
       {state.kind === 'loading' && <p className="hint">Loading messages…</p>}
-      {state.kind === 'not_found' && <p className="error">Room not found (404).</p>}
+      {state.kind === 'not_found' && <p className="error">Room not found.</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.messages.length === 0 && (
         <p className="hint">
@@ -127,7 +150,9 @@ export default function ChatPanel({ roomId }: { roomId: string }) {
             <li key={msg.id} className="task-item">
               <span className="task-title">{msg.author_sub}</span>
               <span className="hint task-status">{msg.body}</span>
-              <span className="hint task-assignee">{msg.created_at}</span>
+              <span className="hint task-assignee">
+                {shortTime(msg.created_at)}
+              </span>
             </li>
           ))}
         </ul>
