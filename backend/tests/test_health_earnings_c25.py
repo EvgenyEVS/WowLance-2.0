@@ -154,3 +154,26 @@ def test_health_regression_counts_slots_tasks_leads(client, sale_payload):
     assert body["leads"] == {"total": 0, "hot": 0, "handed_to_crm": 0}
     assert body["earnings"]["entries_count"] == 0
     assert Decimal(body["earnings"]["total_amount"]) == Decimal("0.00")
+
+
+def test_earnings_list_matches_health(client, sale_payload):
+    """C36 must-fix #2: Earned list total/count совпадает с health earnings."""
+    room_id = _handoff(client, sale_payload)
+    _upsert(client, "freelancer-demo-sub", "Alice")
+
+    for title in ("Task 1", "Task 2"):
+        task = _create(
+            client, room_id, title, assignee_sub="freelancer-demo-sub"
+        )["id"]
+        _start(client, room_id, task)
+        _complete(client, room_id, task)
+        _accept(client, room_id, task)
+
+    earned = client.get(f"/api/v1/rooms/{room_id}/earnings")
+    assert earned.status_code == 200, earned.text
+    earned_body = earned.json()
+    health_body = _get_health(client, room_id).json()
+
+    assert earned_body["total_amount"] == health_body["earnings"]["total_amount"]
+    assert earned_body["currency"] == health_body["earnings"]["currency"]
+    assert len(earned_body["entries"]) == health_body["earnings"]["entries_count"]
