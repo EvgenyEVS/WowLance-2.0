@@ -519,6 +519,10 @@ curl.exe -s http://127.0.0.1:8000/api/v1/rooms/<room_id> `
 Лиды доступны **всегда** после создания комнаты — `staffing_unlocked` (C2) не требуется.
 Get — без пагинации (лимит 100). Auth — заглушка `X-Actor-Sub` (как C7), пока нет C8.
 
+**C34 filter:** `GET /api/v1/rooms/{room_id}/leads?status=open|hot|handed_to_crm` —
+фильтрует лиды по статусу. Без `?status=` возвращаются все лиды. Фильтр зафиксирован
+на сервере (не только на клиенте).
+
 ```powershell
 # room_id из handoff; мутации требуют X-Actor-Sub
 curl -s -X POST http://127.0.0.1:8000/api/v1/rooms/<room_id>/leads `
