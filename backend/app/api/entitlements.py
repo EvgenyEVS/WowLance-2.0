@@ -16,6 +16,7 @@ from app.domain.entitlement import (
     grant_entitlement,
 )
 from app.domain.schemas import EntitlementGrantedRequest, EntitlementGrantedResponse
+from app.stub_log import log_stub
 
 router = APIRouter(prefix="/internal/v1", tags=["entitlements"])
 
@@ -38,8 +39,26 @@ def create_entitlement(
     try:
         result = grant_entitlement(db, body)
     except RoomNotFoundError as exc:
+        log_stub(
+            "entitlement",
+            "not_found",
+            room_id=body.room_id,
+            entitlement_id=body.entitlement_id,
+        )
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except EntitlementRoomConflictError as exc:
+        log_stub(
+            "entitlement",
+            "conflict",
+            room_id=body.room_id,
+            entitlement_id=body.entitlement_id,
+        )
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
+    log_stub(
+        "entitlement",
+        result.response.status.value,
+        room_id=result.response.room_id,
+        entitlement_id=body.entitlement_id,
+    )
     return result.response

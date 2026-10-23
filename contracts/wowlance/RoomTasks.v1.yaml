@@ -36,6 +36,11 @@ paths:
   list:
     method: GET
     path: /api/v1/rooms/{room_id}/tasks
+    query:
+      status:
+        type: string
+        enum: [todo, in_progress, submitted, done, rejected]
+        description: Optional server-side filter. rejected = in_progress with reviewed_by_sub set (C30; review_note optional). List is submitted-first.
   create:
     method: POST
     path: /api/v1/rooms/{room_id}/tasks

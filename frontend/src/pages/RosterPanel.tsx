@@ -115,7 +115,9 @@ export default function RosterPanel({ onChanged }: { onChanged?: () => void }) {
       {state.kind === 'loading' && <p className="hint">Loading roster…</p>}
       {state.kind === 'error' && <p className="error">{state.message}</p>}
       {state.kind === 'ok' && state.members.length === 0 && (
-        <p className="hint">Roster empty.</p>
+        <p className="hint">
+          Roster empty. Upsert freelancer_sub + name here — Assign/Suggest need it.
+        </p>
       )}
       {state.kind === 'ok' && state.members.length > 0 && (
         <ul className="roster-list">

@@ -15,6 +15,17 @@ type MutateResult =
   | { ok: true }
   | { ok: false; status: number; message: string }
 
+const STATUS_FILTERS = [
+  'all',
+  'todo',
+  'in_progress',
+  'submitted',
+  'done',
+  'rejected',
+] as const
+
+type StatusFilter = (typeof STATUS_FILTERS)[number]
+
 export default function TasksPanel({
   roomId,
   canStaff = true,
@@ -31,11 +42,16 @@ export default function TasksPanel({
   const [rosterBusy, setRosterBusy] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
 
   const loadTasks = useCallback(() => {
     const controller = new AbortController()
     setState({ kind: 'loading' })
-    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/tasks`, {
+    const query =
+      statusFilter === 'all'
+        ? ''
+        : `?status=${encodeURIComponent(statusFilter)}`
+    apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/tasks${query}`, {
       signal: controller.signal,
     })
       .then(async (res) => {
@@ -58,7 +74,7 @@ export default function TasksPanel({
         })
       })
     return () => controller.abort()
-  }, [roomId])
+  }, [roomId, statusFilter])
 
   const loadRoster = useCallback(() => {
     setRosterBusy(true)
@@ -153,6 +169,26 @@ export default function TasksPanel({
   return (
     <section className="block tasks-block">
       <h2>Tasks</h2>
+      <div className="task-filters">
+        {STATUS_FILTERS.map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={
+              value === statusFilter ? 'slot-action' : 'ghost-action'
+            }
+            disabled={busy}
+            onClick={() => setStatusFilter(value)}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      {state.kind === 'ok' ? (
+        <p className="hint">
+          {state.tasks.length} задач · фильтр: {statusFilter}
+        </p>
+      ) : null}
       {canStaff ? (
       <form className="task-form" onSubmit={addTask}>
         <input
@@ -233,6 +269,46 @@ type TaskItemProps = {
   onReject: (reviewNote: string) => Promise<MutateResult>
   onAssign: (sub: string) => void
   canStaff: boolean
+}
+
+function ProofBlock({
+  uri,
+  note,
+  reviewedBy,
+  reviewNote,
+}: {
+  uri: string
+  note?: string | null
+  reviewedBy?: string | null
+  reviewNote?: string | null
+}) {
+  const long = (note ?? '').length > 80
+  const [open, setOpen] = useState(!long)
+  return (
+    <p className="hint task-proof">
+      Proof:{' '}
+      <a href={uri} target="_blank" rel="noopener noreferrer">
+        {uri}
+      </a>
+      {note ? (
+        <>
+          {' — '}
+          {long && !open ? `${note.slice(0, 80)}…` : note}{' '}
+          {long ? (
+            <button
+              type="button"
+              className="ghost-action"
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? 'Collapse' : 'Expand'}
+            </button>
+          ) : null}
+        </>
+      ) : null}
+      {reviewedBy ? <> (reviewed by {reviewedBy})</> : null}
+      {reviewNote ? <> — reason: {reviewNote}</> : null}
+    </p>
+  )
 }
 
 function TaskItem({
@@ -363,12 +439,12 @@ function TaskItem({
       )}
 
       {(task.status === 'submitted' || task.status === 'done') && task.proof_uri ? (
-        <p className="hint task-proof">
-          Proof: <a href={task.proof_uri}>{task.proof_uri}</a>
-          {task.proof_note ? <> — {task.proof_note}</> : null}
-          {task.reviewed_by_sub ? <> (reviewed by {task.reviewed_by_sub})</> : null}
-          {task.review_note ? <> — reason: {task.review_note}</> : null}
-        </p>
+        <ProofBlock
+          uri={task.proof_uri}
+          note={task.proof_note}
+          reviewedBy={task.reviewed_by_sub}
+          reviewNote={task.review_note}
+        />
       ) : null}
 
       {task.status === 'in_progress' && task.review_note ? (

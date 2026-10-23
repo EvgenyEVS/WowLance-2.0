@@ -7,6 +7,7 @@
 | **Стек** | FastAPI · React · PostgreSQL · OpenSpec · Superpowers |
 | **Канон** | [ADR-002](docs/ADR-002-wowlance-2.0-platform-room.md) |
 | **Для ИИ / команды** | [AGENTS.md](AGENTS.md) |
+| **Контракты / owners** | [REGISTRY](contracts/REGISTRY.md) · [owners](docs/contracts-owners.md) |
 | **1.0 (reference)** | [EvgenyEVS/WowLance](https://github.com/EvgenyEVS/WowLance) |
 
 ## Структура
@@ -41,6 +42,8 @@ npm run dev
 C1 handoff: [backend/README.md](backend/README.md) (`POST /internal/v1/handoffs`).  
 C3 room UI: [frontend/README.md](frontend/README.md) (`GET /api/v1/rooms/{id}` → `/rooms/:roomId`).  
 Health: http://127.0.0.1:8000/health  
+
+**Stub hardening (C32):** [docs/hardening-stub.md](docs/hardening-stub.md) — идемпотентность, 4xx `detail`, логи internal stubs.
 
 **Founder demo (C26):** `powershell -File scripts/founder-demo.ps1` — handoff → entitlement → assign → QG → hot lead → health. Чеклист: [docs/demo/founder-demo.md](docs/demo/founder-demo.md).
 
@@ -80,7 +83,11 @@ Health: http://127.0.0.1:8000/health
 | **C27** | Room RBAC lite — [задание](docs/261022%20-%20задание%20C27%20Room%20RBAC.md) ∥ C26 · C28 (осторожно с C29) |
 | **C28** | QA полный прогон C0–C25 — [задание](docs/261022%20-%20задание%20C28%20QA%20C0-C25.md) ∥ C26 · C27 · C29 |
 | **C29** | Room UX polish — [задание](docs/261022%20-%20задание%20C29%20Room%20UX%20polish.md) ∥ C26 · C28 (осторожно с C27) |
-| **C30+** | Live adapters / Gateway — только после `agreed` контрактов с соседями |
+| **C30** | Tasks + QG UX — [задание](docs/261022%20-%20задание%20C30%20Tasks%20QG%20UX.md) ∥ C31–C33 |
+| **C31** | Slots & staffing UX — [задание](docs/261022%20-%20задание%20C31%20Slots%20staffing%20UX.md) ∥ C30 · C32 · C33 |
+| **C32** | Stub hardening — [задание](docs/261022%20-%20задание%20C32%20Stub%20hardening.md) ∥ C30 · C31 · C33 |
+| **C33** | Contract owners — [задание](docs/261022%20-%20задание%20C33%20Contract%20owners.md) ∥ C30–C32 |
+| **C34+** | Live adapters / Gateway — только после `agreed` контрактов с соседями |
 
 ## Политика оплаты
 

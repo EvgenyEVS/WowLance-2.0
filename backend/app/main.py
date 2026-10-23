@@ -1,5 +1,7 @@
 """WowLance 2.0 API (FastAPI + PostgreSQL)."""
 
+import uuid
+
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -52,6 +54,15 @@ app.add_middleware(
 # C8: client routes require a valid Keycloak JWT when AUTH_DISABLED=false.
 # /health and /internal/v1/* stay open (C21 guards /internal/v1/* separately).
 client_auth = [Depends(require_user)]
+
+
+@app.middleware("http")
+async def echo_request_id(request: Request, call_next):
+    """C32: echo X-Request-Id (generate if missing)."""
+    rid = request.headers.get("x-request-id") or str(uuid.uuid4())
+    response = await call_next(request)
+    response.headers["X-Request-Id"] = rid
+    return response
 
 
 @app.middleware("http")

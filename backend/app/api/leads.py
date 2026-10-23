@@ -20,6 +20,7 @@ from app.domain.leads import (
     list_leads,
     mark_hot,
 )
+from app.stub_log import log_stub
 from app.domain.schemas import (
     CrmDealStatusRequest,
     CrmDealStatusResponse,
@@ -153,9 +154,18 @@ def post_crm_deal_status(
             currency=payload.currency,
         )
     except LeadNotFoundError as exc:
+        log_stub("crm_deal_status", "not_found", crm_ref=payload.crm_ref)
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except LeadNotEligibleError as exc:
+        log_stub("crm_deal_status", "conflict", crm_ref=payload.crm_ref)
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    log_stub(
+        "crm_deal_status",
+        "applied",
+        room_id=lead.room_id,
+        crm_ref=lead.crm_ref,
+    )
 
     return CrmDealStatusResponse(
         room_id=lead.room_id,
