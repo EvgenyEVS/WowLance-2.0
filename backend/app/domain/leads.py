@@ -78,14 +78,16 @@ def _lead_out(row: RoomLead) -> RoomLeadOut:
     )
 
 
-def list_leads(db: Session, room_id: uuid.UUID) -> RoomLeadListResponse:
+def list_leads(
+    db: Session, room_id: uuid.UUID, status: str | None = None
+) -> RoomLeadListResponse:
     room = _require_room(db, room_id)
+    stmt = select(RoomLead).where(RoomLead.room_id == room.id)
+    if status is not None:
+        stmt = stmt.where(RoomLead.status == status)
     rows = list(
         db.scalars(
-            select(RoomLead)
-            .where(RoomLead.room_id == room.id)
-            .order_by(RoomLead.created_at, RoomLead.id)
-            .limit(LIST_LIMIT)
+            stmt.order_by(RoomLead.created_at, RoomLead.id).limit(LIST_LIMIT)
         ).all()
     )
     return RoomLeadListResponse(room_id=room.id, leads=[_lead_out(r) for r in rows])
