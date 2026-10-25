@@ -172,3 +172,81 @@ def test_regression_handoff_and_room_read(client, sale_payload):
     room = client.get(f"/api/v1/rooms/{room_id}")
     assert room.status_code == 200
     assert room.json()["id"] == room_id
+
+
+def test_filter_status_open(client, sale_payload):
+    """C34: GET /leads?status=open returns only open leads."""
+    room_id = _handoff(client, sale_payload)
+    _create(client, room_id, "Open lead 1")
+    _create(client, room_id, "Open lead 2")
+
+    r = client.get(f"/api/v1/rooms/{room_id}/leads?status=open")
+    assert r.status_code == 200, r.text
+    assert len(r.json()["leads"]) == 2
+    assert all(l["status"] == "open" for l in r.json()["leads"])
+
+
+def test_filter_status_hot(client, sale_payload):
+    """C34: GET /leads?status=hot returns only hot leads."""
+    room_id = _handoff(client, sale_payload)
+    open_lead = _create(client, room_id, "Open lead")
+    hot_lead = _create(client, room_id, "Hot lead")
+    client.post(
+        f"/api/v1/rooms/{room_id}/leads/{hot_lead['id']}/mark-hot", headers=ACTOR
+    )
+
+    r = client.get(f"/api/v1/rooms/{room_id}/leads?status=hot")
+    assert r.status_code == 200, r.text
+    ids = [l["id"] for l in r.json()["leads"]]
+    assert hot_lead["id"] in ids
+    assert open_lead["id"] not in ids
+    assert all(l["status"] == "hot" for l in r.json()["leads"])
+
+
+def test_filter_status_handed_to_crm(client, sale_payload):
+    """C34: GET /leads?status=handed_to_crm returns only handed_to_crm leads."""
+    room_id = _handoff(client, sale_payload)
+    lead_id = _create(client, room_id)["id"]
+    client.post(
+        f"/api/v1/rooms/{room_id}/leads/{lead_id}/mark-hot", headers=ACTOR
+    )
+    client.post(
+        f"/api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm", headers=ACTOR
+    )
+
+    r = client.get(f"/api/v1/rooms/{room_id}/leads?status=handed_to_crm")
+    assert r.status_code == 200, r.text
+    assert len(r.json()["leads"]) == 1
+    assert r.json()["leads"][0]["status"] == "handed_to_crm"
+
+
+def test_happy_path_open_hot_handoff(client, db_session, sale_payload):
+    """C34: happy path open → mark-hot → handoff-crm."""
+    room_id = _handoff(client, sale_payload)
+    lead_id = _create(client, room_id, "Warm intro to Acme")["id"]
+
+    # open
+    r = client.get(f"/api/v1/rooms/{room_id}/leads")
+    assert r.json()["leads"][0]["status"] == "open"
+
+    # mark hot
+    hot = client.post(
+        f"/api/v1/rooms/{room_id}/leads/{lead_id}/mark-hot", headers=ACTOR
+    )
+    assert hot.status_code == 200, hot.text
+    assert hot.json()["status"] == "hot"
+
+    # handoff to CRM
+    hand = client.post(
+        f"/api/v1/rooms/{room_id}/leads/{lead_id}/handoff-crm", headers=ACTOR
+    )
+    assert hand.status_code == 200, hand.text
+    assert hand.json()["status"] == "handed"
+    assert hand.json()["lead"]["status"] == "handed_to_crm"
+    assert hand.json()["crm_ref"] == f"crm-stub:{lead_id}"
+
+    # outbox row
+    rows = db_session.scalars(
+        select(OutboxMessage).where(OutboxMessage.event_type == "HotLeadToCrm")
+    ).all()
+    assert len(rows) == 1

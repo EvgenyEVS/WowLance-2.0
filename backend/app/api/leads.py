@@ -52,10 +52,12 @@ def _map_errors(exc: Exception) -> None:
 )
 def get_room_leads(
     room_id: uuid.UUID,
+    status: str | None = None,
     db: Session = Depends(get_db),
 ) -> RoomLeadListResponse:
+    """GET /api/v1/rooms/{room_id}/leads?status=open|hot|handed_to_crm — optional status filter (C34)."""
     try:
-        return list_leads(db, room_id)
+        return list_leads(db, room_id, status=status)
     except RoomNotFoundError as exc:
         _map_errors(exc)
         raise
