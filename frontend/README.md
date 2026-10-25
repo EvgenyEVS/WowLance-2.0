@@ -11,7 +11,8 @@ Tasks assignee (C15): при **Add** можно выбрать исполнит�
 Tasks Quality Gate (C10): **Submit** proof URI (+ note) → `submitted`; **Accept** / **Reject** (optional reason) as `X-Actor-Sub: teamlead-demo-sub`. Proof shown on the card; reject keeps proof for resubmit.  
 Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-Sub: founder-demo-sub`.
 C19 Deal status: после `Hand to CRM` вебхук `POST /internal/v1/crm/deal-status` ставит `deal_status` (+ `deal_amount`/`deal_currency`) на лид в статусе `handed_to_crm`, показывается в списке лидов.
-Chat (C20): **ChatPanel** на RoomPage — список сообщений + форма **Send** + **Refresh** (poll, без WebSocket). Автор = `X-Actor-Sub`.
+Chat (C20 + C35): **ChatPanel** на RoomPage — список сообщений + форма **Send** + **Refresh** (poll каждые ~7 сек без WebSocket, мягкое обновление без “Loading…”). После **Send** список перезагружается сразу. Сообщение показывает автора + короткое время. Пустой чат — подсказка.
+Meet (C14 + C35): блок Meet на RoomPage — если `meeting_url` уже есть, показывается ссылка **Open** + кнопка **Re-ensure**; если нет — **Ensure meeting / Создать ссылку**. После ensure ссылка подхватывается без полной перезагрузки страницы. Ошибка ensure — короткий текст.
 Room health (C13 + C25): card on the room page shows slots/tasks/leads aggregates
 plus the **Earned** block (`total_amount`, `currency`, `entries_count`) from the
 stub earnings ledger; **Refresh** re-reads `GET …/health`, **Publish snapshot**

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { viewerSub } from '../actor'
 import { apiFetch } from '../api'
-import type { EarningsList, RoomRead } from '../types'
+import type { EarningsList, MeetEnsureResult, RoomRead } from '../types'
 import LeadsPanel from './LeadsPanel'
 import PendingStrategyPanel from './PendingStrategyPanel'
 import RosterPanel from './RosterPanel'
@@ -80,6 +80,9 @@ function RoomView({
   const [rosterVersion, setRosterVersion] = useState(0)
   const [meetBusy, setMeetBusy] = useState(false)
   const [meetError, setMeetError] = useState<string | null>(null)
+  const [meetingUrl, setMeetingUrl] = useState<string | null>(
+    room.meeting_url ?? null
+  )
   const [earnings, setEarnings] = useState<EarningsList | null>(null)
   const [earningsBusy, setEarningsBusy] = useState(false)
   const [earningsError, setEarningsError] = useState<string | null>(null)
@@ -102,7 +105,8 @@ function RoomView({
         setMeetError(`HTTP ${res.status}`)
         return
       }
-      onReload()
+      const body = (await res.json()) as MeetEnsureResult
+      setMeetingUrl(body.meeting_url)
     } finally {
       setMeetBusy(false)
     }
@@ -145,15 +149,23 @@ function RoomView({
       </dl>
       <section className="block">
         <h2>Meet (Jitsi stub)</h2>
-        {room.meeting_url ? (
+        {meetingUrl ? (
           <>
             <p>
               <strong>Ссылка на звонок:</strong>{' '}
-              <a href={room.meeting_url} target="_blank" rel="noopener noreferrer">
-                {room.meeting_url}
+              <a href={meetingUrl} target="_blank" rel="noopener noreferrer">
+                {meetingUrl}
               </a>
             </p>
-            <p className="hint">Ссылка уже создана (идемпотентно).</p>
+            <button
+              type="button"
+              className="slot-action"
+              disabled={meetBusy}
+              onClick={() => void ensureMeet()}
+            >
+              Re-ensure
+            </button>
+            {meetError ? <p className="error">{meetError}</p> : null}
           </>
         ) : (
           <>
