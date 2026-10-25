@@ -1,0 +1,13 @@
+INFO:     127.0.0.1:65341 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65341 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49232 - "POST /internal/v1/handoffs HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49234 - "POST /internal/v1/entitlements HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49235 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/slots/materialize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49236 - "POST /internal/v1/roster HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49237 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/slots/1e331fe9-972d-4e6e-9d8c-54033cc17050/assign HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49238 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/slots/1e331fe9-972d-4e6e-9d8c-54033cc17050/assign HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49239 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/leads HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49240 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/leads/80fa915c-eda6-4907-a8f0-afdb6c61cc9f/mark-hot HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49241 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/members/freelancer-demo-sub/terminate HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49242 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/messages HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49243 - "POST /api/v1/rooms/8b38408a-e73d-455c-a29d-4ff585f05040/meet/ensure HTTP/1.1" 200 OK
