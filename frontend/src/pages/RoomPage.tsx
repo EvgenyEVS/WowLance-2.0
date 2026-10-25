@@ -86,12 +86,19 @@ function RoomView({
   const [earnings, setEarnings] = useState<EarningsList | null>(null)
   const [earningsBusy, setEarningsBusy] = useState(false)
   const [earningsError, setEarningsError] = useState<string | null>(null)
+  const [healthVersion, setHealthVersion] = useState(0)
+  const [earnedMine, setEarnedMine] = useState(false)
   const canStaff =
     !room.rbac_enforced ||
     room.viewer_role === 'founder' ||
     room.viewer_role === 'teamlead'
   const badge = room.staffing_unlocked ? 'Staffing unlocked' : 'Staffing locked'
   const docs = room.strategy.documents ?? []
+  const mySub = viewerSub()
+  const earnedEntries = earnings?.entries ?? []
+  const visibleEarned = earnedMine
+    ? earnedEntries.filter((e) => e.freelancer_sub === mySub)
+    : earnedEntries
 
   async function ensureMeet() {
     setMeetBusy(true)
@@ -214,13 +221,36 @@ function RoomView({
       <TasksPanel
         roomId={room.id}
         canStaff={canStaff}
-        onAccepted={() => void loadEarnings()}
+        onAccepted={() => {
+          void loadEarnings()
+          setHealthVersion((v) => v + 1)
+        }}
       />
       <LeadsPanel roomId={room.id} canStaff={canStaff} />
       <ChatPanel roomId={room.id} />
-      <RoomHealthPanel roomId={room.id} />
+      <RoomHealthPanel roomId={room.id} refreshKey={healthVersion} />
       <section className="block">
-        <h2>Earned (stub)</h2>
+        <div className="earned-head">
+          <h2>Earned (stub)</h2>
+          {room.rbac_enforced ? (
+            <div className="earned-filter">
+              <button
+                type="button"
+                className={earnedMine ? 'ghost-action' : 'slot-action'}
+                onClick={() => setEarnedMine(false)}
+              >
+                Все
+              </button>
+              <button
+                type="button"
+                className={earnedMine ? 'slot-action' : 'ghost-action'}
+                onClick={() => setEarnedMine(true)}
+              >
+                Мои
+              </button>
+            </div>
+          ) : null}
+        </div>
         {earningsBusy ? (
           <p className="hint">Loading earned…</p>
         ) : earningsError ? (
@@ -230,14 +260,23 @@ function RoomView({
             <p>
               <strong>Total:</strong> {earnings?.total_amount} {earnings?.currency}
             </p>
-            {earnings?.entries.length === 0 ? (
-              <p className="hint">No earnings yet. Accept a task with an assignee to accrue.</p>
+            {earnedMine ? (
+              <p className="hint">Показаны только мои начисления.</p>
+            ) : null}
+            {visibleEarned.length === 0 ? (
+              <p className="hint">
+                {earnedMine
+                  ? 'У вас пока нет начислений — Accept задачу.'
+                  : 'Пока нет начислений — Accept задачу.'}
+              </p>
             ) : (
               <ul className="task-list">
-                {earnings?.entries.map((e) => (
+                {visibleEarned.map((e) => (
                   <li key={e.id} className="task-item">
                     <span className="task-title">{e.freelancer_sub}</span>
-                    <span className="hint task-assignee">{e.amount} {e.currency}</span>
+                    <span className="hint task-assignee">
+                      {e.amount} {e.currency}
+                    </span>
                     <span className="hint task-status">{e.source}</span>
                   </li>
                 ))}

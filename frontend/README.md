@@ -13,11 +13,12 @@ Leads (C9): **Add** / **Mark hot** / **Hand to CRM** with stub header `X-Actor-S
 C19 Deal status: после `Hand to CRM` вебхук `POST /internal/v1/crm/deal-status` ставит `deal_status` (+ `deal_amount`/`deal_currency`) на лид в статусе `handed_to_crm`, показывается в списке лидов.
 Chat (C20 + C35): **ChatPanel** на RoomPage — список сообщений + форма **Send** + **Refresh** (poll каждые ~7 сек без WebSocket, мягкое обновление без “Loading…”). После **Send** список перезагружается сразу. Сообщение показывает автора + короткое время. Пустой чат — подсказка.
 Meet (C14 + C35): блок Meet на RoomPage — если `meeting_url` уже есть, показывается ссылка **Open** + кнопка **Re-ensure**; если нет — **Ensure meeting / Создать ссылку**. После ensure ссылка подхватывается без полной перезагрузки страницы. Ошибка ensure — короткий текст.
-Room health (C13 + C25): card on the room page shows slots/tasks/leads aggregates
-plus the **Earned** block (`total_amount`, `currency`, `entries_count`) from the
-stub earnings ledger; **Refresh** re-reads `GET …/health`, **Publish snapshot**
-writes an outbox `RoomHealthSnapshot` row (stub).
-Earned (C16): block on the room page shows total earned + entries per accepted task (`GET …/earnings`). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
+Room health (C13 + C25 + C36): card shows slots/tasks/leads as a readable grid
+plus the **Earned** stat (`total_amount`, `currency`, `entries_count`) from the
+stub ledger; **Refresh** re-reads `GET …/health` without false error flicker;
+**Publish snapshot** writes an outbox `RoomHealthSnapshot` row and shows
+`outbox stub → Strategy (не live)` + short `outbox_id`.
+Earned (C16 + C36): block on the room page shows total + entries per accepted task (`GET …/earnings`). After task Accept the Earned list and the health Earned stat reload together, so the two numbers always match. Empty — «Пока нет начислений — Accept задачу». With RBAC on, **Все / Мои** filters entries by `viewerSub()` (total stays the room total). Amount per accepted task = stub `EARNINGS_TASK_AMOUNT` (default `10.00 USD`).
 Member termination (C17): on a **filled** slot, **Terminate** button (next to **Unassign**) prompts for a reason → `POST …/members/{sub}/terminate` → frees the slot, writes `room_terminations` journal + outbox `MemberTerminated`. **Unassign** = just frees the slot (no journal/outbox); **Terminate** = с причиной и историей.
 Slots (C31): Rematerialize hint after strategy Accept; orphaned filled seats as badges; open = «свободен»; Unassign/Reassign refresh the list; 409/422 as short copy (not JSON). Occupancy «занято/всего». Member still does not see Assign/Unassign/Rematerialize (C27). Empty roster: upsert first, then Suggest→Pick.
 Tasks / QG (C30): status filter `all | todo | in_progress | submitted | done | rejected` (server `?status=`; `rejected` = in_progress with last reject reason). Counter «N задач · фильтр». Proof URI is a link; long notes collapse. Reject reason comes back on GET list (not lost after Refresh). Member still has no staff Accept (C27).
