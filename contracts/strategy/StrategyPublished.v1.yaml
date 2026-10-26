@@ -4,7 +4,7 @@
 
 id: StrategyPublished
 version: "1"
-direction: Strategy -> WowLance
+direction: Стратегия (US Closer) -> WowLance
 channel: https
 path: /internal/v1/strategy-publications
 method: POST

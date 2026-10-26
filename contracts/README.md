@@ -6,7 +6,7 @@
 
 | Папка | Микросервис | Контракты |
 |-------|-------------|-----------|
-| [`strategy/`](strategy/) | Strategy (Founder Studio) | FounderHandoff, StrategyPublished (+ Decide), RoomCreated, RoomHealth |
+| [`strategy/`](strategy/) | Стратегия (US Closer) | FounderHandoff, StrategyPublished (+ Decide), RoomCreated, RoomHealth |
 | [`order/`](order/) | Order / Payments | EntitlementGranted, StaffingUnlocked |
 | [`talent/`](talent/) | Talent | TalentRosterUpsert, MemberTerminated, TaskAccepted |
 | [`crm/`](crm/) | CRM / SRM | HotLeadToCrm, CrmDealStatus |
@@ -22,10 +22,10 @@
 
 | Сосед | YAML | Example |
 |------|------|---------|
-| Strategy | [FounderHandoff](strategy/FounderHandoff.v1.yaml) | [sale.json](strategy/examples/FounderHandoff.sale.json) |
-| Strategy | [StrategyPublished](strategy/StrategyPublished.v1.yaml) | [sale.json](strategy/examples/StrategyPublished.sale.json) |
-| Strategy | [RoomCreated](strategy/RoomCreated.v1.yaml) | [sale.json](strategy/examples/RoomCreated.sale.json) |
-| Strategy | [RoomHealth](strategy/RoomHealth.v1.yaml) | [sale.json](strategy/examples/RoomHealth.sale.json) |
+| Стратегия (US Closer) | [FounderHandoff](strategy/FounderHandoff.v1.yaml) | [sale.json](strategy/examples/FounderHandoff.sale.json) |
+| Стратегия (US Closer) | [StrategyPublished](strategy/StrategyPublished.v1.yaml) | [sale.json](strategy/examples/StrategyPublished.sale.json) |
+| Стратегия (US Closer) | [RoomCreated](strategy/RoomCreated.v1.yaml) | [sale.json](strategy/examples/RoomCreated.sale.json) |
+| Стратегия (US Closer) | [RoomHealth](strategy/RoomHealth.v1.yaml) | [sale.json](strategy/examples/RoomHealth.sale.json) |
 | Order | [EntitlementGranted](order/EntitlementGranted.v1.yaml) | [json](order/examples/EntitlementGranted.json) |
 | Order | [StaffingUnlocked](order/StaffingUnlocked.v1.yaml) | [sale.json](order/examples/StaffingUnlocked.sale.json) |
 | Talent | [TalentRosterUpsert](talent/TalentRosterUpsert.v1.yaml) | [json](talent/examples/TalentRosterUpsert.json) |

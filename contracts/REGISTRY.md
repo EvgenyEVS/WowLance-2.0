@@ -10,7 +10,7 @@
 
 ```text
 contracts/
-  strategy/   ← Strategy (Founder Studio)
+  strategy/   ← Стратегия (US Closer)
   order/      ← Order / Payments
   talent/     ← Talent
   crm/        ← CRM / SRM
@@ -37,15 +37,15 @@ contracts/
 
 ---
 
-## 1. Strategy
+## 1. Стратегия (US Closer)
 
 | Контракт | Файл | Направление | Канал | Фаза | Статус | Совместимость с кодом |
 |----------|------|-------------|-------|------|--------|------------------------|
-| **FounderHandoff** | [strategy/FounderHandoff.v1.yaml](strategy/FounderHandoff.v1.yaml) | Strategy → WL | `POST /internal/v1/handoffs` | C1 | aligned | Поля и ответы = `FounderHandoffRequest/Response`; идемпотентность `handoff_id` |
-| **StrategyPublished** | [strategy/StrategyPublished.v1.yaml](strategy/StrategyPublished.v1.yaml) | Strategy → WL | `POST /internal/v1/strategy-publications` | C5 | aligned | = `StrategyPublishedRequest/Response` |
+| **FounderHandoff** | [strategy/FounderHandoff.v1.yaml](strategy/FounderHandoff.v1.yaml) | Стратегия (US Closer) → WL | `POST /internal/v1/handoffs` | C1 | aligned | Поля и ответы = `FounderHandoffRequest/Response`; идемпотентность `handoff_id` |
+| **StrategyPublished** | [strategy/StrategyPublished.v1.yaml](strategy/StrategyPublished.v1.yaml) | Стратегия (US Closer) → WL | `POST /internal/v1/strategy-publications` | C5 | aligned | = `StrategyPublishedRequest/Response` |
 | **StrategyProposalDecide** | тот же YAML (второй документ) | client → WL | accept/reject `/api/v1/rooms/…/strategy-proposals/…` | C5 | aligned | Пути в `strategy_proposals.py`; header `X-Actor-Sub` |
-| **RoomCreated** | [strategy/RoomCreated.v1.yaml](strategy/RoomCreated.v1.yaml) | WL → Strategy/platform | outbox `RoomCreated` | C11 | aligned | `handoff.py` `ROOM_CREATED_EVENT`; key=`room_id` |
-| **RoomHealth** | [strategy/RoomHealth.v1.yaml](strategy/RoomHealth.v1.yaml) | WL → Strategy | GET health + publish outbox | C13/C25 | aligned | GET + `POST …/health/publish`; outbox `RoomHealthSnapshot`; блок `earnings` |
+| **RoomCreated** | [strategy/RoomCreated.v1.yaml](strategy/RoomCreated.v1.yaml) | WL → Стратегия (US Closer) / platform | outbox `RoomCreated` | C11 | aligned | `handoff.py` `ROOM_CREATED_EVENT`; key=`room_id` |
+| **RoomHealth** | [strategy/RoomHealth.v1.yaml](strategy/RoomHealth.v1.yaml) | WL → Стратегия (US Closer) | GET health + publish outbox | C13/C25 | aligned | GET + `POST …/health/publish`; outbox `RoomHealthSnapshot`; блок `earnings` |
 
 Примеры: `strategy/examples/`.
 
@@ -56,7 +56,7 @@ contracts/
 | Контракт | Файл | Направление | Канал | Фаза | Статус | Совместимость с кодом |
 |----------|------|-------------|-------|------|--------|------------------------|
 | **EntitlementGranted** | [order/EntitlementGranted.v1.yaml](order/EntitlementGranted.v1.yaml) | Order/Payments → WL | `POST /internal/v1/entitlements` | C2 | aligned | = `EntitlementGrantedRequest/Response`; unlock + outbox StaffingUnlocked |
-| **StaffingUnlocked** | [order/StaffingUnlocked.v1.yaml](order/StaffingUnlocked.v1.yaml) | WL → Order/Strategy | outbox `StaffingUnlocked` | C18 | aligned | key=`room:{id}:StaffingUnlocked` в `entitlement.py` |
+| **StaffingUnlocked** | [order/StaffingUnlocked.v1.yaml](order/StaffingUnlocked.v1.yaml) | WL → Order / Стратегия (US Closer) | outbox `StaffingUnlocked` | C18 | aligned | key=`room:{id}:StaffingUnlocked` в `entitlement.py` |
 
 Примеры: `order/examples/`.  
 *Заметка:* отдельного `PaymentSucceeded` / Order-status YAML нет — для согласований Order достаточно `EntitlementGranted` + опционально расширить позже.
@@ -138,7 +138,7 @@ contracts/
 | PaymentSucceeded / OrderStatus (outbound Order) | Order | Если entitlement не единственный сигнал |
 | FreelancerProfileChanged / Verified | Talent | Live sync beyond upsert |
 | Gateway route map | Platform | Публичные vs internal пути |
-| Object storage URI convention | Strategy / Platform | SOP documents |
+| Object storage URI convention | Стратегия (US Closer) / Platform | SOP documents |
 | Jira issue sync | Jira | По ADR не обязательно для sale |
 
 ---

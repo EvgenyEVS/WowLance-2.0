@@ -1,12 +1,12 @@
 # OpenSpec / contract draft — RoomHealth v1 (C13)
-# Read-only aggregate of a room (slots / tasks / leads) for the Strategy showcase.
-# WowLance -> Strategy: GET over https + optional outbox publish (stub, no live broker).
+# Read-only aggregate of a room (slots / tasks / leads) for Стратегия (US Closer) showcase.
+# WowLance -> Стратегия (US Closer): GET over https + optional outbox publish (stub, no live broker).
 # Empty entities are zeros, not 404. Unknown room: 404.
 # Publish = always a new outbox row (snapshot history); no dedup key.
 
 id: RoomHealth
 version: "1"
-direction: WowLance -> Strategy (витрина)
+direction: WowLance -> Стратегия (US Closer) (витрина)
 channel: https + optional outbox
 
 paths:
@@ -16,7 +16,7 @@ paths:
   publish:
     method: POST
     path: /internal/v1/rooms/{room_id}/health/publish
-    note: "stub: пишет outbox RoomHealthSnapshot (status=sent), живой HTTP в Strategy позже"
+    note: "stub: пишет outbox RoomHealthSnapshot (status=sent), живой HTTP в Стратегия (US Closer) позже"
 
 snapshot:
   type: object

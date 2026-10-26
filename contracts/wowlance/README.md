@@ -1,6 +1,6 @@
 # WowLance — API комнаты
 
-Контракты **клиента → WowLance** (не граничные с Strategy/Order/Talent/CRM).
+Контракты **клиента → WowLance** (не граничные с Стратегия (US Closer) / Order / Talent / CRM).
 
 | Контракт | Файл |
 |----------|------|
