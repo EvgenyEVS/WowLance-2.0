@@ -4,7 +4,7 @@
 
 id: RoomCreated
 version: "1"
-direction: WowLance -> platform (Strategy/Order/bus)
+direction: WowLance -> platform (Стратегия (US Closer)/Order/bus)
 channel: outbox
 idempotency_key: room_id
 
@@ -32,4 +32,4 @@ outbox:
   unique: idempotency_key
 
 bus_stub:
-  note: "no live broker/HTTP to Strategy, no OAuth, no Keycloak"
+  note: "no live broker/HTTP to Стратегия (US Closer), no OAuth, no Keycloak"

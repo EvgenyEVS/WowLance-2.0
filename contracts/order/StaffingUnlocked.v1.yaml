@@ -4,7 +4,7 @@
 
 id: StaffingUnlocked
 version: "1"
-direction: WowLance -> platform (Order/Strategy/bus)
+direction: WowLance -> platform (Order/Стратегия (US Closer)/bus)
 channel: outbox
 idempotency_key: room:{id}:StaffingUnlocked
 
@@ -28,4 +28,4 @@ outbox:
   unique: idempotency_key
 
 bus_stub:
-  note: "no live broker/HTTP to Strategy, no OAuth, no Keycloak"
+  note: "no live broker/HTTP to Стратегия (US Closer), no OAuth, no Keycloak"
