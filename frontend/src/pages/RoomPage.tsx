@@ -53,10 +53,11 @@ export default function RoomPage({ roomId }: { roomId: string }) {
   }, [loadRoom])
 
   return (
-    <main className="shell">
-      <p className="brand">WowLance 2.0</p>
+    <div className="page">
       <p className="back">
-        <a href="/">← Home</a>
+        <a className="btn btn-secondary btn-sm" href="/">
+          ← Home
+        </a>
       </p>
       {state.kind === 'loading' && <p className="hint">Loading room…</p>}
       {state.kind === 'not_found' && (
@@ -66,7 +67,7 @@ export default function RoomPage({ roomId }: { roomId: string }) {
       {state.kind === 'ok' && (
         <RoomView room={state.room} onReload={() => loadRoom()} />
       )}
-    </main>
+    </div>
   )
 }
 
