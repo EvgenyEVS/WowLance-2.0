@@ -1,5 +1,14 @@
 # WowLance 2.0 — frontend (React + Vite)
 
+## Visual parity (C39)
+
+UI now uses 1.0 design tokens and app chrome: `:root` colors/radius/shadow,
+Syne + DM Sans self-hosted from `public/fonts`, `body::before` grid background,
+`.app-shell` + sticky `.site-header` (logo W), `.container` (1120px) and
+`.btn` / `.btn-primary` / `.btn-secondary` / `.btn-sm` primitives.
+Home, Login and the RoomPage wrapper use the same shell; panel internals stay
+until C41. Reference: WowLance 1.0 `static/css/style.css` + `fonts.css`.
+
 C3–C9 room shell. C12 slot unassign/reassign. C13 room health card. C16 earnings. C17 member termination. No login.  
 
 Slots: after entitlement + **Materialize slots**.  

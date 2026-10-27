@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import AppShell from './AppShell'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RoomPage from './pages/RoomPage'
@@ -35,12 +37,13 @@ export default function App() {
     }
   }, [])
 
+  let page: ReactNode
   if (path === '/login') {
-    return <LoginPage needsLogin={needsLogin} />
+    page = <LoginPage needsLogin={needsLogin} />
+  } else {
+    const roomId = roomIdFromPath(path)
+    page = roomId ? <RoomPage roomId={roomId} /> : <HomePage />
   }
-  const roomId = roomIdFromPath(path)
-  if (roomId) {
-    return <RoomPage roomId={roomId} />
-  }
-  return <HomePage />
+
+  return <AppShell>{page}</AppShell>
 }
