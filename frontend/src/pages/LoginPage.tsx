@@ -34,60 +34,81 @@ export default function LoginPage({ needsLogin }: { needsLogin?: boolean }) {
   }
 
   return (
-    <main className="shell">
-      <p className="brand">WowLance 2.0</p>
+    <div className="page">
       <p className="back">
-        <a href="/">← Home</a>
+        <a className="btn btn-secondary btn-sm" href="/">
+          ← Home
+        </a>
       </p>
-      <h1>Login</h1>
-      {needsLogin && (
-        <p className="error">Session required: the API answered 401 (нужен login).</p>
-      )}
-      {current.sub ? (
-        <section className="block">
-          <p>
-            <strong>Signed in as</strong> {current.sub}
-            {current.expired ? <span className="error"> (token expired)</span> : null}
-          </p>
-          <button type="button" className="slot-action" onClick={onClear}>
-            Sign out
-          </button>
-        </section>
-      ) : (
-        <p className="hint">No token stored yet.</p>
-      )}
 
-      <section className="block">
-        <h2>Set access token</h2>
-        <p className="hint">
-          Paste a Keycloak access token (JWT). It is kept in memory +
-          sessionStorage and sent as <code>Authorization: Bearer</code> on every
-          API call.
-        </p>
-        <form className="open-form" onSubmit={onSave}>
-          <label htmlFor="access-token">Access token</label>
-          <textarea
-            id="access-token"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9…"
-            rows={4}
-            spellCheck={false}
-          />
-          <button type="submit" disabled={!draft.trim()}>
-            Save token
-          </button>
-        </form>
-        {saved && !error ? (
-          <p className="hint">Token saved.</p>
-        ) : null}
-        {error ? <p className="error">{error}</p> : null}
-        <p className="hint">
-          No Keycloak yet? With <code>AUTH_STUB_JWKS=true</code> on the backend,
-          mint a demo token: <code>POST /auth/stub-token</code> (Swagger at{' '}
-          <code>/docs</code>).
-        </p>
-      </section>
-    </main>
+      <div className="auth-container">
+        <div className="auth-box">
+          <h1>Login</h1>
+          <p className="subtitle">
+            Paste a Keycloak access token to call the API as a user.
+          </p>
+
+          {needsLogin && (
+            <div className="alert alert-error">
+              Session required: the API answered 401 (нужен login).
+            </div>
+          )}
+
+          {current.sub ? (
+            <div className="alert alert-success">
+              <p>
+                <strong>Signed in as</strong> {current.sub}
+                {current.expired ? (
+                  <span className="error"> (token expired)</span>
+                ) : null}
+              </p>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={onClear}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <p className="hint">No token stored yet.</p>
+          )}
+
+          <h2>Set access token</h2>
+          <p className="hint">
+            Paste a Keycloak access token (JWT). It is kept in memory +
+            sessionStorage and sent as <code>Authorization: Bearer</code> on
+            every API call.
+          </p>
+          <form className="open-form" onSubmit={onSave}>
+            <label htmlFor="access-token">Access token</label>
+            <textarea
+              id="access-token"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9…"
+              rows={4}
+              spellCheck={false}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary btn-block"
+              disabled={!draft.trim()}
+            >
+              Save token
+            </button>
+          </form>
+          {saved && !error ? (
+            <p className="hint">Token saved.</p>
+          ) : null}
+          {error ? <p className="error">{error}</p> : null}
+          <p className="hint">
+            No Keycloak yet? With <code>AUTH_STUB_JWKS=true</code> on the
+            backend, mint a demo token: <code>POST /auth/stub-token</code>{' '}
+            (Swagger at <code>/docs</code>).
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
