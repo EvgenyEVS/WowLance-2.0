@@ -24,7 +24,25 @@ docs/        handoff · canon · architecture · phases · …
 scripts/     founder-demo.ps1
 ```
 
-## Быстрый старт
+## Быстрый старт (Docker — рекомендовано)
+
+```powershell
+docker compose up --build -d
+```
+
+| Сервис | URL |
+|--------|-----|
+| UI | http://127.0.0.1:8088 |
+| API / Swagger | http://127.0.0.1:8000/docs |
+| Health | http://127.0.0.1:8000/health |
+| Postgres | `127.0.0.1:5433` (user/pass/db: `wowlance`) |
+
+Миграции Alembic выполняются при старте контейнера `api`.  
+Подробно: [docs/handoff/03-getting-started.md](docs/handoff/03-getting-started.md).
+
+**Demo** (API на :8000): `powershell -File scripts/founder-demo.ps1` — [чеклист](docs/demo/founder-demo.md)
+
+### Локально без Docker (dev)
 
 ```powershell
 docker compose up -d db
@@ -41,12 +59,8 @@ npm install
 npm run dev
 ```
 
-Подробно: [docs/handoff/03-getting-started.md](docs/handoff/03-getting-started.md).
-
 - C1 handoff: [backend/README.md](backend/README.md)  
 - UI: [frontend/README.md](frontend/README.md)  
-- Health: http://127.0.0.1:8000/health  
-- **Demo:** `powershell -File scripts/founder-demo.ps1` — [чеклист](docs/demo/founder-demo.md)  
 - **Stub hardening:** [docs/guides/hardening-stub.md](docs/guides/hardening-stub.md)  
 - **Auth:** по умолчанию `AUTH_DISABLED=true` (local). Строгий режим — см. backend README (C8).
 

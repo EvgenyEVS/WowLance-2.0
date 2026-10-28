@@ -4,7 +4,7 @@
 WowLance-2.0/
 ├── README.md                 ← обзор + быстрый старт + таблица фаз
 ├── AGENTS.md                 ← правила для ИИ и разработчиков
-├── docker-compose.yml        ← PostgreSQL :5433
+├── docker-compose.yml        ← db + api + web (полный стек)
 ├── .env.example
 ├── contracts/                ← OpenSpec (править РАНЬШЕ кода)
 │   ├── REGISTRY.md
@@ -12,11 +12,15 @@ WowLance-2.0/
 │   ├── order/ talent/ crm/ keycloak/ platform/ meet/
 │   └── wowlance/             ← внутренний API комнаты
 ├── backend/                  ← FastAPI
+│   ├── Dockerfile            ← образ API
+│   ├── docker-entrypoint.sh  ← alembic + uvicorn
 │   ├── app/api/ domain/ auth/ adapters/ db/
 │   ├── alembic/
 │   ├── tests/
 │   └── README.md
 ├── frontend/                 ← React (Vite)
+│   ├── Dockerfile            ← multi-stage + nginx
+│   ├── nginx.conf            ← SPA + proxy /api → api
 │   ├── src/
 │   └── README.md
 ├── scripts/                  ← founder-demo.ps1, render_*.py

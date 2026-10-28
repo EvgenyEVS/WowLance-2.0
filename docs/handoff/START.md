@@ -48,19 +48,17 @@
 ## Быстрая проверка «мы на месте»
 
 ```powershell
-docker compose up -d db
-cd backend
-# venv + pip + alembic + uvicorn — см. 03-getting-started.md
-cd ..\frontend
-npm install
-npm run dev
-# другой терминал:
+# полный стек (UI :8088, API :8000, Postgres :5433)
+docker compose up --build -d
+
+curl http://127.0.0.1:8000/health
+# открыть http://127.0.0.1:8088
+
 powershell -File scripts\founder-demo.ps1
-cd backend
-.\.venv\Scripts\pytest -q
 ```
 
-Ожидание: demo отрабатывает золотой путь; pytest зелёный (ориентир ~200+).
+Гибридный запуск (только БД в Docker + локальные venv/npm) — в [03-getting-started.md](03-getting-started.md).  
+Ожидание: demo отрабатывает золотой путь; pytest зелёный (ориентир ~200+, с хоста на `:5433`).
 
 ---
 

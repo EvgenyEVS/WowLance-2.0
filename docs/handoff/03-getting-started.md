@@ -6,16 +6,52 @@ Demo: [demo/founder-demo.md](../demo/founder-demo.md).
 
 ---
 
-## Требования
+## Способ A — весь стек в Docker (рекомендуется принимающей команде)
 
-- Docker Desktop (PostgreSQL)  
-- Python 3.11+ (проект гонялся и на 3.13)  
-- Node.js 20+ (для frontend)  
-- Git  
+**Требование:** Docker Desktop.
+
+```powershell
+cd <repo>
+docker compose up --build -d
+```
+
+| Сервис | Порт / URL |
+|--------|------------|
+| **web** (React + nginx) | http://127.0.0.1:8088 |
+| **api** (FastAPI) | http://127.0.0.1:8000 · Swagger `/docs` |
+| **db** (PostgreSQL 16) | `127.0.0.1:5433` · user/pass/db `wowlance` |
+
+Nginx на `web` проксирует `/api`, `/internal`, `/health`, `/auth`, `/docs` на `api`.  
+При старте `api` сам делает `alembic upgrade head`.
+
+Проверка:
+
+```powershell
+curl http://127.0.0.1:8000/health
+# открыть http://127.0.0.1:8088
+```
+
+Остановка:
+
+```powershell
+docker compose down
+# с данными БД: docker compose down -v
+```
+
+Логи:
+
+```powershell
+docker compose logs -f api
+docker compose logs -f web
+```
 
 ---
 
-## 1. База
+## Способ B — гибрид (только БД в Docker)
+
+**Требования:** Docker Desktop · Python 3.11+ · Node.js 20+ · Git
+
+### 1. База
 
 ```powershell
 cd <repo>
@@ -24,7 +60,7 @@ docker compose up -d db
 # также создаётся БД wowlance_test (для pytest)
 ```
 
-## 2. Backend
+### 2. Backend
 
 ```powershell
 cd backend
@@ -36,9 +72,9 @@ copy ..\.env.example .env
 ```
 
 Проверка: http://127.0.0.1:8000/health → `{"status":"ok",...}`  
-Swagger: http://127.0.0.1:8000/docs  
+Swagger: http://127.0.0.1:8000/docs
 
-## 3. Frontend
+### 3. Frontend
 
 ```powershell
 cd frontend
@@ -47,9 +83,11 @@ npm run dev
 # обычно http://127.0.0.1:5173
 ```
 
-## 4. Founder demo (золотой путь)
+---
 
-При запущенном API:
+## Founder demo (золотой путь)
+
+При запущенном API на :8000:
 
 ```powershell
 powershell -File scripts\founder-demo.ps1
@@ -58,24 +96,28 @@ powershell -File scripts\founder-demo.ps1
 Скрипт: handoff → entitlement → roster/assign → task QG → hot lead → health.  
 Чеклист: [demo/founder-demo.md](../demo/founder-demo.md).
 
-## 5. Тесты
+---
+
+## Тесты
 
 ```powershell
 cd backend
 .\.venv\Scripts\pytest -q
 ```
 
-Нужна БД `wowlance_test` на том же Postgres (создаётся init-скриптом Docker).
+Нужна БД `wowlance_test` на том же Postgres (создаётся init-скриптом Docker).  
+При полном Docker-стеке БД уже на `:5433` — pytest с хоста использует `.env` / `.env.example`.
 
 ---
 
-## Важные env (`.env.example`)
+## Важные env (`.env.example` / compose)
 
 | Переменная | Dev-default | Prod-цель |
 |------------|-------------|-----------|
 | `AUTH_DISABLED` | `true` | `false` + Keycloak |
 | `INTERNAL_AUTH_DISABLED` | `true` | `false` + token |
 | `ROOM_RBAC_DISABLED` | `true` | `false` |
-| `DATABASE_URL` | `…@127.0.0.1:5433/wowlance` | свой |
+| `DATABASE_URL` | host `127.0.0.1:5433` / в compose — `db:5432` | свой |
 
+В `docker-compose.yml` для `api` уже заданы безопасные для локального демо значения.  
 Подробнее hardening: [guides/hardening-stub.md](../guides/hardening-stub.md).
