@@ -22,7 +22,8 @@ contracts/
 
 **Статусы:** `draft` — черновик OpenSpec · `aligned` — совпадает с кодом stub · `proposed` — отдали соседу на review · `agreed` — подписан соседом (пока ни одного).
 
-**Owners / proposed:** таблица владельцев, блокеры live и шаблон пинга — [docs/contracts-owners.md](../docs/contracts-owners.md). Пока нет `agreed` — WowLance продолжает stubs.
+**Owners / proposed:** таблица владельцев, блокеры live и шаблон пинга — [docs/guides/contracts-owners.md](../docs/guides/contracts-owners.md). Пока нет `agreed` — WowLance продолжает stubs.  
+**Передача команде:** [docs/handoff/START.md](../docs/handoff/START.md).
 
 **Синонимы из arch-доков → фактический id:**
 

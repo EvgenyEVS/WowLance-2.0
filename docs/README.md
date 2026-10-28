@@ -1,34 +1,63 @@
-# Docs
+# Документация WowLance 2.0
 
-| Файл | Содержание |
-|------|------------|
-| [ADR-002](ADR-002-wowlance-2.0-platform-room.md) | Канон продукта и границ сервиса |
-| [Реестр контрактов](../contracts/REGISTRY.md) | Контракты по микросервисам + сверка с кодом |
-| [261022 — зоны до согласования контрактов](261022%20-%20зоны%20разработки%20до%20согласования%20контрактов.md) | Для тимлида: что пилить на stubs, что не углублять |
-| [261023 — отчёт стейкхолдерам](261023%20-%20отчёт%20стейкхолдерам%20готовность.md) | Актуальный отчёт: сделали / контракты / акцент / шаги (с старта 2.0) |
-| [261023 — отчёт стейкхолдерам (Word)](261023%20-%20отчёт%20стейкхолдерам%20готовность.docx) | Дубликат отчёта в `.docx` |
-| [261023 — анализ ТЗ регистрации фрилансеров](261023%20-%20анализ%20ТЗ%20регистрации%20фрилансеров%20vs%20WowLance%202.0.md) | ТЗ 260804 (Talent) vs комната 2.0 |
-| [261024 — схема платформы для стейкхолдеров](261024%20-%20схема%20платформы%20для%20стейкхолдеров.md) | Люди + информация между US Closer / Talent / WL / CRM / Order… |
-| [261024 — схема платформы (PNG)](261024%20-%20схема%20платформы%20WOWLANCE.png) | Обзорная схема для презентаций |
-| [261024 — схема платформы tech (PNG)](261024%20-%20схема%20платформы%20WOWLANCE%20tech.png) | Техсхема: свои БД, снимки, аналитика |
-| [261021 — отчёт стейкхолдерам](261021%20-%20отчёт%20стейкхолдерам%20готовность.md) | Предыдущий отчёт (21.10) |
-| [261021 — оценка готовности и качества](261021%20-%20оценка%20готовности%20и%20качества.md) | Техническая оценка stub/live (21.10) |
-| [261026 — технический аудит и обоснование рефакторинга](261026%20-%20технический%20аудит%20и%20обоснование%20рефакторинга.md) | Full vs точечный рефакторинг: код, строки, P0–P2 backlog |
-| [architecture/](architecture/) | Overview, A/B/C, integration map (из пакета 2.0) |
-| [261010 — C1 FounderHandoff](261010%20-%20задание%20C1%20FounderHandoff.md) | Handoff → комната + snapshot |
-| [261010 — C2 Entitlement](261010%20-%20задание%20C2%20Entitlement%20unlock.md) | Unlock staffing |
-| [261010 — C3 Room read](261010%20-%20задание%20C3%20Room%20read%20shell.md) | GET room + React shell |
-| [261015 — C4 Staffing slots](261015%20-%20задание%20C4%20Staffing%20slots.md) | Слоты под `staffing_unlocked` |
-| [261015 — C5 Strategy Accept](261015%20-%20задание%20C5%20Strategy%20accept.md) | StrategyPublished → Accept/Reject |
-| [261015 — C6 Roster assign](261015%20-%20задание%20C6%20Roster%20assign.md) | Local roster + assign на слот ∥ C7 |
-| [261015 — C7 Room tasks](261015%20-%20задание%20C7%20Room%20tasks.md) | Минимальный трекер задач ∥ C6 |
-| [261016 — C8 Keycloak JWT](261016%20-%20задание%20C8%20Keycloak%20JWT.md) | JWT + shadow User ∥ C9 |
-| [261016 — C9 Hot lead CRM](261016%20-%20задание%20C9%20Hot%20lead%20CRM.md) | Hot → CRM stub + outbox ∥ C8 |
-| [261016 — QA C6/C7](261016%20-%20QA%20отчёт%20C6%20и%20C7.md) | QA отчёт C6+C7 |
-| [261017 — QA C8/C9](261017%20-%20задание%20QA%20C8%20и%20C9.md) | Задание QA C8 + C9 |
-| [261017 — C10 Quality Gate](261017%20-%20задание%20C10%20Quality%20Gate.md) | Task proof / accept-reject ∥ C11 |
-| [261017 — C11 RoomCreated outbox](261017%20-%20задание%20C11%20RoomCreated%20outbox.md) | Outbox при create комнаты ∥ C10 |
+## Передача новой команде
 
-Исходная папка документов в монолите 1.0:  
-`C:\Программирование\Стажировка Wowlance\WowLance\WowLance 2.0`  
-Рабочий код 2.0 — **этот** репозиторий (`WowLance-2.0`), не внутри Django.
+**→ [handoff/START.md](handoff/START.md)** — читать первым.
+
+| Раздел handoff | Содержание |
+|----------------|------------|
+| [01 продукт](handoff/01-product-boundaries.md) | Границы, соседи |
+| [02 архитектура](handoff/02-architecture.md) | Стек, каналы, модули |
+| [03 запуск](handoff/03-getting-started.md) | Docker, API, UI, demo |
+| [04 карта репо](handoff/04-repository-map.md) | Структура каталогов |
+| [05 контракты](handoff/05-contracts-and-neighbors.md) | OpenSpec, `agreed` |
+| [06 процесс](handoff/06-development-workflow.md) | Контракт → PR |
+| [07 тесты](handoff/07-testing-and-qa.md) | pytest, QA |
+| [08 статус](handoff/08-status-and-backlog.md) | C0–C42, бэклог |
+| [09 долги](handoff/09-debts-and-risks.md) | P0–P2 |
+| [10 глоссарий](handoff/10-glossary.md) | Термины |
+
+---
+
+## Каталог по папкам
+
+| Папка | Содержание |
+|-------|------------|
+| [handoff/](handoff/) | Пакет передачи команды |
+| [canon/](canon/) | [ADR-002](canon/ADR-002-wowlance-2.0-platform-room.md) — канон продукта |
+| [architecture/](architecture/) | Overview, Hybrid C, integration map, decisions |
+| [diagrams/](diagrams/) | Схемы платформы (MD + PNG) |
+| [guides/](guides/) | Owners, зоны до согласования, stub hardening |
+| [status/](status/) | Отчёты готовности, аудит, UI parity |
+| [phases/assignments/](phases/assignments/) | Задания срезов C1–C42 |
+| [phases/qa/](phases/qa/) | QA-отчёты |
+| [demo/](demo/) | Founder-demo чеклист |
+| [ui-parity/](ui-parity/) | Скриншоты 1.0 vs 2.0 |
+
+**Контракты (код):** [`../contracts/`](../contracts/) · [REGISTRY](../contracts/REGISTRY.md)
+
+> Старые пути (`docs/ADR-002-…`, `docs/contracts-owners.md`, `docs/261022 - зоны…`) оставлены как **редиректы** на новые папки.
+
+---
+
+## Быстрые ссылки
+
+| Тема | Документ |
+|------|----------|
+| ADR | [canon/ADR-002](canon/ADR-002-wowlance-2.0-platform-room.md) |
+| Схема (обзор) | [diagrams PNG](diagrams/261024%20-%20схема%20платформы%20WOWLANCE.png) |
+| Схема (tech / БД) | [diagrams tech PNG](diagrams/261024%20-%20схема%20платформы%20WOWLANCE%20tech.png) |
+| Owners контрактов | [guides/contracts-owners.md](guides/contracts-owners.md) |
+| Зоны до `agreed` | [guides/зоны](guides/261022%20-%20зоны%20разработки%20до%20согласования%20контрактов.md) |
+| Hardening stubs | [guides/hardening-stub.md](guides/hardening-stub.md) |
+| Demo | [demo/founder-demo.md](demo/founder-demo.md) |
+| Аудит / no-rewrite | [status/аудит](status/261026%20-%20технический%20аудит%20и%20обоснование%20рефакторинга.md) |
+| Отчёт стейкхолдерам | [status/261023](status/261023%20-%20отчёт%20стейкхолдерам%20готовность.md) |
+
+---
+
+## Фазы (задания)
+
+Полная таблица — в [корневом README](../README.md).  
+Файлы заданий: [phases/assignments/](phases/assignments/).  
+QA: [phases/qa/](phases/qa/).

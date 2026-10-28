@@ -4,7 +4,7 @@
 
 | # | Файл | Содержание |
 |---|------|------------|
-| — | [ADR-002](../docs/ADR-002-wowlance-2.0-platform-room.md) · [ADR-002.md](ADR-002.md) | **Принятый ADR WowLance 2.0** (канон в `docs/`) |
+| — | [ADR-002](../canon/ADR-002-wowlance-2.0-platform-room.md) · [ADR-002.md](ADR-002.md) | **Принятый ADR WowLance 2.0** (канон в `docs/canon/`) |
 | 0 | [00-decisions.md](00-decisions.md) | Журнал решений (сведён в ADR-002) |
 | 1 | [01-overview.md](01-overview.md) | Технический обзор: переделки, смежники, 3 концепции, рекомендация |
 | 1b | [01-overview for PO.md](01-overview%20for%20PO.md) | Для PO: сравнение вариантов простым языком, рекомендация, верхние вопросы |

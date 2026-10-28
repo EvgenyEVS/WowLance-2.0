@@ -2,7 +2,8 @@
 
 Контракты разложены **по микросервисам-соседям**.  
 Полный реестр с проверкой кода: **[REGISTRY.md](REGISTRY.md)**.  
-Владельцы / `proposed`→`agreed`: **[docs/contracts-owners.md](../docs/contracts-owners.md)**.
+Владельцы / `proposed`→`agreed`: **[docs/guides/contracts-owners.md](../docs/guides/contracts-owners.md)**.  
+Handoff: [docs/handoff/05-contracts-and-neighbors.md](../docs/handoff/05-contracts-and-neighbors.md).
 
 | Папка | Микросервис | Контракты |
 |-------|-------------|-----------|
